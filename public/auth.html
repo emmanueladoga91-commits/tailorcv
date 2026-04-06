@@ -99,6 +99,13 @@
         <label>Confirm password</label>
         <input type="password" id="regConfirm" placeholder="Repeat password" required autocomplete="new-password" />
       </div>
+      <div class="f" id="betaCodeWrap" style="margin-top:4px;">
+        <label style="display:flex;align-items:center;gap:6px;">
+          Beta access code
+          <span style="color:var(--gray400);font-weight:400;font-size:.75rem;">(optional — unlocks full Pro access for 24h)</span>
+        </label>
+        <input type="text" id="regBetaCode" placeholder="e.g. AB12-CD34-EF56" autocomplete="off" style="text-transform:uppercase;letter-spacing:.08em;" />
+      </div>
       <button class="btn-primary" type="submit" id="registerBtn">Create free account</button>
       <p class="terms">By signing up you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.</p>
     </form>
@@ -162,12 +169,14 @@
     if (pass !== conf) { showAlert('error', 'Passwords do not match.'); return; }
     setLoading('registerBtn', true);
     try {
+      var betaCode = document.getElementById('regBetaCode').value.trim();
       var res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email: document.getElementById('regEmail').value.trim(),
           password: pass,
+          betaCode: betaCode || undefined,
         }),
       });
       var data = await res.json();

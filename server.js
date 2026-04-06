@@ -15,11 +15,13 @@ const cors       = require('cors');
 // ── Load env ───────────────────────────────────────────────────
 try { require('dotenv').config(); } catch(e) {}
 
-const PORT       = process.env.PORT        || 3000;
-const JWT_SECRET = process.env.JWT_SECRET  || 'CHANGE_THIS_SECRET_IN_PRODUCTION';
-const CLAUDE_KEY = process.env.CLAUDE_API_KEY;
-const APP_URL    = process.env.APP_URL     || `http://localhost:${PORT}`;
-const stripe     = Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_placeholder');
+const PORT         = process.env.PORT          || 3000;
+const JWT_SECRET   = process.env.JWT_SECRET    || 'CHANGE_THIS_SECRET_IN_PRODUCTION';
+const CLAUDE_KEY   = process.env.CLAUDE_API_KEY;
+const APP_URL      = process.env.APP_URL       || `http://localhost:${PORT}`;
+const ADMIN_SECRET = process.env.ADMIN_SECRET  || '';
+const OWNER_EMAIL  = (process.env.OWNER_EMAIL  || '').toLowerCase();
+const stripe       = Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_placeholder');
 
 // ── PostgreSQL pool ────────────────────────────────────────────
 const pool = new Pool({
@@ -27,7 +29,7 @@ const pool = new Pool({
   ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false,
 });
 
-// ── Create table on startup ────────────────────────────────────
+// ── Create tables on startup ───────────────────────────────────
 (async () => {
   await pool.query(`
     CREATE TABLE IF NOT EXISTS users (
@@ -41,6 +43,16 @@ const pool = new Pool({
       tailoring_count        INTEGER NOT NULL DEFAULT 0,
       created_at             TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       updated_at             TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+  `);
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS beta_codes (
+      id         SERIAL PRIMARY KEY,
+      code       TEXT UNIQUE NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      expires_at TIMESTAMPTZ NOT NULL,
+      used_by    TEXT,
+      used_at    TIMESTAMPTZ
     );
   `);
   console.log('Database ready.');
@@ -93,18 +105,42 @@ const aiLimiter   = rateLimit({ windowMs:  1 * 60 * 1000, max: 10, message: { er
 // ══════════════════════════════════════════════════════════════
 app.post('/api/auth/register', authLimiter, async (req, res) => {
   try {
-    const { email, password } = req.body || {};
+    const { email, password, betaCode } = req.body || {};
     if (!email || !password) return res.status(400).json({ error: 'Email and password are required.' });
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ error: 'Invalid email address.' });
     if (password.length < 8) return res.status(400).json({ error: 'Password must be at least 8 characters.' });
 
-    const existing = await pool.query('SELECT id FROM users WHERE email = $1', [email.toLowerCase()]);
+    const normalEmail = email.toLowerCase();
+    const existing = await pool.query('SELECT id FROM users WHERE email = $1', [normalEmail]);
     if (existing.rows.length) return res.status(409).json({ error: 'An account with this email already exists.' });
+
+    // Determine plan — owner always gets Pro; valid beta code grants 24h Pro
+    let plan = 'free';
+    let subscriptionStatus = null;
+    const isOwner = OWNER_EMAIL && normalEmail === OWNER_EMAIL;
+
+    if (isOwner) {
+      plan = 'pro';
+      subscriptionStatus = 'active';
+    } else if (betaCode) {
+      const codeRow = await pool.query(
+        `SELECT * FROM beta_codes WHERE code = $1 AND used_by IS NULL AND expires_at > NOW()`,
+        [betaCode.trim().toUpperCase()]
+      );
+      if (!codeRow.rows.length) return res.status(400).json({ error: 'Invalid or expired beta code.' });
+      plan = 'pro';
+      subscriptionStatus = 'beta';
+      // Mark code as used
+      await pool.query(
+        'UPDATE beta_codes SET used_by = $1, used_at = NOW() WHERE code = $2',
+        [normalEmail, betaCode.trim().toUpperCase()]
+      );
+    }
 
     const hash = await bcrypt.hash(password, 12);
     const result = await pool.query(
-      'INSERT INTO users (email, password_hash) VALUES ($1, $2) RETURNING *',
-      [email.toLowerCase(), hash]
+      'INSERT INTO users (email, password_hash, plan, subscription_status) VALUES ($1, $2, $3, $4) RETURNING *',
+      [normalEmail, hash, plan, subscriptionStatus]
     );
     const user = result.rows[0];
     const token = signToken(user.id);
@@ -144,7 +180,9 @@ app.post('/api/claude', requireAuth, aiLimiter, async (req, res) => {
   const user = req.user;
 
   // ── Gating logic ───────────────────────────────────────────
-  const isPro = (user.plan === 'pro' && user.subscription_status === 'active');
+  // Owner always has unlimited access; beta testers treated as Pro
+  const isOwner = OWNER_EMAIL && user.email === OWNER_EMAIL;
+  const isPro = isOwner || (user.plan === 'pro' && ['active', 'beta'].includes(user.subscription_status));
 
   if (type === 'tailor') {
     if (!isPro && user.tailoring_count >= 1) {
@@ -204,6 +242,63 @@ app.post('/api/claude', requireAuth, aiLimiter, async (req, res) => {
   } catch (err) {
     console.error('Claude proxy error:', err);
     res.status(502).json({ error: 'AI request failed. Please try again.' });
+  }
+});
+
+// ══════════════════════════════════════════════════════════════
+//  ADMIN ROUTES (beta code management)
+// ══════════════════════════════════════════════════════════════
+function requireAdmin(req, res, next) {
+  const secret = req.headers['x-admin-secret'] || '';
+  if (!ADMIN_SECRET || secret !== ADMIN_SECRET) {
+    return res.status(403).json({ error: 'Forbidden' });
+  }
+  next();
+}
+
+// Generate a new beta code (24h expiry)
+app.post('/api/admin/generate-code', requireAdmin, async (req, res) => {
+  try {
+    const code = [
+      Math.random().toString(36).slice(2,6),
+      Math.random().toString(36).slice(2,6),
+      Math.random().toString(36).slice(2,6),
+    ].join('-').toUpperCase();
+
+    const result = await pool.query(
+      `INSERT INTO beta_codes (code, expires_at) VALUES ($1, NOW() + INTERVAL '24 hours') RETURNING *`,
+      [code]
+    );
+    res.json({ code: result.rows[0] });
+  } catch (err) {
+    console.error('Generate code error:', err);
+    res.status(500).json({ error: 'Failed to generate code.' });
+  }
+});
+
+// List all beta codes
+app.get('/api/admin/codes', requireAdmin, async (req, res) => {
+  try {
+    const result = await pool.query(
+      'SELECT * FROM beta_codes ORDER BY created_at DESC'
+    );
+    res.json({ codes: result.rows });
+  } catch (err) {
+    console.error('List codes error:', err);
+    res.status(500).json({ error: 'Failed to fetch codes.' });
+  }
+});
+
+// List all users
+app.get('/api/admin/users', requireAdmin, async (req, res) => {
+  try {
+    const result = await pool.query(
+      'SELECT id, email, plan, subscription_status, tailoring_count, created_at FROM users ORDER BY created_at DESC'
+    );
+    res.json({ users: result.rows });
+  } catch (err) {
+    console.error('List users error:', err);
+    res.status(500).json({ error: 'Failed to fetch users.' });
   }
 });
 

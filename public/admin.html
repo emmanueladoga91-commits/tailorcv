@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TailorCV — Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --navy:#1a2744; --indigo:#4f6ef7; --indigo2:#3a5ce4;
+      --green:#166534; --green-bg:#dcfce7; --green-bd:#86efac;
+      --red:#991b1b; --red-bg:#fef2f2; --red-bd:#fca5a5;
+      --gold:#92400e; --gold-bg:#fef3c7; --gold-bd:#fcd34d;
+      --gray50:#f8fafc; --gray100:#f1f5f9; --gray200:#e2e8f0;
+      --gray400:#94a3b8; --gray600:#475569; --gray800:#1e293b;
+    }
+    body { font-family:'Inter',system-ui,sans-serif; background:var(--gray50); color:var(--gray800); min-height:100vh; }
+    nav { background:var(--navy); padding:16px 28px; display:flex; align-items:center; justify-content:space-between; }
+    .logo { font-size:1.2rem; font-weight:900; color:#fff; text-decoration:none; }
+    .logo span { color:#7c9ef8; }
+    .nav-tag { font-size:.75rem; font-weight:700; background:rgba(255,255,255,.15); color:#fff; padding:3px 10px; border-radius:20px; letter-spacing:.06em; }
+
+    /* Lock screen */
+    #lockScreen { display:flex; align-items:center; justify-content:center; min-height:calc(100vh - 56px); padding:20px; }
+    .lock-card { background:#fff; border:1px solid var(--gray200); border-radius:16px; padding:36px; width:100%; max-width:380px; box-shadow:0 4px 24px rgba(0,0,0,.07); text-align:center; }
+    .lock-icon { font-size:2.5rem; margin-bottom:16px; }
+    .lock-card h2 { font-size:1.3rem; font-weight:800; color:var(--navy); margin-bottom:8px; }
+    .lock-card p { font-size:.9rem; color:var(--gray600); margin-bottom:24px; }
+    .lock-input { width:100%; padding:12px 14px; border:1.5px solid var(--gray200); border-radius:10px; font-size:.95rem; font-family:inherit; outline:none; text-align:center; letter-spacing:.06em; }
+    .lock-input:focus { border-color:var(--indigo); box-shadow:0 0 0 3px rgba(79,110,247,.1); }
+    .btn { padding:12px 24px; border:none; border-radius:10px; font-size:.95rem; font-weight:700; font-family:inherit; cursor:pointer; transition:opacity .15s; }
+    .btn-primary { background:var(--indigo); color:#fff; width:100%; margin-top:12px; }
+    .btn-primary:hover { opacity:.88; }
+    .btn-sm { padding:8px 16px; font-size:.85rem; }
+    .btn-green { background:#16a34a; color:#fff; }
+    .btn-green:hover { opacity:.88; }
+
+    /* Main dashboard */
+    #dashboard { display:none; padding:32px 28px; max-width:1000px; margin:0 auto; }
+    .dash-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:32px; flex-wrap:wrap; gap:12px; }
+    .dash-title { font-size:1.5rem; font-weight:900; color:var(--navy); }
+    .dash-subtitle { font-size:.9rem; color:var(--gray600); margin-top:2px; }
+
+    .card { background:#fff; border:1px solid var(--gray200); border-radius:14px; padding:24px; margin-bottom:24px; }
+    .card-title { font-size:1rem; font-weight:800; color:var(--navy); margin-bottom:6px; display:flex; align-items:center; gap:8px; }
+    .card-sub { font-size:.85rem; color:var(--gray600); margin-bottom:20px; }
+
+    /* Code generation */
+    .gen-area { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+    .generated-code { font-size:1.6rem; font-weight:900; color:var(--indigo); letter-spacing:.12em; font-family:monospace; background:var(--gray50); border:2px dashed var(--indigo); border-radius:10px; padding:14px 24px; flex:1; min-width:200px; text-align:center; }
+    .copy-btn { padding:10px 18px; background:var(--gray100); border:1px solid var(--gray200); border-radius:8px; font-size:.85rem; font-weight:700; cursor:pointer; font-family:inherit; }
+    .copy-btn:hover { background:var(--gray200); }
+    .copy-btn.copied { background:var(--green-bg); border-color:var(--green-bd); color:var(--green); }
+
+    /* Table */
+    .tbl-wrap { overflow-x:auto; }
+    table { width:100%; border-collapse:collapse; font-size:.88rem; }
+    th { background:var(--gray50); color:var(--gray600); font-weight:700; font-size:.78rem; text-transform:uppercase; letter-spacing:.05em; padding:10px 12px; text-align:left; border-bottom:1px solid var(--gray200); }
+    td { padding:11px 12px; border-bottom:1px solid var(--gray100); color:var(--gray800); }
+    tr:last-child td { border-bottom:none; }
+    tr:hover td { background:var(--gray50); }
+    .code-cell { font-family:monospace; font-weight:700; font-size:.92rem; color:var(--indigo); letter-spacing:.08em; }
+    .badge { display:inline-block; padding:3px 10px; border-radius:20px; font-size:.75rem; font-weight:700; }
+    .badge-active { background:var(--green-bg); color:var(--green); }
+    .badge-used { background:var(--gray100); color:var(--gray600); }
+    .badge-expired { background:var(--red-bg); color:var(--red); }
+    .badge-pro { background:#eef2ff; color:var(--indigo); }
+    .badge-free { background:var(--gray100); color:var(--gray600); }
+    .badge-beta { background:var(--gold-bg); color:var(--gold); }
+    .empty { text-align:center; padding:32px; color:var(--gray400); font-size:.9rem; }
+    .refresh-btn { background:none; border:1px solid var(--gray200); padding:7px 14px; border-radius:8px; font-size:.82rem; font-weight:600; cursor:pointer; color:var(--gray600); font-family:inherit; }
+    .refresh-btn:hover { background:var(--gray100); }
+    .alert { padding:10px 14px; border-radius:8px; font-size:.88rem; margin-bottom:16px; }
+    .alert.error { background:var(--red-bg); color:var(--red); border:1px solid var(--red-bd); }
+    .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:16px; margin-bottom:24px; }
+    .stat-card { background:#fff; border:1px solid var(--gray200); border-radius:12px; padding:16px 20px; text-align:center; }
+    .stat-n { font-size:2rem; font-weight:900; color:var(--indigo); line-height:1; }
+    .stat-l { font-size:.8rem; color:var(--gray600); margin-top:4px; font-weight:600; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="logo">Tailor<span>CV</span></a>
+  <span class="nav-tag">ADMIN</span>
+</nav>
+
+<!-- Lock screen -->
+<div id="lockScreen">
+  <div class="lock-card">
+    <div class="lock-icon">🔐</div>
+    <h2>Admin Access</h2>
+    <p>Enter your admin secret to manage beta codes and view users.</p>
+    <div id="lockAlert" class="alert error" style="display:none;"></div>
+    <input type="password" id="secretInput" class="lock-input" placeholder="Admin secret" />
+    <button class="btn btn-primary" onclick="unlock()">Unlock →</button>
+  </div>
+</div>
+
+<!-- Dashboard -->
+<div id="dashboard">
+  <div class="dash-header">
+    <div>
+      <div class="dash-title">Admin Dashboard</div>
+      <div class="dash-subtitle">Manage beta access codes and view registered users</div>
+    </div>
+    <button class="btn btn-sm" onclick="signOut()" style="background:var(--gray100);color:var(--gray800);">Sign out</button>
+  </div>
+
+  <!-- Stats row -->
+  <div class="stats" id="statsRow">
+    <div class="stat-card"><div class="stat-n" id="statUsers">—</div><div class="stat-l">Total Users</div></div>
+    <div class="stat-card"><div class="stat-n" id="statPro">—</div><div class="stat-l">Pro / Beta</div></div>
+    <div class="stat-card"><div class="stat-n" id="statCodes">—</div><div class="stat-l">Codes Generated</div></div>
+    <div class="stat-card"><div class="stat-n" id="statActive">—</div><div class="stat-l">Active Codes</div></div>
+  </div>
+
+  <!-- Generate code -->
+  <div class="card">
+    <div class="card-title">🎟️ Generate Beta Code</div>
+    <div class="card-sub">Each code gives a new user full Pro access for 24 hours. Single-use — once redeemed it cannot be reused.</div>
+    <div id="genAlert" class="alert error" style="display:none;"></div>
+    <div class="gen-area">
+      <div class="generated-code" id="generatedCode">—</div>
+      <button class="btn btn-green btn-sm" onclick="generateCode()">⚡ Generate New Code</button>
+      <button class="copy-btn" id="copyBtn" onclick="copyCode()" style="display:none;">Copy</button>
+    </div>
+  </div>
+
+  <!-- Active codes table -->
+  <div class="card">
+    <div class="card-title" style="justify-content:space-between;">
+      <span>📋 All Beta Codes</span>
+      <button class="refresh-btn" onclick="loadCodes()">↺ Refresh</button>
+    </div>
+    <div class="card-sub">Codes expire 24 hours after creation. Each code is single-use.</div>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Code</th>
+            <th>Created</th>
+            <th>Expires</th>
+            <th>Status</th>
+            <th>Used by</th>
+          </tr>
+        </thead>
+        <tbody id="codesBody"><tr><td colspan="5" class="empty">Loading…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Users table -->
+  <div class="card">
+    <div class="card-title" style="justify-content:space-between;">
+      <span>👥 Registered Users</span>
+      <button class="refresh-btn" onclick="loadUsers()">↺ Refresh</button>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Email</th>
+            <th>Plan</th>
+            <th>Status</th>
+            <th>Tailoring Count</th>
+            <th>Joined</th>
+          </tr>
+        </thead>
+        <tbody id="usersBody"><tr><td colspan="5" class="empty">Loading…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+  var adminSecret = '';
+
+  function unlock() {
+    var s = document.getElementById('secretInput').value.trim();
+    if (!s) return;
+    adminSecret = s;
+    sessionStorage.setItem('tc_admin', s);
+    fetchAll();
+  }
+
+  document.getElementById('secretInput').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') unlock();
+  });
+
+  function signOut() {
+    sessionStorage.removeItem('tc_admin');
+    adminSecret = '';
+    document.getElementById('dashboard').style.display = 'none';
+    document.getElementById('lockScreen').style.display = 'flex';
+    document.getElementById('secretInput').value = '';
+  }
+
+  function fetchAll() {
+    Promise.all([loadCodes(), loadUsers()]).then(function() {
+      document.getElementById('lockAlert').style.display = 'none';
+      document.getElementById('lockScreen').style.display = 'none';
+      document.getElementById('dashboard').style.display = 'block';
+    }).catch(function() {
+      document.getElementById('lockAlert').style.display = 'block';
+      document.getElementById('lockAlert').textContent = 'Invalid secret or server error.';
+      adminSecret = '';
+    });
+  }
+
+  function adminFetch(url, opts) {
+    return fetch(url, Object.assign({ headers: { 'x-admin-secret': adminSecret } }, opts || {}))
+      .then(function(r) {
+        if (r.status === 403) throw new Error('Forbidden');
+        return r.json();
+      });
+  }
+
+  function loadCodes() {
+    return adminFetch('/api/admin/codes').then(function(data) {
+      var rows = data.codes || [];
+      var now = new Date();
+
+      // Update stats
+      document.getElementById('statCodes').textContent = rows.length;
+      document.getElementById('statActive').textContent = rows.filter(function(c) {
+        return !c.used_by && new Date(c.expires_at) > now;
+      }).length;
+
+      if (!rows.length) {
+        document.getElementById('codesBody').innerHTML = '<tr><td colspan="5" class="empty">No codes generated yet.</td></tr>';
+        return;
+      }
+      document.getElementById('codesBody').innerHTML = rows.map(function(c) {
+        var expired = new Date(c.expires_at) < now;
+        var status = c.used_by ? '<span class="badge badge-used">Used</span>'
+          : expired ? '<span class="badge badge-expired">Expired</span>'
+          : '<span class="badge badge-active">Active</span>';
+        var exp = new Date(c.expires_at);
+        var created = new Date(c.created_at);
+        return '<tr>' +
+          '<td class="code-cell">' + c.code + '</td>' +
+          '<td>' + created.toLocaleString() + '</td>' +
+          '<td>' + exp.toLocaleString() + '</td>' +
+          '<td>' + status + '</td>' +
+          '<td style="color:var(--gray600);font-size:.83rem">' + (c.used_by || '—') + '</td>' +
+          '</tr>';
+      }).join('');
+    });
+  }
+
+  function loadUsers() {
+    return adminFetch('/api/admin/users').then(function(data) {
+      var rows = data.users || [];
+
+      // Update stats
+      document.getElementById('statUsers').textContent = rows.length;
+      document.getElementById('statPro').textContent = rows.filter(function(u) {
+        return u.plan === 'pro';
+      }).length;
+
+      if (!rows.length) {
+        document.getElementById('usersBody').innerHTML = '<tr><td colspan="5" class="empty">No users yet.</td></tr>';
+        return;
+      }
+      document.getElementById('usersBody').innerHTML = rows.map(function(u) {
+        var planBadge = u.plan === 'pro'
+          ? (u.subscription_status === 'beta'
+              ? '<span class="badge badge-beta">Beta</span>'
+              : '<span class="badge badge-pro">Pro</span>')
+          : '<span class="badge badge-free">Free</span>';
+        var statusText = u.subscription_status || '—';
+        var joined = new Date(u.created_at).toLocaleDateString();
+        return '<tr>' +
+          '<td style="font-weight:600">' + u.email + '</td>' +
+          '<td>' + planBadge + '</td>' +
+          '<td style="color:var(--gray600);font-size:.85rem">' + statusText + '</td>' +
+          '<td style="text-align:center">' + u.tailoring_count + '</td>' +
+          '<td style="color:var(--gray600)">' + joined + '</td>' +
+          '</tr>';
+      }).join('');
+    });
+  }
+
+  function generateCode() {
+    adminFetch('/api/admin/generate-code', { method: 'POST' }).then(function(data) {
+      var code = data.code.code;
+      document.getElementById('generatedCode').textContent = code;
+      document.getElementById('copyBtn').style.display = 'inline-block';
+      document.getElementById('copyBtn').className = 'copy-btn';
+      document.getElementById('copyBtn').textContent = 'Copy';
+      document.getElementById('genAlert').style.display = 'none';
+      loadCodes();
+    }).catch(function() {
+      document.getElementById('genAlert').style.display = 'block';
+      document.getElementById('genAlert').textContent = 'Failed to generate code. Check your connection.';
+    });
+  }
+
+  function copyCode() {
+    var code = document.getElementById('generatedCode').textContent;
+    navigator.clipboard.writeText(code).then(function() {
+      var btn = document.getElementById('copyBtn');
+      btn.textContent = '✓ Copied!';
+      btn.className = 'copy-btn copied';
+      setTimeout(function() {
+        btn.textContent = 'Copy';
+        btn.className = 'copy-btn';
+      }, 2000);
+    });
+  }
+
+  // Auto-unlock if secret is stored in session
+  var saved = sessionStorage.getItem('tc_admin');
+  if (saved) { adminSecret = saved; fetchAll(); }
+</script>
+</body>
+</html>

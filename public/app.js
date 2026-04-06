@@ -599,7 +599,9 @@ async function extractPdfText(buffer) {
   if (!pdfjsLib) throw new Error('PDF reader not loaded. Please refresh the page and try again.');
   pdfjsLib.GlobalWorkerOptions.workerSrc =
     'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-  var pdf = await pdfjsLib.getDocument({ data: new Uint8Array(buffer) }).promise;
+  // Use buffer.slice(0) to copy — PDF.js transfers the ArrayBuffer to its
+  // worker thread which detaches the original, breaking any subsequent use.
+  var pdf = await pdfjsLib.getDocument({ data: new Uint8Array(buffer.slice(0)) }).promise;
   var parts = [];
   for (var p = 1; p <= pdf.numPages; p++) {
     var page    = await pdf.getPage(p);

@@ -49,6 +49,10 @@
     .free-badge { background:linear-gradient(135deg,#f0f4ff,#eef2ff); border:1px solid #c7d2fe; border-radius:10px; padding:12px 16px; margin-bottom:24px; font-size:.88rem; color:var(--indigo); font-weight:600; text-align:center; }
     .spin { display:inline-block; width:16px; height:16px; border:2.5px solid rgba(255,255,255,.4); border-top-color:#fff; border-radius:50%; animation:spin .7s linear infinite; vertical-align:middle; margin-right:8px; }
     @keyframes spin { to { transform:rotate(360deg); } }
+    .pw-wrap { position:relative; }
+    .pw-wrap input { padding-right:42px; }
+    .pw-eye { position:absolute; right:12px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; font-size:1.1rem; color:var(--gray400); padding:2px; line-height:1; }
+    .pw-eye:hover { color:var(--gray600); }
   </style>
 </head>
 <body>
@@ -80,7 +84,10 @@
       </div>
       <div class="f">
         <label>Password</label>
-        <input type="password" id="loginPassword" placeholder="Your password" required autocomplete="current-password" />
+        <div class="pw-wrap">
+          <input type="password" id="loginPassword" placeholder="Your password" required autocomplete="current-password" />
+          <button type="button" class="pw-eye" onclick="togglePw('loginPassword', this)" tabindex="-1">👁</button>
+        </div>
       </div>
       <button class="btn-primary" type="submit" id="loginBtn">Sign in</button>
     </form>
@@ -93,11 +100,17 @@
       </div>
       <div class="f">
         <label>Password <span style="color:var(--gray400);font-weight:400">(min 8 characters)</span></label>
-        <input type="password" id="regPassword" placeholder="Create a password" required autocomplete="new-password" minlength="8" />
+        <div class="pw-wrap">
+          <input type="password" id="regPassword" placeholder="Create a password" required autocomplete="new-password" minlength="8" />
+          <button type="button" class="pw-eye" onclick="togglePw('regPassword', this)" tabindex="-1">👁</button>
+        </div>
       </div>
       <div class="f">
         <label>Confirm password</label>
-        <input type="password" id="regConfirm" placeholder="Repeat password" required autocomplete="new-password" />
+        <div class="pw-wrap">
+          <input type="password" id="regConfirm" placeholder="Repeat password" required autocomplete="new-password" />
+          <button type="button" class="pw-eye" onclick="togglePw('regConfirm', this)" tabindex="-1">👁</button>
+        </div>
       </div>
       <div class="f" id="betaCodeWrap" style="margin-top:4px;">
         <label style="display:flex;align-items:center;gap:6px;">
@@ -187,6 +200,13 @@
     } catch(err) {
       showAlert('error', 'Network error. Please try again.');
     } finally { setLoading('registerBtn', false); }
+  }
+
+  function togglePw(inputId, btn) {
+    var input = document.getElementById(inputId);
+    var show = input.type === 'password';
+    input.type = show ? 'text' : 'password';
+    btn.textContent = show ? '🙈' : '👁';
   }
 
   // Pre-fill tab from query string ?tab=register

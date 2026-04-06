@@ -77,6 +77,11 @@ function requireAuth(req, res, next) {
     .then(result => {
       const user = result.rows[0];
       if (!user) return res.status(401).json({ error: 'User not found' });
+      // Owner always gets Pro regardless of what's in the DB
+      if (OWNER_EMAIL && user.email === OWNER_EMAIL) {
+        user.plan = 'pro';
+        user.subscription_status = 'active';
+      }
       req.user = user;
       next();
     })
@@ -160,6 +165,10 @@ app.post('/api/auth/login', authLimiter, async (req, res) => {
     if (!user) return res.status(401).json({ error: 'Invalid email or password.' });
     const match = await bcrypt.compare(password, user.password_hash);
     if (!match) return res.status(401).json({ error: 'Invalid email or password.' });
+    if (OWNER_EMAIL && user.email === OWNER_EMAIL) {
+      user.plan = 'pro';
+      user.subscription_status = 'active';
+    }
     const token = signToken(user.id);
     res.json({ token, user: safeUser(user) });
   } catch (err) {

@@ -593,54 +593,26 @@ function resetFile() {
   document.getElementById('fileInput').value = '';
 }
 
-// ── PDF extraction ─────────────────────────────────────────────────────────
-async function inflatePdfStream(bytes) {
-  try {
-    var ds = new DecompressionStream('deflate-raw');
-    var writer = ds.writable.getWriter(); var reader = ds.readable.getReader();
-    writer.write(bytes); writer.close();
-    var chunks = [], total = 0;
-    while (true) { var r = await reader.read(); if (r.done) break; chunks.push(r.value); total += r.value.length; }
-    var out = new Uint8Array(total), off = 0;
-    for (var i = 0; i < chunks.length; i++) { out.set(chunks[i], off); off += chunks[i].length; }
-    return new TextDecoder('latin1').decode(out);
-  } catch(e) { return null; }
-}
-function decodePdfStr(s) {
-  return s.replace(/\\n/g,' ').replace(/\\r/g,'').replace(/\\t/g,' ')
-    .replace(/\\\(/g,'(').replace(/\\\)/g,')').replace(/\\\\/g,'\\')
-    .replace(/\\(\d{3})/g, function(_,o){ return String.fromCharCode(parseInt(o,8)); });
-}
-function extractTextFromContent(content) {
-  var parts=[], m;
-  var btBlocks = content.match(/BT[\s\S]*?ET/g)||[];
-  for (var b=0;b<btBlocks.length;b++) {
-    var block=btBlocks[b];
-    var tjRe=/\(([^)\\]*(?:\\.[^)\\]*)*)\)\s*Tj/g;
-    while((m=tjRe.exec(block))!==null) parts.push(decodePdfStr(m[1]));
-    var tjArrRe=/\[([^\]]*)\]\s*TJ/g;
-    while((m=tjArrRe.exec(block))!==null){
-      var strRe=/\(([^)\\]*(?:\\.[^)\\]*)*)\)/g, sm;
-      while((sm=strRe.exec(m[1]))!==null) parts.push(decodePdfStr(sm[1]));
-    }
-  }
-  return parts.join(' ');
-}
+// ── PDF extraction (PDF.js) ────────────────────────────────────────────────
 async function extractPdfText(buffer) {
-  var bytes=new Uint8Array(buffer);
-  var raw=new TextDecoder('latin1').decode(bytes);
-  var parts=[], m;
-  var streamRe=/stream\r?\n([\s\S]*?)\r?\nendstream/g;
-  while((m=streamRe.exec(raw))!==null){
-    var sd=m[1];
-    if(/BT[\s\S]{0,10000}ET/.test(sd)){parts.push(extractTextFromContent(sd));continue;}
-    var sb=new Uint8Array(sd.length);
-    for(var i=0;i<sd.length;i++) sb[i]=sd.charCodeAt(i)&0xff;
-    var dc=await inflatePdfStream(sb);
-    if(dc&&/BT[\s\S]{0,10000}ET/.test(dc)) parts.push(extractTextFromContent(dc));
+  var pdfjsLib = window['pdfjs-dist/build/pdf'];
+  if (!pdfjsLib) throw new Error('PDF reader not loaded. Please refresh the page and try again.');
+  pdfjsLib.GlobalWorkerOptions.workerSrc =
+    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  var pdf = await pdfjsLib.getDocument({ data: new Uint8Array(buffer) }).promise;
+  var parts = [];
+  for (var p = 1; p <= pdf.numPages; p++) {
+    var page    = await pdf.getPage(p);
+    var content = await page.getTextContent();
+    var pageText = content.items.map(function(item) {
+      return item.str;
+    }).join(' ');
+    parts.push(pageText);
   }
-  var text=parts.join(' ').replace(/\s+/g,' ').trim();
-  if(text.length<50) throw new Error('Could not extract text from this PDF. Try uploading the .docx version instead.');
+  var text = parts.join('\n').replace(/\s+/g, ' ').trim();
+  if (text.length < 50) throw new Error(
+    'Could not extract text from this PDF. Make sure it has selectable text — scanned image PDFs are not supported. Try the .docx version instead.'
+  );
   return text;
 }
 async function extractDocxText(buffer) {

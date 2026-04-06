@@ -63,6 +63,22 @@
     .free-limit-fill { height:8px; border-radius:99px; background:var(--indigo); transition:width .6s; }
     .spin { display:inline-block; width:14px; height:14px; border:2px solid rgba(255,255,255,.4); border-top-color:#fff; border-radius:50%; animation:spin .7s linear infinite; }
     @keyframes spin { to { transform:rotate(360deg); } }
+    .card-danger { border-color:#fca5a5; }
+    .card-danger .card-title { color:var(--red); }
+    .btn-danger-solid { background:var(--red); color:#fff; border:none; }
+    .btn-danger-solid:hover:not(:disabled) { opacity:.88; }
+    .btn-danger-solid:disabled { opacity:.5; cursor:not-allowed; }
+    /* Delete confirmation modal */
+    .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:1000; align-items:center; justify-content:center; }
+    .modal-overlay.open { display:flex; }
+    .modal-box { background:#fff; border-radius:18px; padding:36px 32px; max-width:420px; width:90%; box-shadow:0 20px 60px rgba(0,0,0,.2); }
+    .modal-title { font-size:1.25rem; font-weight:900; color:var(--red); margin-bottom:10px; }
+    .modal-body { font-size:.9rem; color:var(--gray600); line-height:1.6; margin-bottom:22px; }
+    .modal-body strong { color:var(--gray800); }
+    .modal-input { width:100%; padding:11px 14px; border:2px solid var(--gray200); border-radius:10px; font-size:.95rem; font-family:inherit; outline:none; transition:border-color .15s; margin-bottom:18px; }
+    .modal-input:focus { border-color:#ef4444; }
+    .modal-actions { display:flex; gap:10px; }
+    .modal-actions .btn { flex:1; padding:12px; }
   </style>
 </head>
 <body>
@@ -154,7 +170,35 @@
       <button class="btn btn-danger" onclick="logout()">Sign out</button>
     </div>
   </div>
+
+  <!-- Danger Zone -->
+  <div class="card card-danger">
+    <div class="card-title">Danger Zone</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;">
+      <div>
+        <div style="font-weight:700;color:var(--gray800);margin-bottom:4px;">Delete my account</div>
+        <div style="font-size:.88rem;color:var(--gray600);">Permanently removes your account and all data. This cannot be undone.</div>
+      </div>
+      <button class="btn btn-danger-solid" onclick="openDeleteModal()">Delete account</button>
+    </div>
+  </div>
 </main>
+
+<!-- Delete Account Modal -->
+<div class="modal-overlay" id="deleteModal" onclick="handleOverlayClick(event)">
+  <div class="modal-box">
+    <div class="modal-title">⚠️ Delete your account?</div>
+    <div class="modal-body">
+      This will <strong>permanently delete</strong> your account, all your data, and cancel any active subscription.<br><br>
+      To confirm, type <strong>DELETE</strong> in the box below.
+    </div>
+    <input class="modal-input" type="text" id="deleteConfirmInput" placeholder="Type DELETE to confirm" oninput="checkDeleteInput()" autocomplete="off" />
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeDeleteModal()">Cancel</button>
+      <button class="btn btn-danger-solid" id="confirmDeleteBtn" onclick="doDeleteAccount()" disabled>Delete forever</button>
+    </div>
+  </div>
+</div>
 
 <script>
   var user = null;
@@ -257,6 +301,51 @@
     el.className = 'alert on ' + type;
     el.textContent = msg;
     el.scrollIntoView({ behavior:'smooth', block:'nearest' });
+  }
+
+  function openDeleteModal() {
+    document.getElementById('deleteConfirmInput').value = '';
+    document.getElementById('confirmDeleteBtn').disabled = true;
+    document.getElementById('deleteModal').classList.add('open');
+    setTimeout(function(){ document.getElementById('deleteConfirmInput').focus(); }, 80);
+  }
+
+  function closeDeleteModal() {
+    document.getElementById('deleteModal').classList.remove('open');
+  }
+
+  function handleOverlayClick(e) {
+    if (e.target === document.getElementById('deleteModal')) closeDeleteModal();
+  }
+
+  function checkDeleteInput() {
+    var val = document.getElementById('deleteConfirmInput').value;
+    document.getElementById('confirmDeleteBtn').disabled = (val !== 'DELETE');
+  }
+
+  async function doDeleteAccount() {
+    var btn = document.getElementById('confirmDeleteBtn');
+    btn.disabled = true;
+    btn.textContent = 'Deleting…';
+    try {
+      var res = await fetch('/api/auth/account', {
+        method: 'DELETE',
+        headers: { Authorization: 'Bearer ' + token() },
+      });
+      var data = await res.json();
+      if (!res.ok) {
+        closeDeleteModal();
+        showAlert('warn', data.error || 'Could not delete account. Please try again.');
+        return;
+      }
+      // Clear session and redirect
+      localStorage.removeItem('tc_token');
+      localStorage.removeItem('tc_user');
+      window.location.href = '/?deleted=1';
+    } catch(e) {
+      closeDeleteModal();
+      showAlert('warn', 'Network error. Please try again.');
+    }
   }
 
   loadUser();

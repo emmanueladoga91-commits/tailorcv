@@ -181,6 +181,21 @@ app.get('/api/auth/me', requireAuth, (req, res) => {
   res.json({ user: safeUser(req.user) });
 });
 
+app.delete('/api/auth/account', requireAuth, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    // Prevent owner account from being deleted
+    if (OWNER_EMAIL && req.user.email === OWNER_EMAIL) {
+      return res.status(403).json({ error: 'The owner account cannot be deleted.' });
+    }
+    await pool.query('DELETE FROM users WHERE id = $1', [userId]);
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Delete account error:', err);
+    res.status(500).json({ error: 'Could not delete account. Please try again.' });
+  }
+});
+
 // ══════════════════════════════════════════════════════════════
 //  CLAUDE AI PROXY
 // ══════════════════════════════════════════════════════════════

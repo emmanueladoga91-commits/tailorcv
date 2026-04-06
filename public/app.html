@@ -356,6 +356,50 @@
     .user-link { background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.2); border-radius:8px; padding:6px 12px; font-size:.8rem; color:#fff; text-decoration:none; cursor:pointer; font-family:inherit; transition:background .15s; }
     .user-link:hover { background:rgba(255,255,255,.2); }
 
+    /* ── Resume Library / Upload Tabs ── */
+    .upload-tabs { display:flex; border:1.5px solid var(--border); border-radius:9px; overflow:hidden; margin-bottom:14px; }
+    .upload-tab  { flex:1; padding:9px 10px; font-size:12px; font-weight:700; background:#fafbfd; color:var(--muted); border:none; cursor:pointer; font-family:inherit; transition:all .15s; border-right:1px solid var(--border); text-align:center; }
+    .upload-tab:last-child { border-right:none; }
+    .upload-tab.active { background:var(--navy); color:#fff; }
+    .upload-pane { display:none; }
+    .upload-pane.active { display:block; }
+    .lib-empty { text-align:center; padding:28px 16px; color:var(--muted); font-size:13px; line-height:1.6; }
+    .lib-empty .lib-empty-icon { font-size:36px; display:block; margin-bottom:10px; }
+    .lib-item { display:flex; align-items:center; gap:10px; padding:11px 13px; border:1.5px solid var(--border); border-radius:9px; margin-bottom:7px; cursor:pointer; transition:all .15s; background:#fafbfd; }
+    .lib-item:hover { border-color:var(--mid); background:var(--lite); }
+    .lib-item.active-lib { border-color:var(--green); background:var(--green-bg); }
+    .lib-item-icon { font-size:20px; flex-shrink:0; }
+    .lib-item-name { font-size:13px; font-weight:700; color:var(--text); flex:1; }
+    .lib-item-date { font-size:11px; color:var(--muted); white-space:nowrap; }
+    .lib-del-btn   { background:none; border:none; color:var(--muted); cursor:pointer; font-size:15px; padding:2px 4px; line-height:1; flex-shrink:0; }
+    .lib-del-btn:hover { color:var(--red); }
+    .lib-save-row  { display:flex; gap:8px; margin-top:12px; }
+    .lib-name-input { flex:1; padding:9px 12px; border:1.5px solid var(--border); border-radius:8px; font-size:13px; font-family:inherit; outline:none; transition:border-color .15s; }
+    .lib-name-input:focus { border-color:var(--mid); }
+    .lib-save-btn  { padding:9px 16px; background:var(--navy); color:#fff; border:none; border-radius:8px; font-size:13px; font-weight:700; font-family:inherit; cursor:pointer; white-space:nowrap; transition:opacity .15s; }
+    .lib-save-btn:hover { opacity:.88; }
+    .lib-save-btn:disabled { opacity:.5; cursor:not-allowed; }
+    /* LinkedIn import pane */
+    .li-import-box { border:2px dashed var(--accent-bd); border-radius:10px; padding:24px 20px; text-align:center; background:var(--accent-lite); }
+    .li-icon { font-size:38px; display:block; margin-bottom:10px; }
+    .li-title { font-size:14px; font-weight:700; color:var(--navy); margin-bottom:6px; }
+    .li-steps { font-size:12.5px; color:var(--muted); line-height:1.7; margin-bottom:14px; text-align:left; background:#fff; border-radius:8px; padding:12px 16px; border:1px solid var(--accent-bd); }
+    .li-steps strong { color:var(--navy); }
+    .li-upload-btn { display:inline-flex; align-items:center; gap:8px; padding:11px 22px; background:var(--accent); color:#fff; border:none; border-radius:9px; font-size:14px; font-weight:700; font-family:inherit; cursor:pointer; transition:opacity .15s; }
+    .li-upload-btn:hover { opacity:.88; }
+    /* ── Match Score Preview ── */
+    #matchPanel { display:none; background:#fff; border:1.5px solid var(--accent-bd); border-radius:var(--r); padding:18px 20px; margin-bottom:12px; }
+    #matchPanel.on { display:block; }
+    .mp-hdr { display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+    .mp-title { font-size:14px; font-weight:700; color:var(--navy); flex:1; }
+    .mp-close { background:none; border:none; color:var(--muted); cursor:pointer; font-size:17px; line-height:1; padding:0; }
+    #checkMatchBtn { width:100%; padding:12px; background:linear-gradient(135deg,var(--accent),#7c3aed); color:#fff; border:none; border-radius:9px; font-size:14px; font-weight:700; font-family:inherit; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; transition:opacity .15s; margin-bottom:12px; }
+    #checkMatchBtn:hover:not(:disabled) { opacity:.9; }
+    #checkMatchBtn:disabled { opacity:.5; cursor:not-allowed; }
+    /* ── PDF download card ── */
+    .dl-card-pdf { background:var(--lite); border-color:var(--accent-bd); color:var(--navy); }
+    .dl-card-pdf:hover { background:#c8ddf0; }
+
     /* ── Free tier banner ── */
     #freeTierBanner { display:none; background:linear-gradient(90deg,#fef9c3,#fef3c7); border:1px solid #fcd34d; border-radius:10px; padding:12px 18px; max-width:760px; margin:12px auto 0; align-items:center; gap:10px; }
     #freeTierBanner.on { display:flex; }
@@ -557,21 +601,66 @@
     </div>
   </div>
 
-  <!-- Step 1: Upload -->
+  <!-- Step 1: Upload / Library / LinkedIn -->
   <div class="card">
     <div class="sec-hdr">
       <div class="sec-num" id="sn1">2</div>
-      <div class="sec-hdr-text"><h2>Upload your current resume</h2></div>
+      <div class="sec-hdr-text">
+        <h2>Load your resume</h2>
+        <p>Upload a file, pick from your library, or import from LinkedIn</p>
+      </div>
     </div>
-    <div class="dz" id="dz">
-      <input type="file" id="fileInput" accept=".docx,.pdf">
-      <span class="dz-icon" id="dzIcon">📎</span>
-      <div class="dz-title" id="dzTitle">Drop your resume here</div>
-      <div class="dz-sub" id="dzSub">Accepts <b>.docx</b> and <b>.pdf</b> &nbsp;·&nbsp; or click to browse</div>
+
+    <!-- Tabs -->
+    <div class="upload-tabs">
+      <button class="upload-tab active" id="tabUpload"   onclick="switchUploadTab('upload')">📎 Upload File</button>
+      <button class="upload-tab"        id="tabLibrary"  onclick="switchUploadTab('library')">📚 My Library</button>
+      <button class="upload-tab"        id="tabLinkedin" onclick="switchUploadTab('linkedin')">🔗 LinkedIn PDF</button>
     </div>
-    <div class="badge" id="badge">
-      <span>✅</span><span id="badgeName">File loaded</span>
-      <span class="change" id="changeBtn">Change</span>
+
+    <!-- Pane 1: Upload -->
+    <div class="upload-pane active" id="paneUpload">
+      <div class="dz" id="dz">
+        <input type="file" id="fileInput" accept=".docx,.pdf">
+        <span class="dz-icon" id="dzIcon">📎</span>
+        <div class="dz-title" id="dzTitle">Drop your resume here</div>
+        <div class="dz-sub" id="dzSub">Accepts <b>.docx</b> and <b>.pdf</b> &nbsp;·&nbsp; or click to browse</div>
+      </div>
+      <div class="badge" id="badge">
+        <span>✅</span><span id="badgeName">File loaded</span>
+        <span class="change" id="changeBtn">Change</span>
+      </div>
+      <!-- Save to library (shown after file is loaded) -->
+      <div id="libSaveRow" class="lib-save-row" style="display:none">
+        <input type="text" class="lib-name-input" id="libNameInput" placeholder="Name this resume (e.g. Software Engineer Base)" maxlength="80" />
+        <button class="lib-save-btn" id="libSaveBtn" onclick="saveResumeToLibrary()">💾 Save to Library</button>
+      </div>
+    </div>
+
+    <!-- Pane 2: Library -->
+    <div class="upload-pane" id="paneLibrary">
+      <div id="libList">
+        <div class="lib-empty"><span class="lib-empty-icon">📂</span>No saved resumes yet.<br>Upload a resume and save it to your library for quick reuse.</div>
+      </div>
+    </div>
+
+    <!-- Pane 3: LinkedIn PDF -->
+    <div class="upload-pane" id="paneLinkedin">
+      <div class="li-import-box">
+        <span class="li-icon">🔗</span>
+        <div class="li-title">Import your LinkedIn Profile</div>
+        <div class="li-steps">
+          <strong>How to export from LinkedIn in 3 steps:</strong><br>
+          1. Go to <strong>linkedin.com</strong> and open your profile<br>
+          2. Click <strong>More…</strong> → <strong>Save to PDF</strong><br>
+          3. Upload the downloaded PDF below ↓
+        </div>
+        <button class="li-upload-btn" onclick="document.getElementById('fileInputLi').click()">
+          ⬆ Upload LinkedIn PDF
+        </button>
+        <input type="file" id="fileInputLi" accept=".pdf" style="display:none">
+        <div style="font-size:11px;color:var(--muted);margin-top:10px">Your data stays private — processed on our secure server, never stored.</div>
+      </div>
     </div>
   </div>
 
@@ -874,6 +963,19 @@
     <div><strong id="alertT"></strong> <span id="alertD"></span></div>
   </div>
 
+  <!-- Match Score Preview (pre-tailoring, free for all users) -->
+  <button id="checkMatchBtn" onclick="checkMatchScore()">🎯 Check My Match Score (Free Preview)</button>
+
+  <!-- Match Score Result Panel -->
+  <div id="matchPanel">
+    <div class="mp-hdr">
+      <span style="font-size:18px">🎯</span>
+      <div class="mp-title">Match Score — Before Tailoring</div>
+      <button class="mp-close" onclick="document.getElementById('matchPanel').classList.remove('on')">✕</button>
+    </div>
+    <div id="matchContent"></div>
+  </div>
+
   <button id="saveProgressBtn">💾 Save Progress</button>
   <button id="buildBtn">⚡ Build Resume, Cover Letter &amp; Full Analysis</button>
 
@@ -895,6 +997,9 @@
     </div>
     <button type="button" id="previewBtn">👁 Preview Resume Before Downloading</button>
     <div class="dl-grid" id="dlGrid"></div>
+    <a href="#" class="dl-card dl-card-pdf" id="pdfDlCard" style="display:none" onclick="downloadResumePDF(event)">
+      <span class="di">🖨</span>Resume (PDF)<span class="dn">Browser print-to-PDF</span>
+    </a>
   </div>
 
   <!-- ATS Score -->
@@ -947,7 +1052,8 @@
   <div class="pv-wrap">
     <div class="pv-bar">
       <h3>📄 Resume Preview</h3>
-      <button type="button" class="pv-dl-btn" id="pvDlBtn">⬇ Download Resume</button>
+      <button type="button" class="pv-dl-btn" id="pvDlBtn">⬇ Download .docx</button>
+      <button type="button" class="pv-dl-btn" id="pvPdfBtn" style="background:rgba(99,102,241,.35);">🖨 Download PDF</button>
       <button type="button" class="pv-close" id="pvClose">✕</button>
     </div>
     <div id="pvPage"></div>

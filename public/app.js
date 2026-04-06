@@ -1667,3 +1667,349 @@ function renderTracker() {
 
 function openTracker()  { document.getElementById('trackerSidebar').classList.add('open');    document.getElementById('trackerOverlay').classList.add('on'); }
 function closeTracker() { document.getElementById('trackerSidebar').classList.remove('open'); document.getElementById('trackerOverlay').classList.remove('on'); }
+
+// ══════════════════════════════════════════════════════════════════════════════
+// ── NEW FEATURES: RESUME LIBRARY · MATCH SCORE · PDF EXPORT · LINKEDIN ───────
+// ══════════════════════════════════════════════════════════════════════════════
+
+// Wire up new features once DOM ready
+document.addEventListener('DOMContentLoaded', function() {
+  // LinkedIn file input
+  var fileInputLi = document.getElementById('fileInputLi');
+  if (fileInputLi) {
+    fileInputLi.addEventListener('change', function(e) {
+      var file = e.target.files[0];
+      if (file) {
+        loadFile(file);
+        switchUploadTab('upload'); // jump to upload tab to show success badge
+      }
+    });
+  }
+
+  // PDF button in preview modal
+  var pvPdfBtn = document.getElementById('pvPdfBtn');
+  if (pvPdfBtn) pvPdfBtn.addEventListener('click', downloadResumePDF);
+
+  // Load resume library from server
+  loadResumeLibrary();
+});
+
+// ── Upload tab switching ────────────────────────────────────────────────────
+function switchUploadTab(name) {
+  ['upload','library','linkedin'].forEach(function(t) {
+    document.getElementById('tab'+capitalize(t)).classList.toggle('active', t===name);
+    document.getElementById('pane'+capitalize(t)).classList.toggle('active', t===name);
+  });
+  if (name === 'library') loadResumeLibrary();
+}
+function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+// ── Show/hide the "Save to Library" row after a file loads ─────────────────
+// We hook this into the existing loadFile flow by watching for the badge
+var _origLoadFile = loadFile;
+loadFile = function(file) {
+  _origLoadFile(file);
+  // Show save row after a short delay (let loadFile finish)
+  setTimeout(function() {
+    var saveRow = document.getElementById('libSaveRow');
+    if (saveRow && fileBuffer) {
+      var nameInput = document.getElementById('libNameInput');
+      if (nameInput && !nameInput.value) {
+        // Pre-fill with filename minus extension
+        nameInput.value = (file.name || '').replace(/\.(pdf|docx)$/i,'').replace(/[_-]+/g,' ').trim();
+      }
+      saveRow.style.display = 'flex';
+    }
+  }, 200);
+};
+
+// ── Resume Library: load from server ───────────────────────────────────────
+var _resumeLibraryCache = [];
+
+async function loadResumeLibrary() {
+  var listEl = document.getElementById('libList');
+  if (!listEl) return;
+  var tok = getToken();
+  if (!tok) { renderLibraryList([]); return; }
+  try {
+    var res = await fetch('/api/resumes', { headers: { Authorization: 'Bearer ' + tok } });
+    if (!res.ok) { renderLibraryList([]); return; }
+    var data = await res.json();
+    _resumeLibraryCache = data.resumes || [];
+    renderLibraryList(_resumeLibraryCache);
+  } catch(e) {
+    renderLibraryList([]);
+  }
+}
+
+function renderLibraryList(list) {
+  var listEl = document.getElementById('libList');
+  if (!listEl) return;
+  if (!list || !list.length) {
+    listEl.innerHTML = '<div class="lib-empty"><span class="lib-empty-icon">📂</span>No saved resumes yet.<br>Upload a resume and save it to your library.</div>';
+    return;
+  }
+  var h = '';
+  list.forEach(function(r) {
+    var d = r.created_at ? new Date(r.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '';
+    h += '<div class="lib-item" data-lib-id="'+esc(String(r.id))+'" onclick="loadFromLibrary('+r.id+',\''+esc(r.name)+'\')">';
+    h += '<span class="lib-item-icon">📄</span>';
+    h += '<span class="lib-item-name">'+esc(r.name)+'</span>';
+    h += '<span class="lib-item-date">'+esc(d)+'</span>';
+    h += '<button class="lib-del-btn" title="Delete" onclick="event.stopPropagation();deleteFromLibrary('+r.id+')">🗑</button>';
+    h += '</div>';
+  });
+  listEl.innerHTML = h;
+}
+
+async function saveResumeToLibrary() {
+  if (!fileBuffer) return showAlert('warn','No resume loaded.','Upload a resume first, then save it to your library.');
+  var nameInput = document.getElementById('libNameInput');
+  var name = (nameInput ? nameInput.value.trim() : '') || 'My Resume';
+  var btn = document.getElementById('libSaveBtn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+  try {
+    var resumeText = await extractText(fileBuffer, fileName);
+    var res = await fetch('/api/resumes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + getToken() },
+      body: JSON.stringify({ name: name, content: resumeText })
+    });
+    var data = await res.json();
+    if (!res.ok) {
+      if (data.error === 'upgrade_required') {
+        showUpgradeModal(data.message || 'Upgrade to Pro to save more resumes.');
+      } else {
+        showAlert('warn', 'Could not save.', data.error || 'Please try again.');
+      }
+      btn.disabled = false; btn.textContent = '💾 Save to Library';
+      return;
+    }
+    btn.textContent = '✅ Saved!';
+    setTimeout(function() { btn.disabled = false; btn.textContent = '💾 Save to Library'; }, 2500);
+    loadResumeLibrary();
+  } catch(e) {
+    showAlert('warn','Save failed.', e.message);
+    btn.disabled = false; btn.textContent = '💾 Save to Library';
+  }
+}
+
+async function loadFromLibrary(id, name) {
+  var tok = getToken();
+  if (!tok) return;
+  try {
+    var res = await fetch('/api/resumes/' + id, { headers: { Authorization: 'Bearer ' + tok } });
+    if (!res.ok) return showAlert('warn', 'Could not load resume.', 'Please try again.');
+    var data = await res.json();
+    var r = data.resume;
+    // Fake the file flow: store content as a text file buffer so extractText works
+    // We'll store the raw text directly and flag that it's pre-extracted
+    fileBuffer = null;   // clear file buffer — we'll use preExtractedText
+    fileName = (r.name || 'Resume') + '.txt';
+    window._preExtractedResumeText = r.content; // stash pre-extracted text
+    // Show badge
+    var dz = document.getElementById('dz');
+    dz.classList.add('loaded');
+    document.getElementById('dzIcon').textContent  = '✅';
+    document.getElementById('dzTitle').textContent = r.name;
+    document.getElementById('dzSub').textContent   = 'Loaded from library — click Change to swap';
+    document.getElementById('badge').classList.add('on');
+    document.getElementById('badgeName').textContent = r.name;
+    document.getElementById('sn1').classList.add('done');
+    setStepDone(1);
+    // Highlight active item
+    document.querySelectorAll('.lib-item').forEach(function(el) {
+      el.classList.toggle('active-lib', el.getAttribute('data-lib-id') === String(id));
+    });
+    switchUploadTab('upload');
+    showAlert('warn', '📂 ' + r.name + ' loaded.', 'Fill in the job details, then click Build.');
+    setTimeout(clearAlert, 3000);
+  } catch(e) {
+    showAlert('warn', 'Load failed.', e.message);
+  }
+}
+
+async function deleteFromLibrary(id) {
+  if (!confirm('Delete this saved resume? This cannot be undone.')) return;
+  try {
+    var res = await fetch('/api/resumes/' + id, {
+      method: 'DELETE', headers: { Authorization: 'Bearer ' + getToken() }
+    });
+    if (!res.ok) return showAlert('warn', 'Delete failed.', 'Please try again.');
+    _resumeLibraryCache = _resumeLibraryCache.filter(function(r){ return r.id !== id; });
+    renderLibraryList(_resumeLibraryCache);
+    // Clear pre-extracted text if this was the active resume
+    if (window._preExtractedResumeText) window._preExtractedResumeText = null;
+  } catch(e) {
+    showAlert('warn', 'Delete failed.', e.message);
+  }
+}
+
+// Patch extractText to support pre-extracted library resumes
+var _origExtractText = extractText;
+extractText = async function(buffer, name) {
+  if (window._preExtractedResumeText) {
+    var text = window._preExtractedResumeText;
+    window._preExtractedResumeText = null; // consume once
+    return text;
+  }
+  return _origExtractText(buffer, name);
+};
+
+// Patch build() to allow library-loaded resumes (no file buffer needed)
+var _origBuild = build;
+build = async function() {
+  if (window._preExtractedResumeText) {
+    // Treat as if fileBuffer is valid so validation passes
+    fileBuffer = true;
+  }
+  await _origBuild();
+  // Restore fileBuffer if we faked it
+  if (fileBuffer === true) fileBuffer = null;
+};
+
+// ── Pre-Tailoring Match Score ───────────────────────────────────────────────
+async function checkMatchScore() {
+  var jd = document.getElementById('jd').value.trim();
+  // For match score we need either a real file or pre-extracted text
+  var hasResume = fileBuffer || window._preExtractedResumeText;
+  if (!hasResume) return showAlert('warn', 'Upload your resume first.', 'Load your resume in Step 2, then check your match score.');
+  if (!jd)        return showAlert('warn', 'Paste a job description first.', 'Add the job description in Step 3 before checking your match.');
+
+  var btn = document.getElementById('checkMatchBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin"></span> Checking match…';
+  document.getElementById('matchPanel').classList.remove('on');
+
+  try {
+    var resumeText;
+    if (window._preExtractedResumeText) {
+      resumeText = window._preExtractedResumeText;
+    } else {
+      resumeText = await extractText(fileBuffer, fileName);
+      // After extraction keep for future use
+    }
+
+    var sys = 'You are a resume ATS specialist. Quickly assess how well a resume matches a job description BEFORE tailoring. Return ONLY valid JSON.';
+    var prompt = [
+      'Score how well this resume currently matches this job description on a 0-100 scale.',
+      '',
+      'JOB DESCRIPTION:', jd,
+      '',
+      'RESUME:', resumeText.slice(0, 3000),
+      '',
+      'Return: {"score":42,"label":"Fair Match","summary":"1 sentence on overall fit","matched":["up to 5 keywords already in resume"],"missing":["up to 5 important keywords missing"],"verdict":"One action sentence on biggest improvement opportunity."}'
+    ].join('\n');
+
+    var result = await callClaude('score', sys, prompt, 1000, 'claude-haiku-4-5-20251001');
+    renderMatchScore(result);
+  } catch(e) {
+    if (e.message !== 'upgrade_required') {
+      document.getElementById('matchPanel').classList.add('on');
+      document.getElementById('matchContent').innerHTML = '<p style="font-size:13px;color:var(--red)">Could not check match score. Please try again.</p>';
+    }
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '🎯 Check My Match Score (Free Preview)';
+  }
+}
+
+function renderMatchScore(r) {
+  if (!r) return;
+  var score = Math.max(0, Math.min(100, r.score || 0));
+  var color = score >= 70 ? '#166534' : score >= 45 ? '#92400e' : '#991b1b';
+  var bgColor = score >= 70 ? '#dcfce7' : score >= 45 ? '#fffbeb' : '#fef2f2';
+  var circ = 2 * Math.PI * 46;
+  var fill = circ - (score / 100) * circ;
+  var matched = (r.matched || []).slice(0,5);
+  var missing = (r.missing || []).slice(0,5);
+  var h = '<div class="ats-wrap">';
+  h += '<div class="ats-ring-wrap"><svg viewBox="0 0 114 114"><circle class="ats-track" cx="57" cy="57" r="46"/><circle class="ats-fill" cx="57" cy="57" r="46" stroke="'+color+'" stroke-dasharray="'+circ+'" stroke-dashoffset="'+fill+'"/></svg>';
+  h += '<div class="ats-center"><div class="ats-num" style="color:'+color+'">'+score+'</div><div class="ats-pct">/ 100</div></div></div>';
+  h += '<div class="ats-right">';
+  h += '<div style="font-size:14px;font-weight:800;color:'+color+';margin-bottom:4px">'+(r.label||'Current Match')+'</div>';
+  h += '<div style="font-size:12.5px;color:var(--muted);margin-bottom:10px;line-height:1.5">'+(r.summary||'')+'</div>';
+  if (matched.length) {
+    h += '<div class="kw-sec"><div class="kw-title">Already matched ✓</div><div class="kw-chips">';
+    matched.forEach(function(k){ h += '<span class="kw-chip kw-match">'+esc(k)+'</span>'; });
+    h += '</div></div>';
+  }
+  if (missing.length) {
+    h += '<div class="kw-sec"><div class="kw-title">Missing keywords ✗</div><div class="kw-chips">';
+    missing.forEach(function(k){ h += '<span class="kw-chip kw-miss">'+esc(k)+'</span>'; });
+    h += '</div></div>';
+  }
+  h += '</div></div>';
+  if (r.verdict) {
+    h += '<div style="margin-top:14px;background:'+bgColor+';border-radius:8px;padding:11px 14px;font-size:13px;color:'+color+';font-weight:600">💡 '+esc(r.verdict)+'</div>';
+  }
+  h += '<div style="margin-top:12px;font-size:12px;color:var(--muted);text-align:center">Hit <strong>⚡ Build Resume</strong> below — TailorCV AI will close this gap for you automatically.</div>';
+  document.getElementById('matchContent').innerHTML = h;
+  document.getElementById('matchPanel').classList.add('on');
+  document.getElementById('matchPanel').scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+// ── PDF Export ─────────────────────────────────────────────────────────────
+function downloadResumePDF(e) {
+  if (e) e.preventDefault();
+  if (!tailoredRef) return;
+  var html = buildResumeHtml(tailoredRef, selectedTemplate);
+  var winContent = '<!DOCTYPE html><html><head><meta charset="UTF-8">'
+    + '<title>Resume</title>'
+    + '<style>'
+    + 'body{font-family:Calibri,Georgia,serif;font-size:10pt;line-height:1.45;color:#111;margin:0;padding:0;}'
+    + '.pv-name{font-size:22pt;font-weight:700;margin:0 0 5px;}'
+    + '.pv-contact{font-size:10pt;margin-bottom:4px;}'
+    + '.pv-loc{font-style:italic;font-size:10pt;margin-bottom:18px;}'
+    + '.pv-sec{font-weight:700;border-bottom:1.5px solid #111;margin:16px 0 7px;padding-bottom:3px;font-size:10.5pt;}'
+    + '.pv-para{text-align:justify;margin-bottom:10px;font-size:10pt;}'
+    + '.pv-grid2{display:grid;grid-template-columns:1fr 1fr;gap:3px 20px;margin-bottom:8px;}'
+    + '.pv-comp{font-size:10pt;padding:1px 0;}'
+    + '.pv-role-hdr{display:flex;justify-content:space-between;align-items:baseline;margin:12px 0 3px;flex-wrap:wrap;gap:4px;}'
+    + '.pv-rtitle{font-weight:700;font-size:10.5pt;}'
+    + '.pv-rdates{font-style:italic;font-size:10pt;}'
+    + '.pv-ul{margin:0 0 6px 20px;padding:0;}'
+    + '.pv-ul li{font-size:10pt;margin-bottom:2px;text-align:justify;}'
+    + '.pv-tech{font-size:10pt;margin-bottom:4px;}'
+    + '.pv-edu{font-size:10pt;margin-bottom:5px;}'
+    + '.pv-proj{font-size:10pt;margin:4px 0;text-align:justify;}'
+    + '.pv-resp-lbl{font-weight:700;font-size:10pt;margin:7px 0 3px;}'
+    + '@page{margin:1in;}'
+    + '@media print{body{padding:0;margin:0;}}'
+    + '</style></head>'
+    + '<body>' + html + '</body></html>';
+  var printWin = window.open('', '_blank', 'width=850,height=1100');
+  printWin.document.write(winContent);
+  printWin.document.close();
+  printWin.focus();
+  setTimeout(function() { printWin.print(); }, 500);
+}
+
+// Hide PDF card when outputs are cleared
+var _origClearOutputs = clearOutputs;
+clearOutputs = function() {
+  _origClearOutputs();
+  var pdfCard = document.getElementById('pdfDlCard');
+  if (pdfCard) pdfCard.style.display = 'none';
+  document.getElementById('matchPanel').classList.remove('on');
+};
+
+// Clear pre-extracted text on file reset
+var _origResetFile = resetFile;
+resetFile = function() {
+  _origResetFile();
+  window._preExtractedResumeText = null;
+  var saveRow = document.getElementById('libSaveRow');
+  if (saveRow) saveRow.style.display = 'none';
+};
+
+// Show PDF download card after build
+var _origAddDownload = addDownload;
+addDownload = function(blob, fname, icon, label) {
+  _origAddDownload(blob, fname, icon, label);
+  // Show PDF card once we have a resume blob (first call)
+  if (icon === '📄') {
+    var pdfCard = document.getElementById('pdfDlCard');
+    if (pdfCard) pdfCard.style.display = 'flex';
+  }
+};

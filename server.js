@@ -55,6 +55,15 @@ const pool = new Pool({
       used_at    TIMESTAMPTZ
     );
   `);
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS saved_resumes (
+      id         SERIAL PRIMARY KEY,
+      user_id    INTEGER NOT NULL,
+      name       TEXT NOT NULL,
+      content    TEXT NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+  `);
   console.log('Database ready.');
 })().catch(err => { console.error('DB init error:', err); process.exit(1); });
 
@@ -197,6 +206,83 @@ app.delete('/api/auth/account', requireAuth, async (req, res) => {
 });
 
 // ══════════════════════════════════════════════════════════════
+//  RESUME LIBRARY ROUTES
+// ══════════════════════════════════════════════════════════════
+
+// List saved resumes for current user
+app.get('/api/resumes', requireAuth, async (req, res) => {
+  try {
+    const result = await pool.query(
+      'SELECT id, name, created_at FROM saved_resumes WHERE user_id = $1 ORDER BY created_at DESC',
+      [req.user.id]
+    );
+    res.json({ resumes: result.rows });
+  } catch (err) {
+    console.error('List resumes error:', err);
+    res.status(500).json({ error: 'Could not load saved resumes.' });
+  }
+});
+
+// Save a resume to the library
+app.post('/api/resumes', requireAuth, async (req, res) => {
+  try {
+    const { name, content } = req.body || {};
+    if (!name || !content) return res.status(400).json({ error: 'Name and content are required.' });
+    if (content.length > 50000) return res.status(400).json({ error: 'Resume text too long (max 50,000 chars).' });
+
+    const isOwner = OWNER_EMAIL && req.user.email === OWNER_EMAIL;
+    const isPro   = isOwner || (req.user.plan === 'pro' && ['active','beta'].includes(req.user.subscription_status));
+
+    // Free users: max 1 saved resume; Pro: max 10
+    const limit = isPro ? 10 : 1;
+    const existing = await pool.query(
+      'SELECT COUNT(*) FROM saved_resumes WHERE user_id = $1', [req.user.id]
+    );
+    if (parseInt(existing.rows[0].count) >= limit) {
+      if (!isPro) return res.status(402).json({ error: 'upgrade_required', message: 'Free plan allows 1 saved resume. Upgrade to Pro to save up to 10.' });
+      return res.status(400).json({ error: 'You have reached the 10-resume library limit.' });
+    }
+
+    const result = await pool.query(
+      'INSERT INTO saved_resumes (user_id, name, content) VALUES ($1, $2, $3) RETURNING id, name, created_at',
+      [req.user.id, name.trim().slice(0, 80), content]
+    );
+    res.json({ resume: result.rows[0] });
+  } catch (err) {
+    console.error('Save resume error:', err);
+    res.status(500).json({ error: 'Could not save resume.' });
+  }
+});
+
+// Load full content of a saved resume
+app.get('/api/resumes/:id', requireAuth, async (req, res) => {
+  try {
+    const result = await pool.query(
+      'SELECT id, name, content, created_at FROM saved_resumes WHERE id = $1 AND user_id = $2',
+      [req.params.id, req.user.id]
+    );
+    if (!result.rows.length) return res.status(404).json({ error: 'Resume not found.' });
+    res.json({ resume: result.rows[0] });
+  } catch (err) {
+    res.status(500).json({ error: 'Could not load resume.' });
+  }
+});
+
+// Delete a saved resume
+app.delete('/api/resumes/:id', requireAuth, async (req, res) => {
+  try {
+    const result = await pool.query(
+      'DELETE FROM saved_resumes WHERE id = $1 AND user_id = $2 RETURNING id',
+      [req.params.id, req.user.id]
+    );
+    if (!result.rows.length) return res.status(404).json({ error: 'Resume not found.' });
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Could not delete resume.' });
+  }
+});
+
+// ══════════════════════════════════════════════════════════════
 //  CLAUDE AI PROXY
 // ══════════════════════════════════════════════════════════════
 app.post('/api/claude', requireAuth, aiLimiter, async (req, res) => {
@@ -208,7 +294,10 @@ app.post('/api/claude', requireAuth, aiLimiter, async (req, res) => {
   const isOwner = OWNER_EMAIL && user.email === OWNER_EMAIL;
   const isPro = isOwner || (user.plan === 'pro' && ['active', 'beta'].includes(user.subscription_status));
 
-  if (type === 'tailor') {
+  // 'score' type (pre-tailoring match preview) is free for all users
+  if (type === 'score') {
+    // no gating — everyone can check their match score
+  } else if (type === 'tailor') {
     if (!isPro && user.tailoring_count >= 1) {
       return res.status(402).json({
         error: 'upgrade_required',

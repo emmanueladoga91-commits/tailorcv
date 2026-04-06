@@ -968,6 +968,15 @@ async function build(){
     var trackerAts = (atsResultRef && atsResultRef.overallScore !== undefined) ? atsResultRef.overallScore : null;
     addTrackerEntry(company, role, selectedTemplate, selectedProfile, trackerAts);
 
+    // Save interview context so Interview Coach can auto-load JD + role
+    try {
+      localStorage.setItem('tc_interview_ctx', JSON.stringify({
+        role:    role,
+        company: company,
+        jd:      jd,
+      }));
+    } catch(e) {}
+
   } catch(err){
     showAlert('error','Something went wrong.',err.message);
     console.error(err);

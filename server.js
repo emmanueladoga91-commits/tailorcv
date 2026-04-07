@@ -359,6 +359,75 @@ app.post('/api/claude', requireAuth, aiLimiter, async (req, res) => {
 });
 
 // ══════════════════════════════════════════════════════════════
+//  JD URL SCRAPER  — fetch a job-posting URL and return plain text
+// ══════════════════════════════════════════════════════════════
+app.post('/api/fetch-jd', requireAuth, async (req, res) => {
+  const { url } = req.body || {};
+  if (!url || typeof url !== 'string') {
+    return res.status(400).json({ error: 'url is required' });
+  }
+  // Only allow http/https
+  if (!/^https?:\/\//i.test(url.trim())) {
+    return res.status(400).json({ error: 'Only http/https URLs are supported.' });
+  }
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000);
+    const r = await fetch(url.trim(), {
+      signal: controller.signal,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; TailorCV/1.0)',
+        'Accept': 'text/html,application/xhtml+xml',
+      },
+    });
+    clearTimeout(timeout);
+    if (!r.ok) {
+      return res.status(502).json({ error: `Page returned ${r.status}. Try copying the job description manually.` });
+    }
+    const contentType = r.headers.get('content-type') || '';
+    if (!contentType.includes('text/html') && !contentType.includes('text/plain')) {
+      return res.status(422).json({ error: 'This URL does not appear to be a job posting page.' });
+    }
+    const html = await r.text();
+
+    // Strip HTML → plain text (keep whitespace structure)
+    let text = html
+      .replace(/<script[\s\S]*?<\/script>/gi, '')   // remove scripts
+      .replace(/<style[\s\S]*?<\/style>/gi, '')      // remove styles
+      .replace(/<br\s*\/?>/gi, '\n')                 // br → newline
+      .replace(/<\/p>/gi, '\n\n')                    // close-p → double newline
+      .replace(/<\/li>/gi, '\n')                     // li → newline
+      .replace(/<\/?(h[1-6])[^>]*>/gi, '\n')         // headings → newline
+      .replace(/<[^>]+>/g, ' ')                      // strip remaining tags
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'")
+      .replace(/&[a-z]+;/gi, ' ')                   // other entities
+      .replace(/[ \t]{2,}/g, ' ')                   // collapse spaces
+      .replace(/\n{3,}/g, '\n\n')                   // collapse blank lines
+      .trim();
+
+    if (text.length < 100) {
+      return res.status(422).json({ error: 'Could not extract enough text from this page. Please paste the job description manually.' });
+    }
+
+    // Trim to ~8000 chars to keep prompt size sane
+    if (text.length > 8000) text = text.slice(0, 8000) + '\n[…truncated]';
+
+    res.json({ text });
+  } catch (err) {
+    if (err.name === 'AbortError') {
+      return res.status(504).json({ error: 'The page took too long to load. Please paste the job description manually.' });
+    }
+    console.error('fetch-jd error:', err);
+    res.status(502).json({ error: 'Could not fetch the URL. Please paste the job description manually.' });
+  }
+});
+
+// ══════════════════════════════════════════════════════════════
 //  ADMIN ROUTES (beta code management)
 // ══════════════════════════════════════════════════════════════
 function requireAdmin(req, res, next) {

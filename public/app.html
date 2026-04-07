@@ -674,8 +674,18 @@
     <div class="f"><label>Company</label><input type="text" id="company" placeholder="e.g. Shopify"></div>
     <div class="f"><label>Role you're applying for</label><input type="text" id="role" placeholder="e.g. Senior Business Analyst"></div>
     <div class="f">
-      <label>Job description <span style="font-weight:400;text-transform:none;font-size:11px">(paste the full text)</span></label>
-      <textarea id="jd" rows="10" placeholder="Paste the full job description here…"></textarea>
+      <label>Job description URL <span style="font-weight:400;text-transform:none;font-size:11px">optional — paste a link to auto-fill</span></label>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input type="url" id="jdUrl" placeholder="https://jobs.example.com/role/12345" style="flex:1" oninput="onJdUrlInput()" />
+        <button type="button" id="fetchJdBtn" onclick="fetchJdFromUrl()" style="white-space:nowrap;padding:11px 16px;background:var(--navy);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;transition:opacity .15s" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+          🔗 Fetch
+        </button>
+      </div>
+      <div id="jdFetchStatus" style="font-size:12px;margin-top:5px;display:none"></div>
+    </div>
+    <div class="f">
+      <label>Job description <span style="font-weight:400;text-transform:none;font-size:11px">(or paste the full text directly)</span></label>
+      <textarea id="jd" rows="10" placeholder="Paste the full job description here, or use the URL field above to auto-fill…"></textarea>
     </div>
     <div class="f">
       <label>Resume length</label>
@@ -996,10 +1006,16 @@
     <div class="sec-hdr" style="margin-bottom:12px">
       <span style="font-size:20px">🎉</span><h2 style="margin-left:10px">Your documents are ready</h2>
     </div>
-    <button type="button" id="previewBtn">👁 Preview Resume Before Downloading</button>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:4px">
+      <button type="button" id="previewBtn" style="flex:1;min-width:180px">👁 Preview Resume</button>
+      <button type="button" id="previewClBtn" style="flex:1;min-width:180px;display:none" onclick="openCoverPreview()">📄 Preview Cover Letter</button>
+    </div>
     <div class="dl-grid" id="dlGrid"></div>
     <a href="#" class="dl-card dl-card-pdf" id="pdfDlCard" style="display:none" onclick="downloadResumePDF(event)">
       <span class="di">🖨</span>Resume (PDF)<span class="dn">Browser print-to-PDF</span>
+    </a>
+    <a href="#" class="dl-card dl-card-pdf" id="pdfClDlCard" style="display:none" onclick="downloadCoverPDF(event)">
+      <span class="di">🖨</span>Cover Letter (PDF)<span class="dn">Browser print-to-PDF</span>
     </a>
   </div>
 
@@ -1065,6 +1081,19 @@
       <button type="button" class="pv-close" id="pvClose">✕</button>
     </div>
     <div id="pvPage"></div>
+  </div>
+</div>
+
+<!-- Cover Letter Preview modal -->
+<div id="clPreviewModal" style="display:none;position:fixed;inset:0;z-index:1100;background:rgba(0,0,0,.55);overflow-y:auto;padding:24px 16px">
+  <div style="max-width:720px;margin:0 auto;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+    <div style="background:linear-gradient(135deg,#1e3a5f,#2d5a8e);color:#fff;padding:14px 20px;display:flex;align-items:center;gap:12px">
+      <h3 style="font-size:15px;font-weight:700;flex:1">📄 Cover Letter Preview</h3>
+      <button type="button" id="clDlBtn" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer">⬇ Download .docx</button>
+      <button type="button" id="clPdfBtn" style="background:rgba(99,102,241,.45);border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer">🖨 Download PDF</button>
+      <button type="button" onclick="closeCoverPreview()" style="background:rgba(255,255,255,.15);border:none;color:#fff;border-radius:6px;padding:7px 12px;font-size:16px;cursor:pointer;line-height:1">✕</button>
+    </div>
+    <div id="clPvPage" style="padding:32px 40px;font-family:Calibri,Georgia,serif;font-size:14px;line-height:1.7;color:#1a1a2e"></div>
   </div>
 </div>
 

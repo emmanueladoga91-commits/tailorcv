@@ -327,7 +327,7 @@ function getSystemPrompt(profileKey, pages) {
     '2. Natural human tone. No corporate filler phrases ("synergised", "leveraged", "holistic", "robust", etc.).',
     '3. SPECIFICITY RULE: Every bullet must name the specific technique, tool, or metric. Never say "analysed" without saying how. Never say "managed" without saying what and at what scale.',
     '4. NO EM DASHES anywhere. Use commas, parentheses, or restructure sentences.',
-    '5. PROFESSIONAL SUMMARY: Open with "A [adjective] [exact job title from JD]..." — set summaryTitle to "PROFESSIONAL SUMMARY - [exact job title from JD]".',
+    '5. PROFESSIONAL SUMMARY: Open with "A [adjective] [exact job title from JD]..." — set summaryTitle to "PROFESSIONAL SUMMARY - [exact job title from JD]". HARD LIMIT: maximum 5 lines (≈60 words). No matter the page count, keep the summary concise and punchy.',
     '6. KEY SKILLS / CORE COMPETENCE: Exactly 12 items. Front-load the most JD-relevant ones.',
     projectRule,
     '8. Keep all real metrics from the original resume. Do not water down quantified achievements.',
@@ -1981,12 +1981,17 @@ function downloadResumePDF(e) {
   setTimeout(function() { printWin.print(); }, 500);
 }
 
-// Hide PDF card when outputs are cleared
+// Hide PDF cards + CL preview when outputs are cleared
 var _origClearOutputs = clearOutputs;
 clearOutputs = function() {
   _origClearOutputs();
   var pdfCard = document.getElementById('pdfDlCard');
   if (pdfCard) pdfCard.style.display = 'none';
+  var clPdfCard = document.getElementById('pdfClDlCard');
+  if (clPdfCard) clPdfCard.style.display = 'none';
+  var clPrevBtn = document.getElementById('previewClBtn');
+  if (clPrevBtn) clPrevBtn.style.display = 'none';
+  _clBlobRef = null; _clNameRef = null;
   document.getElementById('matchPanel').classList.remove('on');
 };
 
@@ -2001,13 +2006,166 @@ resetFile = function() {
   if (saveRow) saveRow.style.display = 'none';
 };
 
-// Show PDF download card after build
+// Show PDF download cards + cover letter preview after build
 var _origAddDownload = addDownload;
 addDownload = function(blob, fname, icon, label) {
   _origAddDownload(blob, fname, icon, label);
-  // Show PDF card once we have a resume blob (first call)
   if (icon === '📄') {
+    // Resume PDF card
     var pdfCard = document.getElementById('pdfDlCard');
     if (pdfCard) pdfCard.style.display = 'flex';
   }
+  if (icon === '✉️') {
+    // Capture CL blob for preview/PDF
+    _clBlobRef = blob;
+    _clNameRef = fname;
+    // Show CL PDF card + preview button
+    var clPdfCard = document.getElementById('pdfClDlCard');
+    if (clPdfCard) clPdfCard.style.display = 'flex';
+    var clPrevBtn = document.getElementById('previewClBtn');
+    if (clPrevBtn) clPrevBtn.style.display = '';
+  }
 };
+
+// ── JD URL fetcher ────────────────────────────────────────────
+function onJdUrlInput() {
+  var url = (document.getElementById('jdUrl').value || '').trim();
+  var btn = document.getElementById('fetchJdBtn');
+  var status = document.getElementById('jdFetchStatus');
+  if (btn) btn.disabled = !url;
+  if (status) { status.style.display = 'none'; status.textContent = ''; }
+}
+
+async function fetchJdFromUrl() {
+  var url = (document.getElementById('jdUrl').value || '').trim();
+  if (!url) return;
+  var token = localStorage.getItem('tc_token');
+  if (!token) return;
+
+  var btn    = document.getElementById('fetchJdBtn');
+  var status = document.getElementById('jdFetchStatus');
+  var jdArea = document.getElementById('jd');
+
+  btn.disabled = true;
+  btn.textContent = '⏳ Fetching…';
+  status.style.display = 'block';
+  status.style.color = 'var(--muted)';
+  status.textContent = 'Reading job posting…';
+
+  try {
+    var res = await fetch('/api/fetch-jd', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ url: url }),
+    });
+    var data = await res.json();
+    if (!res.ok) throw new Error(data.error || ('Error ' + res.status));
+
+    jdArea.value = data.text;
+    status.style.color = '#166534';
+    status.textContent = '✅ Job description loaded! Review it below, then build your resume.';
+    // Scroll textarea into view
+    jdArea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  } catch(err) {
+    status.style.color = '#991b1b';
+    status.textContent = '❌ ' + err.message;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🔗 Fetch';
+  }
+}
+
+// ── Cover Letter preview & PDF ────────────────────────────────
+var _clBlobRef = null;
+var _clNameRef = null;
+
+function buildCoverLetterHtml(tailored) {
+  var cl = (tailored && tailored.coverLetter) ? tailored.coverLetter : {};
+  var name = tailored ? (tailored.name || '') : '';
+  var phone = tailored ? (tailored.phone || '') : '';
+  var email = tailored ? (tailored.email || '') : '';
+
+  function p(text, style) {
+    if (!text) return '';
+    return '<p style="margin:0 0 14px;' + (style||'') + '">' +
+      String(text).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') +
+      '</p>';
+  }
+
+  return [
+    p(cl.date || '', 'margin-bottom:20px'),
+    p((cl.recipientTitle || 'Hiring Manager') + ','),
+    cl.recipientDepartment ? p(cl.recipientDepartment, 'margin-bottom:2px') : '',
+    cl.recipientOrg        ? p(cl.recipientOrg,        'margin-bottom:2px') : '',
+    cl.recipientLocation   ? p(cl.recipientLocation,   'margin-bottom:20px') : '',
+    cl.reLine ? p('<strong>RE: ' + String(cl.reLine).replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</strong>', 'margin-bottom:20px') : '',
+    p('Dear Hiring Manager,'),
+    p(cl.openingParagraph),
+    p(cl.bodyParagraph1),
+    p(cl.bodyParagraph2),
+    p(cl.bodyParagraph3),
+    p(cl.closingParagraph),
+    '<p style="margin:20px 0 4px">Warm regards,</p>',
+    '<p style="margin:0;font-weight:700">' + String(name).replace(/</g,'&lt;') + '</p>',
+    phone ? '<p style="margin:2px 0">' + String(phone).replace(/</g,'&lt;') + '</p>' : '',
+    email ? '<p style="margin:2px 0">' + String(email).replace(/</g,'&lt;') + '</p>' : '',
+  ].join('');
+}
+
+function openCoverPreview() {
+  var modal = document.getElementById('clPreviewModal');
+  var page  = document.getElementById('clPvPage');
+  if (!modal || !page) return;
+
+  page.innerHTML = tailoredRef ? buildCoverLetterHtml(tailoredRef) : '<p style="color:#888">Cover letter not available.</p>';
+
+  // Wire download buttons
+  var dlBtn  = document.getElementById('clDlBtn');
+  var pdfBtn = document.getElementById('clPdfBtn');
+  if (dlBtn) dlBtn.onclick = function() {
+    if (!_clBlobRef) return;
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(_clBlobRef);
+    a.download = _clNameRef || 'Cover_Letter.docx';
+    a.click();
+  };
+  if (pdfBtn) pdfBtn.onclick = downloadCoverPDF;
+
+  modal.style.display = 'block';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeCoverPreview() {
+  var modal = document.getElementById('clPreviewModal');
+  if (modal) modal.style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+function downloadCoverPDF(e) {
+  if (e) e.preventDefault();
+  if (!tailoredRef) return;
+  var cl = tailoredRef.coverLetter || {};
+  var win = window.open('', '_blank');
+  if (!win) { alert('Please allow pop-ups for PDF export.'); return; }
+  win.document.write([
+    '<!DOCTYPE html><html><head><meta charset="UTF-8">',
+    '<title>Cover Letter</title>',
+    '<style>',
+    '  body{font-family:Calibri,Georgia,serif;font-size:12pt;line-height:1.7;',
+    '       color:#1a1a2e;max-width:720px;margin:40px auto;padding:0 40px}',
+    '  p{margin:0 0 12pt}',
+    '  @media print{body{margin:0;padding:20pt 40pt}}',
+    '</style>',
+    '</head><body>',
+    buildCoverLetterHtml(tailoredRef),
+    '<script>window.onload=function(){window.print();}<\/script>',
+    '</body></html>',
+  ].join(''));
+  win.document.close();
+}
+
+// Close CL modal on backdrop click
+document.addEventListener('click', function(e) {
+  var modal = document.getElementById('clPreviewModal');
+  if (modal && e.target === modal) closeCoverPreview();
+});

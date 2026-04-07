@@ -479,33 +479,32 @@ async function generateQuestions() {
   document.getElementById('generatingState').style.display = 'block';
 
   var systemPrompt = [
-    'You are an expert interview coach. Generate a comprehensive set of interview questions for a candidate applying to this role.',
-    'Return ONLY valid JSON with this exact structure:',
-    '[',
-    '  {',
-    '    "category": "Behavioral|Technical|Situational|Company|Role",',
-    '    "difficulty": "Easy|Medium|Hard",',
-    '    "question": "The interview question text",',
-    '    "why_asked": "One sentence explaining what the interviewer is assessing",',
-    '    "model_answer": "A comprehensive model answer in 2-3 paragraphs",',
-    '    "star_situation": "Example situation framing for STAR method (if behavioral/situational)",',
-    '    "star_task": "Example task framing",',
-    '    "star_action": "Example action framing",',
-    '    "star_result": "Example result framing",',
-    '    "key_points": ["Point 1 to cover in your answer", "Point 2", "Point 3"]',
-    '  }',
-    ']',
+    'You are an expert interview coach. Generate targeted interview questions for this role.',
+    'Return ONLY a valid JSON array — no markdown, no explanation, nothing else.',
+    'Each element must follow this exact structure (keep all string values concise):',
+    '{',
+    '  "category": "Behavioral|Technical|Situational|Company|Role",',
+    '  "difficulty": "Easy|Medium|Hard",',
+    '  "question": "The question (1-2 sentences)",',
+    '  "why_asked": "What the interviewer is assessing (1 sentence max)",',
+    '  "model_answer": "Strong model answer (3-4 sentences max — be concise)",',
+    '  "star_situation": "Brief STAR situation (Behavioral/Situational only, else empty string)",',
+    '  "star_task": "Brief STAR task (else empty string)",',
+    '  "star_action": "Brief STAR action (else empty string)",',
+    '  "star_result": "Brief STAR result (else empty string)",',
+    '  "key_points": ["Point 1", "Point 2", "Point 3"]',
+    '}',
     '',
-    'Generate 15 questions total distributed as:',
-    '- 3 Behavioral (using STAR method)',
-    '- 3 Technical (specific to the role skills)',
-    '- 3 Situational (hypothetical work scenarios)',
-    '- 3 Company-Specific (about the company, culture, why this company)',
-    '- 3 Role-Specific (deep dive on responsibilities and fit)',
+    'Generate exactly 10 questions — 2 per category in this order:',
+    '1. Behavioral (STAR format)',
+    '2. Technical (role-specific skills)',
+    '3. Situational (hypothetical scenarios)',
+    '4. Company (culture, why this company)',
+    '5. Role (responsibilities, fit)',
     '',
-    'For non-behavioral questions, you may leave star_* fields as empty strings.',
-    'Make all questions specific to this exact role and company, not generic.',
-    'Return ONLY the JSON array, no markdown, no explanation.',
+    'All questions must be specific to this exact role and company.',
+    'IMPORTANT: Keep answers short. The entire JSON response must stay well under 4000 tokens.',
+    'Return ONLY the JSON array.',
   ].join('\n');
 
   var userMsg = [
@@ -524,7 +523,7 @@ async function generateQuestions() {
         type:      'interview_quiz',
         system:    systemPrompt,
         userMsg:   userMsg,
-        maxTokens: 6000,
+        maxTokens: 8000,
       }),
     });
 
@@ -540,9 +539,25 @@ async function generateQuestions() {
     var text = data.text.trim();
 
     // Strip markdown fences if any
-    text = text.replace(/^```json\s*/i,'').replace(/^```\s*/i,'').replace(/\s*```$/,'');
+    text = text.replace(/^```json\s*/i,'').replace(/^```\s*/i,'').replace(/\s*```$/,'').trim();
 
-    _questions = JSON.parse(text);
+    // Safety net: if truncated mid-JSON, try to recover by closing the array
+    var parsed;
+    try {
+      parsed = JSON.parse(text);
+    } catch(parseErr) {
+      // Find the last complete object (ends with }) and close the array
+      var lastClose = text.lastIndexOf('}');
+      if (lastClose !== -1) {
+        var recovered = text.slice(0, lastClose + 1) + ']';
+        // Remove trailing comma before ]
+        recovered = recovered.replace(/,\s*\]$/, ']');
+        parsed = JSON.parse(recovered);
+      } else {
+        throw parseErr;
+      }
+    }
+    _questions = parsed;
     _ratings   = {};
 
     // Save to localStorage

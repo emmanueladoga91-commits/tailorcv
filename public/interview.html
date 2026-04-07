@@ -261,6 +261,51 @@
       display:flex; gap:10px; align-items:center; margin-bottom:16px;
     }
 
+    /* ── Saved sessions panel ── */
+    #savedSessionsPanel {
+      border-top:1px solid var(--border); margin-top:20px; padding-top:20px; display:none;
+    }
+    #savedSessionsPanel.on { display:block; }
+    .saved-sessions-title {
+      font-size:13px; font-weight:700; color:var(--navy); margin-bottom:12px;
+      display:flex; align-items:center; gap:8px;
+    }
+    .saved-sessions-list { display:flex; flex-direction:column; gap:8px; }
+    .saved-session-item {
+      display:flex; align-items:center; gap:12px; padding:12px 14px;
+      background:var(--bg); border:1px solid var(--border); border-radius:10px;
+      transition:border-color .15s,box-shadow .15s; cursor:pointer;
+    }
+    .saved-session-item:hover { border-color:var(--mid); box-shadow:0 2px 8px rgba(0,0,0,.07); }
+    .ss-icon { font-size:22px; flex-shrink:0; }
+    .ss-meta { flex:1; min-width:0; }
+    .ss-name { font-size:14px; font-weight:700; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .ss-detail { font-size:11px; color:var(--muted); margin-top:2px; }
+    .ss-badge {
+      font-size:10px; font-weight:700; border-radius:99px; padding:3px 9px;
+      background:var(--accent-lite); color:var(--accent); flex-shrink:0;
+    }
+    .ss-del {
+      background:none; border:none; color:var(--muted); cursor:pointer; font-size:16px;
+      padding:4px 8px; border-radius:6px; transition:all .15s; flex-shrink:0;
+    }
+    .ss-del:hover { background:var(--red-bg); color:var(--red); }
+    .ss-empty { text-align:center; padding:20px; color:var(--muted); font-size:13px; }
+
+    /* ── Save modal ── */
+    #saveModal {
+      display:none; position:fixed; inset:0; z-index:2000;
+      background:rgba(0,0,0,.55); align-items:center; justify-content:center;
+    }
+    #saveModal.on { display:flex; }
+    .save-modal-box {
+      background:#fff; border-radius:14px; padding:28px; max-width:440px; width:90%;
+      box-shadow:0 20px 60px rgba(0,0,0,.3);
+    }
+    .save-modal-box h3 { font-size:17px; font-weight:800; color:var(--navy); margin-bottom:6px; }
+    .save-modal-box p  { font-size:13px; color:var(--muted); margin-bottom:18px; }
+    .save-modal-actions { display:flex; gap:10px; margin-top:18px; }
+
     /* ── Responsive ── */
     @media(max-width:540px){
       .setup-row { flex-direction:column; }
@@ -336,6 +381,15 @@
         🔄 Start Over
       </button>
     </div>
+
+    <!-- Saved Sessions -->
+    <div id="savedSessionsPanel">
+      <div class="saved-sessions-title">
+        <span>📂</span> Saved Sessions
+        <span id="savedCount" style="font-size:11px;color:var(--muted);font-weight:600"></span>
+      </div>
+      <div class="saved-sessions-list" id="savedSessionsList"></div>
+    </div>
   </div>
 
   <!-- Generating state -->
@@ -370,6 +424,8 @@
       <div class="progress-label" id="progressLabel">0 of 0 questions practised</div>
     </div>
     <div class="stats-actions">
+      <button class="btn-secondary" onclick="openSaveModal()">💾 Save Session</button>
+      <button class="btn-secondary" onclick="exportSessionPDF()" style="background:var(--accent-lite);color:var(--accent);border-color:var(--accent-bd)">📄 Export PDF</button>
       <button class="btn-secondary" onclick="shuffleQuestions()">🔀 Shuffle</button>
       <button class="btn-secondary" onclick="resetRatings()">↩ Reset Ratings</button>
     </div>
@@ -392,10 +448,31 @@
   <!-- Complete Banner -->
   <div id="completeBanner">
     <h3>🎉 Great work! You've practised all questions.</h3>
-    <p>Review any you marked "Need Practice" or start a new session with a different role.</p>
+    <p style="margin-bottom:16px">Review any you marked "Need Practice" or start a new session with a different role.</p>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+      <button class="btn-secondary" onclick="openSaveModal()" style="background:#fff">💾 Save this session</button>
+      <button class="btn-secondary" onclick="exportSessionPDF()" style="background:#fff;color:var(--accent);border-color:var(--accent-bd)">📄 Export as PDF</button>
+    </div>
   </div>
 
 </main>
+
+<!-- Save Session Modal -->
+<div id="saveModal">
+  <div class="save-modal-box">
+    <h3>💾 Save Session</h3>
+    <p>Give this session a name so you can find it later.</p>
+    <div class="f">
+      <label>Session Name</label>
+      <input type="text" id="saveNameInput" placeholder="e.g. Google PM Interview — Apr 2026" maxlength="80"
+             onkeydown="if(event.key==='Enter')confirmSave()" />
+    </div>
+    <div class="save-modal-actions">
+      <button class="btn-primary" onclick="confirmSave()" style="flex:1">Save</button>
+      <button class="btn-secondary" onclick="closeSaveModal()">Cancel</button>
+    </div>
+  </div>
+</div>
 
 <script>
 // ═══════════════════════════════════════════════════════════════
@@ -849,6 +926,272 @@ function esc(s) {
 
 // ── Bootstrap ─────────────────────────────────────────────────
 init();
+
+// ═══════════════════════════════════════════════════════════════
+//  NAMED SESSION SAVE / LOAD
+// ═══════════════════════════════════════════════════════════════
+var SAVED_KEY = 'tc_interview_named_sessions';
+
+function loadNamedSessions() {
+  try { return JSON.parse(localStorage.getItem(SAVED_KEY) || '[]'); } catch(e) { return []; }
+}
+function persistNamedSessions(list) {
+  localStorage.setItem(SAVED_KEY, JSON.stringify(list));
+}
+
+// Render the saved sessions list in the setup panel
+function renderSavedSessionsList() {
+  var list = loadNamedSessions();
+  var panel = document.getElementById('savedSessionsPanel');
+  var container = document.getElementById('savedSessionsList');
+  var countEl = document.getElementById('savedCount');
+  if (!panel || !container) return;
+
+  if (list.length === 0) {
+    panel.classList.remove('on');
+    return;
+  }
+  panel.classList.add('on');
+  if (countEl) countEl.textContent = '(' + list.length + ')';
+
+  container.innerHTML = list.map(function(sess) {
+    var ratingCounts = '';
+    var r = sess.ratings || {};
+    var got = Object.values(r).filter(function(v){ return v === 'got-it'; }).length;
+    var almost = Object.values(r).filter(function(v){ return v === 'almost'; }).length;
+    var need = Object.values(r).filter(function(v){ return v === 'need-work'; }).length;
+    var total = (sess.questions || []).length;
+    ratingCounts = got + '✅ ' + almost + '⚡ ' + need + '🔄';
+
+    return '<div class="saved-session-item" onclick="loadNamedSession(\'' + esc(sess.id) + '\')">' +
+      '<div class="ss-icon">🎤</div>' +
+      '<div class="ss-meta">' +
+        '<div class="ss-name">' + esc(sess.name) + '</div>' +
+        '<div class="ss-detail">' + esc(sess.role || '') + (sess.company ? ' · ' + esc(sess.company) : '') + ' · ' + esc(sess.date) + ' · ' + total + ' questions</div>' +
+        '<div class="ss-detail" style="margin-top:3px">' + ratingCounts + '</div>' +
+      '</div>' +
+      '<span class="ss-badge">' + Math.round(Object.keys(r).length / Math.max(total,1) * 100) + '% done</span>' +
+      '<button class="ss-del" onclick="deleteNamedSession(event,\'' + esc(sess.id) + '\')">🗑</button>' +
+    '</div>';
+  }).join('');
+}
+
+function loadNamedSession(id) {
+  var list = loadNamedSessions();
+  var sess = list.find(function(s){ return s.id === id; });
+  if (!sess) return;
+
+  _questions   = sess.questions || [];
+  _ratings     = sess.ratings   || {};
+  _openState   = {};
+  _revealState = {};
+
+  // Fill inputs
+  if (sess.role)    document.getElementById('jobTitleInput').value = sess.role;
+  if (sess.company) document.getElementById('companyInput').value  = sess.company;
+  if (sess.jd)      document.getElementById('jdInput').value       = sess.jd;
+
+  // Update active session cache
+  saveSession();
+  document.getElementById('clearSessionBtn').style.display = '';
+  renderQuiz();
+
+  // Scroll to stats bar
+  var bar = document.getElementById('statsBar');
+  if (bar) bar.scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+function deleteNamedSession(e, id) {
+  e.stopPropagation();
+  if (!confirm('Delete this saved session?')) return;
+  var list = loadNamedSessions().filter(function(s){ return s.id !== id; });
+  persistNamedSessions(list);
+  renderSavedSessionsList();
+}
+
+// ── Save modal ─────────────────────────────────────────────────
+function openSaveModal() {
+  if (!_questions.length) { alert('No questions to save yet.'); return; }
+  var role    = (document.getElementById('jobTitleInput').value || '').trim();
+  var company = (document.getElementById('companyInput').value  || '').trim();
+  var today   = new Date().toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'});
+  var suggested = [role, company, today].filter(Boolean).join(' — ');
+  document.getElementById('saveNameInput').value = suggested;
+  document.getElementById('saveModal').classList.add('on');
+  setTimeout(function(){ document.getElementById('saveNameInput').focus(); }, 60);
+}
+
+function closeSaveModal() {
+  document.getElementById('saveModal').classList.remove('on');
+}
+
+function confirmSave() {
+  var name = (document.getElementById('saveNameInput').value || '').trim();
+  if (!name) { alert('Please enter a session name.'); return; }
+
+  var role    = (document.getElementById('jobTitleInput').value || '').trim();
+  var company = (document.getElementById('companyInput').value  || '').trim();
+  var jd      = (document.getElementById('jdInput').value       || '').trim();
+  var today   = new Date().toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'});
+
+  var sess = {
+    id:        Date.now().toString(36) + Math.random().toString(36).slice(2,6),
+    name:      name,
+    role:      role,
+    company:   company,
+    jd:        jd.slice(0, 1000), // keep JD brief to save space
+    date:      today,
+    savedAt:   new Date().toISOString(),
+    questions: _questions,
+    ratings:   _ratings,
+  };
+
+  var list = loadNamedSessions();
+  // Replace existing session with same name if any
+  list = list.filter(function(s){ return s.name !== name; });
+  list.unshift(sess); // newest first
+  if (list.length > 20) list = list.slice(0, 20); // cap at 20 sessions
+  persistNamedSessions(list);
+
+  closeSaveModal();
+  renderSavedSessionsList();
+
+  // Toast-style feedback
+  var btn = document.querySelector('.stats-actions .btn-secondary');
+  var origText = '💾 Save Session';
+  var saveBtn = Array.from(document.querySelectorAll('.stats-actions .btn-secondary'))
+    .find(function(b){ return b.textContent.includes('Save Session'); });
+  if (saveBtn) {
+    saveBtn.textContent = '✅ Saved!';
+    setTimeout(function(){ saveBtn.textContent = '💾 Save Session'; }, 2000);
+  }
+}
+
+// Close modal on backdrop click
+document.getElementById('saveModal').addEventListener('click', function(e){
+  if (e.target === this) closeSaveModal();
+});
+
+// ═══════════════════════════════════════════════════════════════
+//  PDF EXPORT
+// ═══════════════════════════════════════════════════════════════
+function exportSessionPDF() {
+  if (!_questions.length) { alert('No questions to export yet.'); return; }
+
+  var role    = (document.getElementById('jobTitleInput').value || '').trim();
+  var company = (document.getElementById('companyInput').value  || '').trim();
+  var today   = new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+
+  var catColors = {
+    Behavioral:'#4338ca', Technical:'#0f766e', Situational:'#7c3aed',
+    Company:'#c2410c', Role:'#1d4ed8'
+  };
+  var ratingLabel = { 'got-it':'✅ Got It', 'almost':'⚡ Almost', 'need-work':'🔄 Need Practice', '':'Not rated' };
+  var ratingColor = { 'got-it':'#166534', 'almost':'#92400e', 'need-work':'#991b1b', '':'#64748b' };
+  var ratingBg    = { 'got-it':'#dcfce7', 'almost':'#fffbeb', 'need-work':'#fef2f2', '':'#f0f4f8' };
+
+  var gotIt  = Object.values(_ratings).filter(function(r){ return r==='got-it'; }).length;
+  var almost = Object.values(_ratings).filter(function(r){ return r==='almost'; }).length;
+  var need   = Object.values(_ratings).filter(function(r){ return r==='need-work'; }).length;
+  var total  = _questions.length;
+  var pct    = Math.round((gotIt+almost+need)/total*100);
+
+  // Build question blocks
+  var qHtml = _questions.map(function(q, i) {
+    var rating  = _ratings[i] || '';
+    var hasStar = q.star_situation && q.star_situation.trim().length > 0;
+    var catColor = catColors[q.category] || '#1e3a5f';
+
+    var keyPtsHtml = (q.key_points || []).map(function(pt){
+      return '<li style="margin-bottom:4px">' + escPdf(pt) + '</li>';
+    }).join('');
+
+    var starHtml = '';
+    if (hasStar) {
+      starHtml = '<div style="margin-top:12px">' +
+        '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#64748b;margin-bottom:8px">⭐ STAR Framework</div>' +
+        starRow('Situation', q.star_situation) +
+        starRow('Task',      q.star_task) +
+        starRow('Action',    q.star_action) +
+        starRow('Result',    q.star_result) +
+        '</div>';
+    }
+
+    return '<div style="page-break-inside:avoid;margin-bottom:28px;border:1.5px solid ' + (rating ? ratingBg[rating].replace(')',',0.5)').replace('rgb','rgba') : '#d0dce8') + ';border-left:5px solid ' + catColor + ';border-radius:10px;overflow:hidden">' +
+      // Question header
+      '<div style="padding:14px 16px;background:#f8fafc;border-bottom:1px solid #e2e8f0">' +
+        '<div style="display:flex;align-items:flex-start;gap:12px">' +
+          '<div style="width:26px;height:26px;border-radius:50%;background:' + catColor + ';color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">' + (i+1) + '</div>' +
+          '<div style="flex:1">' +
+            '<div style="display:inline-block;font-size:10px;font-weight:700;border-radius:99px;padding:2px 10px;background:' + catColor + '22;color:' + catColor + ';margin-bottom:6px">' + escPdf(q.category) + ' · ' + escPdf(q.difficulty) + '</div>' +
+            '<div style="font-size:14px;font-weight:700;color:#1a1a2e;line-height:1.5">' + escPdf(q.question) + '</div>' +
+            (q.why_asked ? '<div style="font-size:11px;color:#64748b;margin-top:4px"><em>' + escPdf(q.why_asked) + '</em></div>' : '') +
+          '</div>' +
+          '<div style="font-size:11px;font-weight:700;padding:4px 10px;border-radius:99px;background:' + ratingBg[rating] + ';color:' + ratingColor[rating] + ';white-space:nowrap;flex-shrink:0">' + ratingLabel[rating] + '</div>' +
+        '</div>' +
+      '</div>' +
+      // Answer body
+      '<div style="padding:16px">' +
+        '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#64748b;margin-bottom:6px">Model Answer</div>' +
+        '<div style="font-size:13px;color:#1a1a2e;line-height:1.7;margin-bottom:12px">' + escPdf(q.model_answer) + '</div>' +
+        (keyPtsHtml ? '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#64748b;margin-bottom:6px">Key Points</div><ul style="margin:0;padding-left:18px;font-size:12px;color:#1a1a2e">' + keyPtsHtml + '</ul>' : '') +
+        starHtml +
+      '</div>' +
+    '</div>';
+  }).join('');
+
+  function starRow(label, text) {
+    if (!text || !text.trim()) return '';
+    return '<div style="margin-bottom:8px;padding:10px;background:#f0f4f8;border-radius:6px">' +
+      '<div style="font-size:10px;font-weight:800;color:#1e3a5f;margin-bottom:2px">' + label + '</div>' +
+      '<div style="font-size:12px;color:#1a1a2e;line-height:1.6">' + escPdf(text) + '</div>' +
+      '</div>';
+  }
+
+  var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Interview Session — ' + escPdf(role || 'TailorCV') + '</title>' +
+    '<style>' +
+    'body{font-family:Calibri,Georgia,serif;font-size:13px;color:#1a1a2e;max-width:820px;margin:0 auto;padding:32px 40px}' +
+    'h1{font-size:22px;color:#1e3a5f;margin-bottom:4px}' +
+    '.meta{font-size:13px;color:#64748b;margin-bottom:20px}' +
+    '.summary-bar{display:flex;gap:12px;margin-bottom:28px;flex-wrap:wrap}' +
+    '.s-chip{padding:10px 16px;border-radius:10px;font-size:13px;font-weight:700;flex:1;min-width:80px;text-align:center}' +
+    '@media print{body{padding:20px 32px}.no-print{display:none}@page{margin:20mm 15mm}}' +
+    '</style></head><body>' +
+    '<div class="no-print" style="background:#eef2ff;border:1px solid #c7d2fe;border-radius:8px;padding:12px 16px;margin-bottom:20px;font-size:13px;color:#4338ca;font-weight:600">' +
+    '💡 Press <strong>Ctrl/Cmd + P</strong> → Save as PDF to download this report.' +
+    '</div>' +
+    '<h1>🎤 Interview Practice Report</h1>' +
+    '<div class="meta">' + escPdf(role || 'Role not specified') + (company ? ' · ' + escPdf(company) : '') + ' · Generated ' + today + '</div>' +
+    '<div class="summary-bar">' +
+      '<div class="s-chip" style="background:#dcfce7;color:#166534">' + gotIt + '<br>Got It ✅</div>' +
+      '<div class="s-chip" style="background:#fffbeb;color:#92400e">' + almost + '<br>Almost ⚡</div>' +
+      '<div class="s-chip" style="background:#fef2f2;color:#991b1b">' + need + '<br>Need Practice 🔄</div>' +
+      '<div class="s-chip" style="background:#f0f4f8;color:#64748b">' + (total - gotIt - almost - need) + '<br>Not Rated</div>' +
+      '<div class="s-chip" style="background:#eef2ff;color:#4338ca">' + pct + '%<br>Completion</div>' +
+    '</div>' +
+    qHtml +
+    '<script>window.onload=function(){window.print();}<\/script>' +
+    '</body></html>';
+
+  var win = window.open('', '_blank');
+  if (!win) { alert('Please allow pop-ups for PDF export.'); return; }
+  win.document.write(html);
+  win.document.close();
+}
+
+function escPdf(s) {
+  if (!s) return '';
+  return String(s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/\n/g,'<br>');
+}
+
+// Re-render saved sessions when setup panel becomes visible
+var _origInit = init;
+init = async function() {
+  await _origInit();
+  renderSavedSessionsList();
+};
 </script>
 </body>
 </html>

@@ -359,65 +359,252 @@ app.post('/api/claude', requireAuth, aiLimiter, async (req, res) => {
 });
 
 // ══════════════════════════════════════════════════════════════
-//  JD URL SCRAPER  — fetch a job-posting URL and return plain text
+//  JD URL SCRAPER  — multi-strategy job description extractor
+//  Strategy order:
+//    1. Board-specific JSON APIs (Greenhouse, Lever, Ashby, Workday)
+//    2. JSON-LD structured data embedded in HTML
+//    3. Open Graph / meta description tags
+//    4. Raw HTML stripping
 // ══════════════════════════════════════════════════════════════
+
+// ── Helpers ────────────────────────────────────────────────────
+async function timedFetch(url, options = {}, ms = 12000) {
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), ms);
+  try {
+    const r = await fetch(url, { ...options, signal: ctrl.signal });
+    clearTimeout(t);
+    return r;
+  } catch (e) { clearTimeout(t); throw e; }
+}
+
+function htmlToText(html) {
+  return html
+    .replace(/<script[\s\S]*?<\/script>/gi, '')
+    .replace(/<style[\s\S]*?<\/style>/gi, '')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/p>/gi, '\n\n')
+    .replace(/<\/li>/gi, '\n')
+    .replace(/<\/?(h[1-6])[^>]*>/gi, '\n')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'")
+    .replace(/&[a-z0-9#]+;/gi, ' ')
+    .replace(/[ \t]{2,}/g, ' ')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
+function extractJsonLd(html) {
+  // Pull all JSON-LD blocks and look for JobPosting schema
+  const blocks = [...html.matchAll(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)];
+  for (const m of blocks) {
+    try {
+      const data = JSON.parse(m[1]);
+      const items = Array.isArray(data) ? data : [data];
+      for (const item of items) {
+        const type = (item['@type'] || '').toLowerCase();
+        if (type === 'jobposting' || type.includes('job')) {
+          const parts = [];
+          if (item.title)           parts.push('Job Title: ' + item.title);
+          if (item.hiringOrganization?.name) parts.push('Company: ' + item.hiringOrganization.name);
+          if (item.jobLocation)     parts.push('Location: ' + JSON.stringify(item.jobLocation));
+          if (item.employmentType)  parts.push('Type: ' + item.employmentType);
+          if (item.description)     parts.push('\n' + htmlToText(item.description));
+          if (item.responsibilities) parts.push('Responsibilities:\n' + item.responsibilities);
+          if (item.qualifications)   parts.push('Qualifications:\n' + item.qualifications);
+          if (item.skills)           parts.push('Skills: ' + item.skills);
+          if (item.baseSalary)       parts.push('Salary: ' + JSON.stringify(item.baseSalary));
+          const text = parts.join('\n').replace(/\n{3,}/g, '\n\n').trim();
+          if (text.length > 200) return text;
+        }
+      }
+    } catch (_) {}
+  }
+  return null;
+}
+
+// ── Board-specific API strategies ──────────────────────────────
+
+async function tryGreenhouseApi(url) {
+  // https://boards.greenhouse.io/COMPANY/jobs/JOB_ID
+  // https://COMPANY.greenhouse.io/jobs/JOB_ID
+  const m1 = url.match(/boards\.greenhouse\.io\/([^/]+)\/jobs\/(\d+)/i);
+  const m2 = url.match(/([^./]+)\.greenhouse\.io\/jobs\/(\d+)/i);
+  const m = m1 || m2;
+  if (!m) return null;
+  const [, company, jobId] = m;
+  const apiUrl = `https://boards-api.greenhouse.io/v1/boards/${company}/jobs/${jobId}`;
+  const r = await timedFetch(apiUrl, { headers: { Accept: 'application/json' } });
+  if (!r.ok) return null;
+  const d = await r.json();
+  const parts = [];
+  if (d.title)    parts.push('Job Title: ' + d.title);
+  if (d.location?.name) parts.push('Location: ' + d.location.name);
+  if (d.content)  parts.push(htmlToText(d.content));
+  return parts.join('\n').trim() || null;
+}
+
+async function tryLeverApi(url) {
+  // https://jobs.lever.co/COMPANY/UUID
+  const m = url.match(/jobs\.lever\.co\/([^/]+)\/([a-f0-9-]{36})/i);
+  if (!m) return null;
+  const [, company, jobId] = m;
+  const apiUrl = `https://api.lever.co/v0/postings/${company}/${jobId}?mode=json`;
+  const r = await timedFetch(apiUrl, { headers: { Accept: 'application/json' } });
+  if (!r.ok) return null;
+  const d = await r.json();
+  const parts = [];
+  if (d.text)      parts.push('Job Title: ' + d.text);
+  if (d.categories?.location) parts.push('Location: ' + d.categories.location);
+  if (d.categories?.team)     parts.push('Team: ' + d.categories.team);
+  if (d.descriptionPlain)     parts.push(d.descriptionPlain);
+  else if (d.description)     parts.push(htmlToText(d.description));
+  if (d.lists) {
+    for (const list of d.lists) {
+      if (list.text) parts.push('\n' + list.text + ':');
+      if (list.content) parts.push(htmlToText(list.content));
+    }
+  }
+  return parts.join('\n').trim() || null;
+}
+
+async function tryAshbyApi(url) {
+  // https://jobs.ashbyhq.com/COMPANY/UUID
+  const m = url.match(/jobs\.ashbyhq\.com\/([^/]+)\/([a-f0-9-]{36})/i);
+  if (!m) return null;
+  const [, , jobId] = m;
+  const apiUrl = `https://api.ashbyhq.com/posting-public/job-posting/${jobId}`;
+  const r = await timedFetch(apiUrl, { headers: { Accept: 'application/json' } });
+  if (!r.ok) return null;
+  const d = await r.json();
+  const job = d.jobPosting || d;
+  const parts = [];
+  if (job.title)          parts.push('Job Title: ' + job.title);
+  if (job.locationName)   parts.push('Location: '  + job.locationName);
+  if (job.employmentType) parts.push('Type: '      + job.employmentType);
+  if (job.descriptionHtml) parts.push(htmlToText(job.descriptionHtml));
+  else if (job.description) parts.push(job.description);
+  return parts.join('\n').trim() || null;
+}
+
+async function tryWorkdayApi(url) {
+  // https://TENANT.wd{N}.myworkdayjobs.com/SITE/job/LOCATION/TITLE_JOBID
+  const m = url.match(/^https?:\/\/([^.]+)\.(wd\d+)\.myworkdayjobs\.com\/([^/]+)\/job\/[^/]+\/[^_]+_([A-Z0-9]+)/i);
+  if (!m) return null;
+  const [, tenant, wdInst, site, jobId] = m;
+  // Workday CXS API endpoint
+  const apiUrl = `https://${tenant}.${wdInst}.myworkdayjobs.com/wday/cxs/${tenant}/${site}/jobs/${jobId}/jobPostingDetails`;
+  try {
+    const r = await timedFetch(apiUrl, {
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      },
+    });
+    if (!r.ok) return null;
+    const d = await r.json();
+    const parts = [];
+    const job = d.jobPostingInfo || d;
+    if (job.title)        parts.push('Job Title: ' + job.title);
+    if (job.jobReqId)     parts.push('Job ID: '    + job.jobReqId);
+    if (job.locationsText) parts.push('Location: ' + job.locationsText);
+    if (job.timeType)     parts.push('Type: '      + job.timeType);
+    const desc = job.jobDescription || job.jobPostingDescription || '';
+    if (desc) parts.push(htmlToText(desc));
+    const additional = job.additionalJobDescription || '';
+    if (additional) parts.push(htmlToText(additional));
+    const text = parts.join('\n').trim();
+    return text.length > 100 ? text : null;
+  } catch (_) { return null; }
+}
+
+async function tryIndeedEmbed(url) {
+  // Indeed URLs sometimes have a viewjob page with clean HTML
+  // Try fetching with a full browser UA
+  if (!/indeed\.com/i.test(url)) return null;
+  const r = await timedFetch(url, {
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+      'Accept-Language': 'en-US,en;q=0.5',
+    },
+  });
+  if (!r.ok) return null;
+  const html = await r.text();
+  const jsonLd = extractJsonLd(html);
+  if (jsonLd) return jsonLd;
+  return null;
+}
+
+// ── Main route ─────────────────────────────────────────────────
 app.post('/api/fetch-jd', requireAuth, async (req, res) => {
   const { url } = req.body || {};
   if (!url || typeof url !== 'string') {
     return res.status(400).json({ error: 'url is required' });
   }
-  // Only allow http/https
-  if (!/^https?:\/\//i.test(url.trim())) {
+  const cleanUrl = url.trim();
+  if (!/^https?:\/\//i.test(cleanUrl)) {
     return res.status(400).json({ error: 'Only http/https URLs are supported.' });
   }
+
   try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 10000);
-    const r = await fetch(url.trim(), {
-      signal: controller.signal,
+    // ── Strategy 1: Board-specific JSON APIs ──────────────────
+    const boardStrategies = [
+      tryGreenhouseApi,
+      tryLeverApi,
+      tryAshbyApi,
+      tryWorkdayApi,
+      tryIndeedEmbed,
+    ];
+    for (const strategy of boardStrategies) {
+      try {
+        const text = await strategy(cleanUrl);
+        if (text && text.length > 150) {
+          const trimmed = text.length > 8000 ? text.slice(0, 8000) + '\n[…truncated]' : text;
+          return res.json({ text: trimmed });
+        }
+      } catch (_) {}
+    }
+
+    // ── Strategy 2: Fetch HTML + JSON-LD extraction ────────────
+    const r = await timedFetch(cleanUrl, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; TailorCV/1.0)',
-        'Accept': 'text/html,application/xhtml+xml',
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.5',
       },
     });
-    clearTimeout(timeout);
+
     if (!r.ok) {
-      return res.status(502).json({ error: `Page returned ${r.status}. Try copying the job description manually.` });
+      return res.status(502).json({ error: `Page returned ${r.status}. Please copy and paste the job description manually.` });
     }
-    const contentType = r.headers.get('content-type') || '';
-    if (!contentType.includes('text/html') && !contentType.includes('text/plain')) {
-      return res.status(422).json({ error: 'This URL does not appear to be a job posting page.' });
-    }
+
     const html = await r.text();
 
-    // Strip HTML → plain text (keep whitespace structure)
-    let text = html
-      .replace(/<script[\s\S]*?<\/script>/gi, '')   // remove scripts
-      .replace(/<style[\s\S]*?<\/style>/gi, '')      // remove styles
-      .replace(/<br\s*\/?>/gi, '\n')                 // br → newline
-      .replace(/<\/p>/gi, '\n\n')                    // close-p → double newline
-      .replace(/<\/li>/gi, '\n')                     // li → newline
-      .replace(/<\/?(h[1-6])[^>]*>/gi, '\n')         // headings → newline
-      .replace(/<[^>]+>/g, ' ')                      // strip remaining tags
-      .replace(/&nbsp;/g, ' ')
-      .replace(/&amp;/g, '&')
-      .replace(/&lt;/g, '<')
-      .replace(/&gt;/g, '>')
-      .replace(/&quot;/g, '"')
-      .replace(/&#39;/g, "'")
-      .replace(/&[a-z]+;/gi, ' ')                   // other entities
-      .replace(/[ \t]{2,}/g, ' ')                   // collapse spaces
-      .replace(/\n{3,}/g, '\n\n')                   // collapse blank lines
-      .trim();
-
-    if (text.length < 100) {
-      return res.status(422).json({ error: 'Could not extract enough text from this page. Please paste the job description manually.' });
+    // Try JSON-LD first (most reliable for JS-heavy boards)
+    const jsonLdText = extractJsonLd(html);
+    if (jsonLdText && jsonLdText.length > 150) {
+      const trimmed = jsonLdText.length > 8000 ? jsonLdText.slice(0, 8000) + '\n[…truncated]' : jsonLdText;
+      return res.json({ text: trimmed });
     }
 
-    // Trim to ~8000 chars to keep prompt size sane
-    if (text.length > 8000) text = text.slice(0, 8000) + '\n[…truncated]';
+    // ── Strategy 3: Raw HTML strip ─────────────────────────────
+    let text = htmlToText(html);
 
+    if (text.length < 200) {
+      // Likely a JS-rendered SPA — give a helpful, specific message
+      const isKnownSpa = /workday|icims|taleo|successfactors|smartrecruiters|jobvite|brassring/i.test(cleanUrl);
+      const hint = isKnownSpa
+        ? 'This job board loads content with JavaScript which our server cannot run. Open the posting in your browser, select all text (Ctrl/Cmd+A), copy, and paste it into the text box below.'
+        : 'This page does not contain enough readable text. Try copying the job description directly from your browser and pasting it below.';
+      return res.status(422).json({ error: hint });
+    }
+
+    if (text.length > 8000) text = text.slice(0, 8000) + '\n[…truncated]';
     res.json({ text });
+
   } catch (err) {
     if (err.name === 'AbortError') {
       return res.status(504).json({ error: 'The page took too long to load. Please paste the job description manually.' });

@@ -236,7 +236,8 @@ function loadCurrentUser() {
 
 function renderUserMenu() {
   if (!currentUser) return;
-  var isPro = (currentUser.plan === 'pro' && currentUser.subscriptionStatus === 'active');
+  var isPro = currentUser.is_owner || (currentUser.plan === 'pro' && ['active','beta'].includes(currentUser.subscriptionStatus || currentUser.subscription_status));
+  window._tcUserIsPro = isPro;
   var badge = document.getElementById('userPlanBadge');
   var emailEl = document.getElementById('userEmailDisplay');
   if (badge) { badge.textContent = isPro ? 'PRO' : 'FREE'; badge.className = 'user-plan-badge' + (isPro ? ' pro' : ''); }
@@ -818,6 +819,20 @@ function buildResumeDoc(d, tmplKey){
     var renderer = SECTION_RENDERERS[sec];
     if(renderer){ renderer(d,cfg).forEach(function(p){ ch.push(p); }); }
   });
+
+  // Free-tier watermark footer
+  if (!window._tcUserIsPro) {
+    ch.push(new Paragraph({
+      alignment: AlignmentType.CENTER,
+      spacing: { before: 240 },
+      children: [
+        new TextRun({
+          text: 'Created with TailorCV.com — AI-powered resumes tailored for every job',
+          size: 16, color: 'AAAAAA', italics: true, font: cfg.FONT
+        })
+      ]
+    }));
+  }
 
   return new Document({
     numbering:{config:[mkBul('bw'),mkBul('bc')]},
@@ -1970,10 +1985,13 @@ function downloadResumePDF(e) {
     + '.pv-edu{font-size:10pt;margin-bottom:5px;}'
     + '.pv-proj{font-size:10pt;margin:4px 0;text-align:justify;}'
     + '.pv-resp-lbl{font-weight:700;font-size:10pt;margin:7px 0 3px;}'
+    + '.tc-brand-footer{text-align:center;color:#aaa;font-size:8pt;font-style:italic;margin-top:24px;padding-top:10px;border-top:1px solid #eee;}'
     + '@page{margin:1in;}'
     + '@media print{body{padding:0;margin:0;}}'
     + '</style></head>'
-    + '<body>' + html + '</body></html>';
+    + '<body>' + html
+    + (!window._tcUserIsPro ? '<div class="tc-brand-footer">Created with <a href="https://tailorcv.com" style="color:#4f6ef7;text-decoration:none;">TailorCV.com</a> — AI-powered resumes tailored for every job</div>' : '')
+    + '</body></html>';
   var printWin = window.open('', '_blank', 'width=850,height=1100');
   printWin.document.write(winContent);
   printWin.document.close();

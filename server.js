@@ -359,6 +359,71 @@ app.post('/api/claude', requireAuth, aiLimiter, async (req, res) => {
 });
 
 // ══════════════════════════════════════════════════════════════
+//  FREE SCORE PREVIEW  — no auth, IP rate-limited (5/hour/IP)
+// ══════════════════════════════════════════════════════════════
+const scorePreviewLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,   // 1 hour
+  max: 5,
+  keyGenerator: (req) => req.ip,
+  message: { error: 'You have used all 5 free previews for this hour. Create a free account for unlimited scoring.' },
+});
+
+app.post('/api/score-preview', scorePreviewLimiter, async (req, res) => {
+  const { resumeText, jd } = req.body || {};
+  if (!resumeText || typeof resumeText !== 'string' || resumeText.trim().length < 50) {
+    return res.status(400).json({ error: 'Please provide your resume text.' });
+  }
+  if (!jd || typeof jd !== 'string' || jd.trim().length < 30) {
+    return res.status(400).json({ error: 'Please provide the job description.' });
+  }
+  if (!CLAUDE_KEY) {
+    return res.status(503).json({ error: 'AI service not configured.' });
+  }
+  try {
+    const sys = 'You are a resume ATS specialist. Assess how well a resume matches a job description. Return ONLY valid JSON, no markdown.';
+    const prompt = [
+      'Score how well this resume matches this job description on a 0-100 scale.',
+      '',
+      'JOB DESCRIPTION:', jd.slice(0, 3000),
+      '',
+      'RESUME:', resumeText.slice(0, 3000),
+      '',
+      'Return exactly this JSON:',
+      '{"score":42,"label":"Fair Match","summary":"1 sentence on overall fit","matched":["up to 5 keywords already present"],"missing":["up to 5 important missing keywords"],"verdict":"One action sentence on the biggest improvement opportunity."}',
+    ].join('\n');
+
+    const claudeRes = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': CLAUDE_KEY,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 1000,
+        system: sys,
+        messages: [{ role: 'user', content: prompt }],
+      }),
+    });
+    if (!claudeRes.ok) throw new Error('AI error ' + claudeRes.status);
+    const raw = (await claudeRes.json()).content[0].text.trim();
+
+    // Extract JSON robustly
+    let jsonStr = null;
+    const fenced = raw.match(/```(?:json)?\s*([\s\S]*?)```/);
+    if (fenced) { jsonStr = fenced[1].trim(); }
+    else { const s = raw.indexOf('{'); if (s !== -1) jsonStr = raw.slice(s, raw.lastIndexOf('}') + 1); }
+    if (!jsonStr) throw new Error('Invalid AI response.');
+
+    res.json(JSON.parse(jsonStr));
+  } catch (err) {
+    console.error('score-preview error:', err);
+    res.status(502).json({ error: 'Could not compute score. Please try again.' });
+  }
+});
+
+// ══════════════════════════════════════════════════════════════
 //  JD URL SCRAPER  — multi-strategy job description extractor
 //  Strategy order:
 //    1. Board-specific JSON APIs (Greenhouse, Lever, Ashby, Workday)

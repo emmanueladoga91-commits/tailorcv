@@ -497,6 +497,165 @@
     .footer-links a:hover { color: var(--white); }
     .footer-copy { font-size: .8rem; margin-top: 28px; text-align: center; }
 
+    /* ─── FREE SCORE DEMO ────────────────────────────── */
+    .score-demo-wrap {
+      background: linear-gradient(135deg, #f0f4ff 0%, #eef8ff 100%);
+      padding: 88px 24px;
+      border-bottom: 1px solid var(--gray200);
+    }
+    .score-demo-inner {
+      max-width: 900px; margin: 0 auto;
+      text-align: center;
+    }
+    .score-demo-inner .section-label { color: var(--indigo); }
+    .score-demo-card {
+      background: var(--white);
+      border: 1px solid var(--gray200);
+      border-radius: 20px;
+      padding: 40px 36px;
+      box-shadow: 0 8px 40px rgba(79,110,247,.1);
+      margin-top: 40px;
+      text-align: left;
+    }
+    .score-demo-inputs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+    @media (max-width: 640px) {
+      .score-demo-inputs { grid-template-columns: 1fr; }
+    }
+    .sdemo-label {
+      font-size: .8rem; font-weight: 700;
+      color: var(--gray600); text-transform: uppercase; letter-spacing: .06em;
+      margin-bottom: 8px; display: block;
+    }
+    .sdemo-dropzone {
+      border: 2px dashed var(--gray200);
+      border-radius: 12px;
+      padding: 28px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color .2s, background .2s;
+      background: var(--gray50);
+      position: relative;
+      min-height: 140px;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 8px;
+    }
+    .sdemo-dropzone:hover, .sdemo-dropzone.drag-over {
+      border-color: var(--indigo);
+      background: #eef2ff;
+    }
+    .sdemo-dropzone input[type=file] {
+      position: absolute; inset: 0;
+      opacity: 0; cursor: pointer;
+      width: 100%; height: 100%;
+    }
+    .sdemo-dropzone .dz-ico { font-size: 2rem; }
+    .sdemo-dropzone .dz-hint {
+      font-size: .88rem; color: var(--gray600); line-height: 1.5;
+    }
+    .sdemo-dropzone .dz-name {
+      font-size: .82rem; font-weight: 600;
+      color: var(--indigo); margin-top: 4px;
+      max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .sdemo-jd {
+      width: 100%; border: 1.5px solid var(--gray200);
+      border-radius: 12px; padding: 14px 16px;
+      font-family: inherit; font-size: .9rem; color: var(--gray800);
+      resize: vertical; min-height: 140px;
+      transition: border-color .2s;
+      outline: none;
+    }
+    .sdemo-jd:focus { border-color: var(--indigo); }
+    .sdemo-btn-row {
+      display: flex; align-items: center; justify-content: center;
+      gap: 12px; flex-wrap: wrap;
+    }
+    .sdemo-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--indigo); color: var(--white);
+      padding: 14px 32px; border-radius: 50px;
+      font-size: 1rem; font-weight: 700;
+      border: none; cursor: pointer;
+      box-shadow: 0 6px 24px rgba(79,110,247,.35);
+      transition: background .2s, transform .15s, box-shadow .15s;
+    }
+    .sdemo-btn:hover:not(:disabled) {
+      background: var(--indigo2); transform: translateY(-2px);
+      box-shadow: 0 10px 32px rgba(79,110,247,.45);
+    }
+    .sdemo-btn:disabled { opacity: .55; cursor: default; transform: none; }
+    .sdemo-note {
+      font-size: .8rem; color: var(--gray400);
+      text-align: center; margin-top: 12px;
+    }
+
+    /* Result panel */
+    .score-result {
+      display: none;
+      margin-top: 32px;
+      padding-top: 32px;
+      border-top: 1px solid var(--gray200);
+      animation: fadeUp .4s ease;
+    }
+    .score-result.on { display: flex; flex-wrap: wrap; gap: 32px; align-items: flex-start; }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: none; }
+    }
+    .sr-ring-col { flex: 0 0 auto; text-align: center; }
+    .sr-ring-col svg { display: block; margin: 0 auto 6px; }
+    .sr-ring-label { font-size: .82rem; font-weight: 700; color: var(--gray600); }
+    .sr-ring-verdict {
+      font-size: .9rem; font-weight: 800;
+      margin-top: 8px; padding: 5px 14px;
+      border-radius: 50px; display: inline-block;
+    }
+    .sr-ring-verdict.good  { background: #dcfce7; color: #16a34a; }
+    .sr-ring-verdict.ok    { background: #fef9c3; color: #a16207; }
+    .sr-ring-verdict.low   { background: #fee2e2; color: #dc2626; }
+    .sr-detail { flex: 1 1 280px; }
+    .sr-summary {
+      font-size: .95rem; color: var(--gray800);
+      line-height: 1.65; margin-bottom: 16px;
+    }
+    .sr-kw-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
+    .sr-kw-group { flex: 1 1 140px; }
+    .sr-kw-title {
+      font-size: .75rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .06em;
+      margin-bottom: 6px;
+    }
+    .sr-kw-title.matched { color: var(--green); }
+    .sr-kw-title.missing { color: var(--rose); }
+    .sr-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+    .sr-chip {
+      font-size: .78rem; font-weight: 600;
+      padding: 3px 10px; border-radius: 50px;
+    }
+    .sr-chip.matched { background: #dcfce7; color: #15803d; }
+    .sr-chip.missing { background: #fee2e2; color: #b91c1c; }
+    .sr-cta {
+      margin-top: 20px; padding: 12px 28px;
+      background: var(--indigo); color: white;
+      border-radius: 50px; font-weight: 700; font-size: .95rem;
+      text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
+      transition: background .2s, transform .15s;
+    }
+    .sr-cta:hover { background: var(--indigo2); transform: translateY(-1px); }
+    .sdemo-error {
+      background: #fff1f2; border: 1px solid #fecdd3;
+      border-radius: 10px; padding: 12px 16px;
+      font-size: .88rem; color: #be123c;
+      margin-top: 12px; display: none;
+    }
+    .sdemo-error.on { display: block; }
+
     /* ─── RESPONSIVE ──────────────────────────────────── */
     @media (max-width: 680px) {
       .nav-links { display: none; }
@@ -533,6 +692,7 @@
   <div class="nav-inner">
     <a href="#" class="logo">Tailor<span>CV</span></a>
     <ul class="nav-links">
+      <li><a href="#try-it">Try it free</a></li>
       <li><a href="#how-it-works">How it works</a></li>
       <li><a href="#features">Features</a></li>
       <li><a href="#pricing">Pricing</a></li>
@@ -573,6 +733,78 @@
     </div>
   </div>
 </section>
+
+<!-- ════════════════ FREE SCORE DEMO ════════════════ -->
+<div class="score-demo-wrap" id="try-it">
+  <div class="score-demo-inner reveal">
+    <div class="section-label">Try it free — no account needed</div>
+    <h2 class="section-title" style="color:var(--navy);">See your ATS score<br/>in 15 seconds</h2>
+    <p style="color:var(--gray600);font-size:1rem;max-width:540px;margin:0 auto;">Upload your resume, paste a job description, and get your real match score instantly — free, no sign-up required.</p>
+
+    <div class="score-demo-card">
+      <div class="score-demo-inputs">
+        <!-- Resume upload -->
+        <div>
+          <span class="sdemo-label">📄 Your Resume</span>
+          <div class="sdemo-dropzone" id="sdemoDrop" ondragover="sdemoDrag(event,true)" ondragleave="sdemoDrag(event,false)" ondrop="sdemoDrop(event)">
+            <input type="file" id="sdemoFile" accept=".pdf,.docx" onchange="sdemoFileChosen(this)">
+            <span class="dz-ico">☁️</span>
+            <span class="dz-hint">Drop your .pdf or .docx resume here<br/><span style="color:var(--indigo);font-weight:600;">or click to browse</span></span>
+            <span class="dz-name" id="sdemoDzName" style="display:none;"></span>
+          </div>
+        </div>
+        <!-- JD paste -->
+        <div>
+          <span class="sdemo-label">📋 Job Description</span>
+          <textarea class="sdemo-jd" id="sdemoJd" placeholder="Paste the full job description here — the more detail, the more accurate your score…" oninput="sdemoCheck()"></textarea>
+        </div>
+      </div>
+
+      <div class="sdemo-btn-row">
+        <button class="sdemo-btn" id="sdemoBtn" disabled onclick="sdemoGetScore()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+          <span id="sdemoBtnTxt">Get My Free Score</span>
+        </button>
+      </div>
+      <p class="sdemo-note">5 free previews per hour · No account needed · Takes ~10 seconds</p>
+      <div class="sdemo-error" id="sdemoErr"></div>
+
+      <!-- Result panel -->
+      <div class="score-result" id="scoreResult">
+        <div class="sr-ring-col">
+          <svg id="srSvg" width="120" height="120" viewBox="0 0 120 120">
+            <circle cx="60" cy="60" r="50" fill="none" stroke="#e2e8f0" stroke-width="10"/>
+            <circle id="srArc" cx="60" cy="60" r="50" fill="none" stroke="#22c55e" stroke-width="10"
+              stroke-dasharray="314" stroke-dashoffset="314" stroke-linecap="round"
+              transform="rotate(-90 60 60)" style="transition:stroke-dashoffset 1.2s ease,stroke .4s"/>
+            <text id="srPct" x="60" y="65" text-anchor="middle"
+              style="font-family:Inter,sans-serif;font-size:22px;font-weight:900;fill:#1a2744;">—</text>
+          </svg>
+          <div class="sr-ring-label">ATS Match Score</div>
+          <div class="sr-ring-verdict" id="srVerdict" style="display:none;"></div>
+        </div>
+        <div class="sr-detail">
+          <p class="sr-summary" id="srSummary"></p>
+          <div class="sr-kw-row">
+            <div class="sr-kw-group">
+              <div class="sr-kw-title matched">✓ Matched keywords</div>
+              <div class="sr-chips" id="srMatched"></div>
+            </div>
+            <div class="sr-kw-group">
+              <div class="sr-kw-title missing">✗ Missing keywords</div>
+              <div class="sr-chips" id="srMissing"></div>
+            </div>
+          </div>
+          <p id="srVerdict2" style="font-size:.88rem;color:var(--gray600);margin-top:12px;line-height:1.6;"></p>
+          <a href="/auth.html?tab=register" class="sr-cta">
+            🚀 Tailor My Resume — Free
+          </a>
+          <p style="font-size:.78rem;color:var(--gray400);margin-top:8px;">Full tailoring, cover letter &amp; skills gap — free account, no card needed</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- ════════════════ TEMPLATE MOSAIC ════════════════ -->
 <div class="mockup-strip">
@@ -933,6 +1165,217 @@
 </footer>
 
 <script>
+  /* ─── FREE SCORE DEMO ──────────────────────────────── */
+  var _sdemoText = null;
+
+  function sdemoDrag(e, over) {
+    e.preventDefault();
+    document.getElementById('sdemoDrop').classList.toggle('drag-over', over);
+  }
+
+  function sdemoDrop(e) {
+    e.preventDefault();
+    document.getElementById('sdemoDrop').classList.remove('drag-over');
+    var file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+    if (file) sdemoProcessFile(file);
+  }
+
+  function sdemoFileChosen(input) {
+    if (input.files && input.files[0]) sdemoProcessFile(input.files[0]);
+  }
+
+  function sdemoProcessFile(file) {
+    var name = file.name || '';
+    var ext  = name.split('.').pop().toLowerCase();
+    if (ext !== 'pdf' && ext !== 'docx') {
+      sdemoShowErr('Please upload a .pdf or .docx file.');
+      return;
+    }
+    var nameEl = document.getElementById('sdemoDzName');
+    var hint   = document.querySelector('#sdemoDrop .dz-hint');
+    nameEl.textContent = name;
+    nameEl.style.display = 'block';
+    if (hint) hint.style.display = 'none';
+    document.getElementById('sdemoDrop').querySelector('.dz-ico').textContent = '✅';
+    _sdemoText = null;
+    sdemoCheck();
+
+    var reader = new FileReader();
+    reader.onload = function(ev) {
+      var buf = ev.target.result;
+      if (ext === 'pdf') {
+        sdemoExtractPdf(buf);
+      } else {
+        sdemoExtractDocx(buf);
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  }
+
+  function sdemoExtractPdf(buf) {
+    if (typeof pdfjsLib === 'undefined') {
+      // Load PDF.js on demand
+      var s = document.createElement('script');
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+      s.onload = function() {
+        pdfjsLib.GlobalWorkerOptions.workerSrc =
+          'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        _sdemoRunPdf(buf);
+      };
+      document.head.appendChild(s);
+    } else {
+      _sdemoRunPdf(buf);
+    }
+  }
+
+  function _sdemoRunPdf(buf) {
+    pdfjsLib.getDocument({ data: new Uint8Array(buf) }).promise.then(function(doc) {
+      var pages = [];
+      for (var i = 1; i <= doc.numPages; i++) pages.push(i);
+      return Promise.all(pages.map(function(n) {
+        return doc.getPage(n).then(function(p) {
+          return p.getTextContent().then(function(tc) {
+            return tc.items.map(function(it) { return it.str; }).join(' ');
+          });
+        });
+      }));
+    }).then(function(parts) {
+      _sdemoText = parts.join('\n');
+      sdemoCheck();
+    }).catch(function() {
+      sdemoShowErr('Could not read PDF. Try pasting your resume text into the job description box, or upload a .docx.');
+    });
+  }
+
+  function sdemoExtractDocx(buf) {
+    if (typeof mammoth === 'undefined') {
+      var s = document.createElement('script');
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js';
+      s.onload = function() { _sdemoRunDocx(buf); };
+      document.head.appendChild(s);
+    } else {
+      _sdemoRunDocx(buf);
+    }
+  }
+
+  function _sdemoRunDocx(buf) {
+    mammoth.extractRawText({ arrayBuffer: buf }).then(function(r) {
+      _sdemoText = r.value || '';
+      sdemoCheck();
+    }).catch(function() {
+      sdemoShowErr('Could not read .docx file. Please try a different file.');
+    });
+  }
+
+  function sdemoCheck() {
+    var jd  = (document.getElementById('sdemoJd').value || '').trim();
+    var btn = document.getElementById('sdemoBtn');
+    btn.disabled = !(_sdemoText && _sdemoText.length > 50 && jd.length > 30);
+  }
+
+  function sdemoShowErr(msg) {
+    var el = document.getElementById('sdemoErr');
+    el.textContent = msg;
+    el.classList.add('on');
+  }
+
+  function sdemoClearErr() {
+    var el = document.getElementById('sdemoErr');
+    el.textContent = '';
+    el.classList.remove('on');
+  }
+
+  async function sdemoGetScore() {
+    var jd  = (document.getElementById('sdemoJd').value || '').trim();
+    if (!_sdemoText || _sdemoText.length < 50) { sdemoShowErr('Resume text not ready yet — please wait a moment.'); return; }
+    if (!jd || jd.length < 30) { sdemoShowErr('Please paste a job description first.'); return; }
+
+    sdemoClearErr();
+    var btn    = document.getElementById('sdemoBtn');
+    var btnTxt = document.getElementById('sdemoBtnTxt');
+    btn.disabled = true;
+    btnTxt.textContent = 'Analysing…';
+
+    try {
+      var r = await fetch('/api/score-preview', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ resumeText: _sdemoText.slice(0, 6000), jd: jd.slice(0, 4000) })
+      });
+      var data = await r.json();
+      if (!r.ok) {
+        sdemoShowErr(data.error || 'Something went wrong. Please try again.');
+        btn.disabled = false;
+        btnTxt.textContent = 'Get My Free Score';
+        return;
+      }
+      sdemoShowResult(data);
+    } catch (err) {
+      sdemoShowErr('Network error — please check your connection and try again.');
+      btn.disabled = false;
+      btnTxt.textContent = 'Get My Free Score';
+    }
+  }
+
+  function sdemoShowResult(d) {
+    var score   = Math.max(0, Math.min(100, d.score || 0));
+    var arc     = document.getElementById('srArc');
+    var pctEl   = document.getElementById('srPct');
+    var verdict = document.getElementById('srVerdict');
+    var verdict2= document.getElementById('srVerdict2');
+    var sumEl   = document.getElementById('srSummary');
+    var matchEl = document.getElementById('srMatched');
+    var missEl  = document.getElementById('srMissing');
+
+    // Color the arc by score
+    var color = score >= 70 ? '#22c55e' : score >= 45 ? '#f59e0b' : '#f43f5e';
+    var circ  = 2 * Math.PI * 50; // 314.16
+    arc.style.stroke = color;
+    arc.setAttribute('stroke-dashoffset', circ * (1 - score / 100));
+    pctEl.textContent = score + '%';
+
+    // Verdict badge
+    var vClass = score >= 70 ? 'good' : score >= 45 ? 'ok' : 'low';
+    var vText  = d.label || (score >= 70 ? 'Strong Match' : score >= 45 ? 'Partial Match' : 'Needs Work');
+    verdict.textContent  = vText;
+    verdict.className    = 'sr-ring-verdict ' + vClass;
+    verdict.style.display = 'inline-block';
+
+    // Summary
+    sumEl.textContent = d.summary || '';
+
+    // Chips
+    matchEl.innerHTML = '';
+    missEl.innerHTML  = '';
+    (d.matched || []).slice(0, 8).forEach(function(kw) {
+      var c = document.createElement('span');
+      c.className = 'sr-chip matched';
+      c.textContent = kw;
+      matchEl.appendChild(c);
+    });
+    (d.missing || []).slice(0, 8).forEach(function(kw) {
+      var c = document.createElement('span');
+      c.className = 'sr-chip missing';
+      c.textContent = kw;
+      missEl.appendChild(c);
+    });
+
+    // Verdict 2
+    verdict2.textContent = d.verdict || '';
+
+    // Show result
+    var resultEl = document.getElementById('scoreResult');
+    resultEl.classList.add('on');
+
+    // Scroll result into view
+    resultEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+    // Reset button
+    var btn = document.getElementById('sdemoBtn');
+    document.getElementById('sdemoBtnTxt').textContent = 'Check Again';
+    btn.disabled = false;
+  }
+
   // FAQ accordion
   function toggleFaq(btn) {
     var answer = btn.nextElementSibling;

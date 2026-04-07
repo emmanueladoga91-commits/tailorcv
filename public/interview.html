@@ -416,7 +416,8 @@ async function init() {
   try {
     var r = await fetch('/api/auth/me', { headers: { Authorization: 'Bearer ' + token } });
     if (!r.ok) { window.location.href = 'auth.html'; return; }
-    var u = await r.json();
+    var data = await r.json();
+    var u = data.user || data;   // /api/auth/me returns { user: {...} }
 
     // Owner always gets Pro; beta-code users have plan='pro' + status='beta'
     var isPro = u.is_owner

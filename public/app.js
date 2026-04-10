@@ -4,6 +4,9 @@ var resumeBlobRef = null, resumeNameRef = '';
 var tailoredRef = null, jdRef = '', atsResultRef = null;
 var selectedProfile = null;
 var selectedTemplate = 'classic';
+var selectedFontFamily = '';   // '' = use template default
+var selectedFontSize   = 0;    // 0  = use template default (half-points)
+var selectedFontStyle  = '';   // '' | 'italic' | 'bold' | 'bold-italic'
 
 // ══════════════════════════════════════════════════════════════════════════════
 // ── 18 PROFESSIONAL PROFILES ──────────────────────────────────────────────────
@@ -343,6 +346,14 @@ function getSystemPrompt(profileKey, pages) {
 // ══════════════════════════════════════════════════════════════════════════════
 // ── 13 TEMPLATE CONFIGURATIONS ─────────────────────────────────────────────
 // ══════════════════════════════════════════════════════════════════════════════
+// Visual fields:
+//   hdrStyle: 'plain-center'|'banner'|'gradient-banner'|'dark-banner'|
+//             'top-stripe'|'light-banner'|'double-border'|'accent-top'|
+//             'color-left'|'plain-left'
+//   headerBg/headerFg: colours for banner headers
+//   secHdr:  'underline'|'double'|'left-bar'|'block-bg'|'caps-gray'|'dots'|'color-underline'
+//   secCase: 'upper'|'title'
+//   skillsRender: 'grid2'|'pills'|'tags'|'inline'|'single'
 var TEMPLATES = {
   classic: {
     FONT:'Calibri', B:20, NP:56, nameAlign:'CENTER',
@@ -350,7 +361,8 @@ var TEMPLATES = {
     MAR:1080, secBefore:220, secAfter:100, bodyAfter:120, roleAfter:180,
     order:['summary','skills','experience','tech','certs','edu'],
     names:{ summary:'PROFESSIONAL SUMMARY', skills:'KEY SKILLS / CORE COMPETENCE', experience:'WORK EXPERIENCE', tech:'TECHNICAL SKILLS & TOOLS', certs:'CERTIFICATIONS AND TRAINING', edu:'EDUCATION' },
-    pvAccent:'#111111'
+    pvAccent:'#111111',
+    hdrStyle:'plain-center', secHdr:'underline', secCase:'upper', skillsRender:'grid2'
   },
   executive: {
     FONT:'Times New Roman', B:20, NP:60, nameAlign:'CENTER',
@@ -358,15 +370,19 @@ var TEMPLATES = {
     MAR:1080, secBefore:280, secAfter:120, bodyAfter:140, roleAfter:200,
     order:['summary','skills','experience','tech','certs','edu'],
     names:{ summary:'EXECUTIVE SUMMARY', skills:'LEADERSHIP COMPETENCIES', experience:'PROFESSIONAL EXPERIENCE', tech:'TECHNICAL CAPABILITIES', certs:'PROFESSIONAL CREDENTIALS', edu:'EDUCATION & QUALIFICATIONS' },
-    pvAccent:'#1b3a2f'
+    pvAccent:'#1b3a2f',
+    hdrStyle:'banner', headerBg:'#1b3a2f', headerFg:'#ffffff',
+    secHdr:'double', secCase:'upper', skillsRender:'grid2'
   },
   modern: {
     FONT:'Calibri', B:20, NP:56, nameAlign:'CENTER',
     secBorder:'SINGLE', secColor:'6366f1', secBorderSz:6,
     MAR:1080, secBefore:220, secAfter:100, bodyAfter:120, roleAfter:180,
     order:['summary','skills','experience','tech','certs','edu'],
-    names:{ summary:'PROFESSIONAL SUMMARY', skills:'KEY COMPETENCIES', experience:'CAREER EXPERIENCE', tech:'SKILLS & TECHNOLOGIES', certs:'CERTIFICATIONS', edu:'EDUCATION' },
-    pvAccent:'#6366f1', accentBar:true
+    names:{ summary:'Profile', skills:'Competencies', experience:'Experience', tech:'Skills & Technologies', certs:'Certifications', edu:'Education' },
+    pvAccent:'#6366f1', accentBar:true,
+    hdrStyle:'gradient-banner', headerBg:'linear-gradient(135deg,#6366f1,#2d5a8e)', headerFg:'#ffffff',
+    secHdr:'color-underline', secCase:'title', skillsRender:'pills'
   },
   professional: {
     FONT:'Calibri', B:20, NP:56, nameAlign:'CENTER',
@@ -374,23 +390,27 @@ var TEMPLATES = {
     MAR:1080, secBefore:240, secAfter:100, bodyAfter:120, roleAfter:180,
     order:['summary','skills','experience','tech','certs','edu'],
     names:{ summary:'PROFESSIONAL SUMMARY', skills:'CORE COMPETENCIES', experience:'PROFESSIONAL EXPERIENCE', tech:'TECHNICAL PROFICIENCIES', certs:'CREDENTIALS & TRAINING', edu:'EDUCATION' },
-    pvAccent:'#1e3a5f'
+    pvAccent:'#1e3a5f',
+    hdrStyle:'plain-center', secHdr:'left-bar', secCase:'upper', skillsRender:'grid2'
   },
   minimal: {
     FONT:'Arial', B:20, NP:52, nameAlign:'LEFT',
     secBorder:'NONE', secColor:'111111', secBorderSz:0,
     MAR:1080, secBefore:260, secAfter:80, bodyAfter:120, roleAfter:160,
     order:['summary','skills','experience','tech','certs','edu'],
-    names:{ summary:'Summary', skills:'Core Skills', experience:'Experience', tech:'Technical Skills', certs:'Certifications', edu:'Education' },
-    pvAccent:'#555555', minimal:true
+    names:{ summary:'Summary', skills:'Skills', experience:'Experience', tech:'Technical', certs:'Certifications', edu:'Education' },
+    pvAccent:'#555555', minimal:true,
+    hdrStyle:'plain-left', secHdr:'caps-gray', secCase:'upper', skillsRender:'inline'
   },
   tech: {
     FONT:'Calibri', B:20, NP:56, nameAlign:'LEFT',
     secBorder:'SINGLE', secColor:'0284c7', secBorderSz:6,
     MAR:1080, secBefore:220, secAfter:100, bodyAfter:120, roleAfter:180,
     order:['summary','tech','skills','experience','certs','edu'],
-    names:{ summary:'PROFESSIONAL PROFILE', skills:'TECHNICAL COMPETENCIES', experience:'WORK EXPERIENCE', tech:'TECHNICAL SKILLS & STACK', certs:'CERTIFICATIONS', edu:'EDUCATION' },
-    pvAccent:'#0284c7'
+    names:{ summary:'PROFILE', skills:'COMPETENCIES', experience:'EXPERIENCE', tech:'TECH STACK', certs:'CERTIFICATIONS', edu:'EDUCATION' },
+    pvAccent:'#0284c7',
+    hdrStyle:'dark-banner', headerBg:'#0f172a', headerFg:'#38bdf8',
+    secHdr:'left-bar', secCase:'upper', skillsRender:'tags'
   },
   consulting: {
     FONT:'Calibri', B:20, NP:56, nameAlign:'CENTER',
@@ -398,23 +418,28 @@ var TEMPLATES = {
     MAR:1080, secBefore:240, secAfter:80, bodyAfter:100, roleAfter:180,
     order:['summary','skills','experience','tech','certs','edu'],
     names:{ summary:'PROFESSIONAL SUMMARY', skills:'CORE COMPETENCIES', experience:'PROFESSIONAL EXPERIENCE', tech:'TECHNICAL SKILLS', certs:'CERTIFICATIONS & TRAINING', edu:'EDUCATION' },
-    pvAccent:'#7f1d1d'
+    pvAccent:'#7f1d1d',
+    hdrStyle:'accent-top', headerBg:'#7f1d1d',
+    secHdr:'left-bar', secCase:'upper', skillsRender:'grid2'
   },
   academic: {
     FONT:'Georgia', B:20, NP:56, nameAlign:'CENTER',
     secBorder:'SINGLE', secColor:'78350f', secBorderSz:6,
     MAR:1080, secBefore:220, secAfter:100, bodyAfter:120, roleAfter:180,
     order:['summary','edu','skills','certs','experience','tech'],
-    names:{ summary:'ACADEMIC PROFILE', skills:'AREAS OF EXPERTISE', experience:'PROFESSIONAL EXPERIENCE', tech:'RESEARCH & TECHNICAL SKILLS', certs:'QUALIFICATIONS & LICENCES', edu:'EDUCATION & ACADEMIC CREDENTIALS' },
-    pvAccent:'#78350f'
+    names:{ summary:'Academic Profile', skills:'Areas of Expertise', experience:'Professional Experience', tech:'Research & Technical Skills', certs:'Qualifications & Licences', edu:'Education & Academic Credentials' },
+    pvAccent:'#78350f',
+    hdrStyle:'plain-center', secHdr:'dots', secCase:'title', skillsRender:'single'
   },
   entrylevel: {
     FONT:'Calibri', B:20, NP:54, nameAlign:'CENTER',
     secBorder:'SINGLE', secColor:'0369a1', secBorderSz:6,
     MAR:1080, secBefore:220, secAfter:100, bodyAfter:120, roleAfter:180,
     order:['summary','edu','skills','experience','tech','certs'],
-    names:{ summary:'PROFESSIONAL OBJECTIVE', skills:'SKILLS & COMPETENCIES', experience:'EXPERIENCE', tech:'TECHNICAL SKILLS', certs:'CERTIFICATIONS', edu:'EDUCATION' },
-    pvAccent:'#0369a1'
+    names:{ summary:'Objective', skills:'Skills & Competencies', experience:'Experience', tech:'Technical Skills', certs:'Certifications', edu:'Education' },
+    pvAccent:'#0369a1',
+    hdrStyle:'light-banner', headerBg:'#e0f2fe', headerFg:'#0369a1',
+    secHdr:'underline', secCase:'title', skillsRender:'grid2'
   },
   government: {
     FONT:'Times New Roman', B:20, NP:56, nameAlign:'CENTER',
@@ -422,7 +447,9 @@ var TEMPLATES = {
     MAR:1080, secBefore:240, secAfter:100, bodyAfter:130, roleAfter:190,
     order:['summary','skills','experience','tech','certs','edu'],
     names:{ summary:'PROFESSIONAL SUMMARY', skills:'KEY CAPABILITIES', experience:'EMPLOYMENT HISTORY', tech:'TECHNICAL SKILLS & SYSTEMS', certs:'QUALIFICATIONS & PROFESSIONAL DEVELOPMENT', edu:'EDUCATION' },
-    pvAccent:'#1e3a5f'
+    pvAccent:'#1e3a5f',
+    hdrStyle:'double-border',
+    secHdr:'block-bg', secCase:'upper', skillsRender:'single'
   },
   creative: {
     FONT:'Calibri', B:20, NP:54, nameAlign:'LEFT',
@@ -430,23 +457,28 @@ var TEMPLATES = {
     MAR:1080, secBefore:220, secAfter:100, bodyAfter:120, roleAfter:180,
     order:['summary','skills','experience','tech','certs','edu'],
     names:{ summary:'ABOUT ME', skills:'SKILLS & EXPERTISE', experience:'EXPERIENCE', tech:'TOOLS & TECHNOLOGIES', certs:'CERTIFICATIONS', edu:'EDUCATION' },
-    pvAccent:'#0d9488'
+    pvAccent:'#0d9488',
+    hdrStyle:'color-left', headerBg:'#0d9488', headerFg:'#ffffff',
+    secHdr:'color-underline', secCase:'upper', skillsRender:'pills'
   },
   healthcare: {
     FONT:'Calibri', B:20, NP:56, nameAlign:'CENTER',
     secBorder:'SINGLE', secColor:'0f766e', secBorderSz:6,
     MAR:1080, secBefore:220, secAfter:100, bodyAfter:120, roleAfter:180,
     order:['summary','skills','experience','tech','certs','edu'],
-    names:{ summary:'CLINICAL PROFILE', skills:'CLINICAL COMPETENCIES', experience:'CLINICAL & PROFESSIONAL EXPERIENCE', tech:'CLINICAL SYSTEMS & TOOLS', certs:'LICENCES, REGISTRATIONS & CERTIFICATIONS', edu:'EDUCATION & TRAINING' },
-    pvAccent:'#0f766e'
+    names:{ summary:'Clinical Profile', skills:'Clinical Competencies', experience:'Clinical & Professional Experience', tech:'Clinical Systems & Tools', certs:'Licences, Registrations & Certifications', edu:'Education & Training' },
+    pvAccent:'#0f766e',
+    hdrStyle:'top-stripe', headerBg:'#0f766e',
+    secHdr:'underline', secCase:'title', skillsRender:'single'
   },
   compact: {
-    FONT:'Calibri', B:18, NP:48, nameAlign:'CENTER',
+    FONT:'Calibri', B:18, NP:48, nameAlign:'LEFT',
     secBorder:'SINGLE', secColor:'4b5563', secBorderSz:4,
     MAR:720, secBefore:160, secAfter:60, bodyAfter:80, roleAfter:120,
     order:['summary','skills','experience','tech','certs','edu'],
-    names:{ summary:'PROFESSIONAL SUMMARY', skills:'CORE COMPETENCIES', experience:'WORK EXPERIENCE', tech:'TECHNICAL SKILLS', certs:'CERTIFICATIONS', edu:'EDUCATION' },
-    pvAccent:'#4b5563', compact:true
+    names:{ summary:'SUMMARY', skills:'SKILLS', experience:'EXPERIENCE', tech:'TECHNICAL', certs:'CERTS', edu:'EDUCATION' },
+    pvAccent:'#4b5563', compact:true,
+    hdrStyle:'plain-left', secHdr:'caps-gray', secCase:'upper', skillsRender:'inline'
   }
 };
 
@@ -463,6 +495,35 @@ document.addEventListener('DOMContentLoaded', function() {
   dz.addEventListener('dragleave', function()  { dz.classList.remove('over'); });
   dz.addEventListener('drop', function(e) { e.preventDefault(); dz.classList.remove('over'); loadFile(e.dataTransfer.files[0]); });
   document.getElementById('fileInput').addEventListener('change', function(e) { loadFile(e.target.files[0]); });
+
+  // ── Font toolbar ───────────────────────────────────────────────────────
+  function updateFontSample(){
+    var fam = document.getElementById('ftFont').value || 'inherit';
+    var sty = document.getElementById('ftStyle').value;
+    var smp = document.getElementById('ftSample');
+    smp.style.fontFamily = fam;
+    smp.style.fontStyle  = (sty==='italic'||sty==='bold-italic') ? 'italic' : 'normal';
+    smp.style.fontWeight = (sty==='bold'||sty==='bold-italic')   ? '700'    : '400';
+    // Live-update open preview if resume already built
+    if(tailoredRef){
+      var pvPage = document.getElementById('pvPage');
+      if(pvPage && pvPage.innerHTML) pvPage.innerHTML = buildResumeHtml(tailoredRef, selectedTemplate);
+      var tpvPage = document.getElementById('tpvPage');
+      if(tpvPage && tpvPage.innerHTML) tpvPage.innerHTML = buildResumeHtml(tailoredRef, selectedTemplate);
+    }
+  }
+  document.getElementById('ftFont').addEventListener('change', function(){
+    selectedFontFamily = this.value;
+    updateFontSample();
+  });
+  document.getElementById('ftSize').addEventListener('change', function(){
+    selectedFontSize = parseInt(this.value,10) || 0;
+    updateFontSample();
+  });
+  document.getElementById('ftStyle').addEventListener('change', function(){
+    selectedFontStyle = this.value;
+    updateFontSample();
+  });
 
   document.getElementById('buildBtn').addEventListener('click', build);
   document.getElementById('previewBtn').addEventListener('click', openPreview);
@@ -778,7 +839,16 @@ var PW=12240, PH=15840;
 
 function mkBul(ref){ return {reference:ref,levels:[{level:0,format:LevelFormat.BULLET,text:'\u2022',alignment:AlignmentType.LEFT,style:{paragraph:{indent:{left:360,hanging:360}}}}]}; }
 
-function getTmplCfg(tmplKey){ return TEMPLATES[tmplKey] || TEMPLATES.classic; }
+function getTmplCfg(tmplKey){
+  var base = TEMPLATES[tmplKey] || TEMPLATES.classic;
+  // Apply user font overrides (font toolbar selections override template defaults)
+  return Object.assign({}, base, {
+    FONT: selectedFontFamily || base.FONT,
+    B:    selectedFontSize   || base.B,
+    _italic: selectedFontStyle === 'italic' || selectedFontStyle === 'bold-italic',
+    _bold:   selectedFontStyle === 'bold'   || selectedFontStyle === 'bold-italic',
+  });
+}
 
 // Section header paragraph
 function makeHdr(title, cfg) {
@@ -1313,53 +1383,179 @@ async function improveResume(){
   }catch(err){btn.disabled=false;btn.innerHTML='\u2728 Improve Resume with Missing Keywords';if(msg)msg.innerHTML='<div style="font-size:13px;color:var(--red);margin-top:10px">Error: '+esc(err.message)+'</div>';}
 }
 
-// ── Resume HTML preview (template-aware) ─────────────────────────────────────
+// ── Resume HTML preview (unique per template) ─────────────────────────────────
 function buildResumeHtml(d, tmplKey){
   var cfg = getTmplCfg(tmplKey||'classic');
-  var ac = cfg.pvAccent||'#111';
-  var nameAlign = cfg.nameAlign==='LEFT' ? 'left' : 'center';
-  var secStyle = 'font-weight:700;border-bottom:1.5px solid '+ac+';margin:16px 0 7px;padding-bottom:3px;font-size:10.5pt;color:'+ac;
-  if(cfg.minimal) secStyle = 'font-weight:700;margin:14px 0 5px;font-size:10.5pt;color:'+ac+';border:none;';
-  var h='';
-  if(cfg.accentBar) h+='<div style="height:5px;background:linear-gradient(90deg,#6366f1,#2d5a8e);border-radius:3px;margin-bottom:20px"></div>';
-  h+='<div class="pv-name" style="text-align:'+nameAlign+';font-family:'+(cfg.FONT||'Calibri')+',serif">'+esc(d.name)+'</div>';
-  h+='<div class="pv-contact" style="text-align:'+nameAlign+'">'+esc(d.phone)+' &middot; '+esc(d.email)+'</div>';
-  if(d.locationPreference) h+='<div class="pv-loc" style="text-align:'+nameAlign+'">'+esc(d.locationPreference)+'</div>';
-  // Render sections in template order
+  var ac  = cfg.pvAccent || '#111';
+  var fam = (cfg.FONT||'Calibri')+',serif';
+  var fsz = (cfg.B || 20) / 2;   // half-points → pt
+  var bodyStyle = 'font-family:'+fam+';font-size:'+fsz+'pt;'
+    + (cfg._italic ? 'font-style:italic;' : '')
+    + (cfg._bold   ? 'font-weight:bold;'  : '');
+  var h = '<div style="'+bodyStyle+'">';
+
+  // ── HEADER ────────────────────────────────────────────────────────────
+  var hs = cfg.hdrStyle || 'plain-center';
+  var na = cfg.nameAlign === 'LEFT' ? 'left' : 'center';
+
+  if (hs === 'banner' || hs === 'gradient-banner') {
+    // Full-bleed coloured/gradient banner
+    h += '<div style="background:'+cfg.headerBg+';margin:-52px -62px 24px;padding:26px 62px;text-align:'+na+'">';
+    h += '<div class="pv-name" style="color:'+cfg.headerFg+'">'+esc(d.name)+'</div>';
+    h += '<div style="text-align:'+na+';font-size:'+fsz+'pt;color:'+cfg.headerFg+';opacity:.75;margin:4px 0 2px">'+esc(d.phone)+' &middot; '+esc(d.email)+'</div>';
+    if(d.locationPreference) h += '<div style="text-align:'+na+';font-style:italic;font-size:'+(fsz-0.5)+'pt;color:'+cfg.headerFg+';opacity:.6">'+esc(d.locationPreference)+'</div>';
+    h += '</div>';
+
+  } else if (hs === 'dark-banner') {
+    // Dark slate banner (tech)
+    h += '<div style="background:'+cfg.headerBg+';margin:-52px -62px 22px;padding:22px 62px">';
+    h += '<div class="pv-name" style="color:'+cfg.headerFg+';text-align:left;letter-spacing:-.3px">'+esc(d.name)+'</div>';
+    h += '<div style="font-size:'+(fsz-0.5)+'pt;color:rgba(56,189,248,.65);margin:4px 0 2px">'+esc(d.phone)+' &middot; '+esc(d.email)+'</div>';
+    if(d.locationPreference) h += '<div style="font-style:italic;font-size:'+(fsz-0.5)+'pt;color:rgba(56,189,248,.45)">'+esc(d.locationPreference)+'</div>';
+    h += '</div>';
+
+  } else if (hs === 'light-banner') {
+    // Pale coloured banner (entry level)
+    h += '<div style="background:'+cfg.headerBg+';margin:-52px -62px 22px;padding:22px 62px;text-align:center;border-bottom:2px solid '+ac+'">';
+    h += '<div class="pv-name" style="color:'+cfg.headerFg+'">'+esc(d.name)+'</div>';
+    h += '<div style="text-align:center;font-size:'+fsz+'pt;color:'+cfg.headerFg+';opacity:.8;margin:4px 0 2px">'+esc(d.phone)+' &middot; '+esc(d.email)+'</div>';
+    if(d.locationPreference) h += '<div style="text-align:center;font-style:italic;font-size:'+(fsz-0.5)+'pt;color:'+cfg.headerFg+';opacity:.65">'+esc(d.locationPreference)+'</div>';
+    h += '</div>';
+
+  } else if (hs === 'top-stripe') {
+    // Thick coloured top stripe (healthcare)
+    h += '<div style="border-top:5px solid '+ac+';padding:16px 0 12px;text-align:center;margin-bottom:4px">';
+    h += '<div class="pv-name" style="color:'+ac+'">'+esc(d.name)+'</div>';
+    h += '<div class="pv-contact">'+esc(d.phone)+' &middot; '+esc(d.email)+'</div>';
+    if(d.locationPreference) h += '<div class="pv-loc">'+esc(d.locationPreference)+'</div>';
+    h += '</div>';
+
+  } else if (hs === 'double-border') {
+    // Double navy lines above and below (government — formal)
+    h += '<div style="border-top:3px solid '+ac+';border-bottom:3px solid '+ac+';padding:14px 0;margin-bottom:16px;text-align:center">';
+    h += '<div class="pv-name" style="font-size:18pt;letter-spacing:2.5px;text-transform:uppercase">'+esc(d.name)+'</div>';
+    h += '<div class="pv-contact" style="margin-top:6px">'+esc(d.phone)+' &middot; '+esc(d.email)+'</div>';
+    if(d.locationPreference) h += '<div class="pv-loc">'+esc(d.locationPreference)+'</div>';
+    h += '</div>';
+
+  } else if (hs === 'accent-top') {
+    // Coloured bar at top then plain centre (consulting)
+    h += '<div style="background:'+cfg.headerBg+';height:7px;margin:-52px -62px 0"></div>';
+    h += '<div style="text-align:center;padding:18px 0 12px;border-bottom:2.5px solid '+ac+';margin-bottom:4px">';
+    h += '<div class="pv-name">'+esc(d.name)+'</div>';
+    h += '<div class="pv-contact">'+esc(d.phone)+' &middot; '+esc(d.email)+'</div>';
+    if(d.locationPreference) h += '<div class="pv-loc">'+esc(d.locationPreference)+'</div>';
+    h += '</div>';
+
+  } else if (hs === 'color-left') {
+    // Vertical coloured stripe left of name (creative)
+    h += '<div style="display:flex;margin:-52px -62px 22px -62px">';
+    h += '<div style="background:'+cfg.headerBg+';width:9px;flex-shrink:0"></div>';
+    h += '<div style="padding:22px 28px;flex:1">';
+    h += '<div class="pv-name" style="color:'+ac+';text-align:left;font-size:26pt">'+esc(d.name)+'</div>';
+    h += '<div style="font-size:'+fsz+'pt;color:#555;margin:4px 0 2px">'+esc(d.phone)+' &middot; '+esc(d.email)+'</div>';
+    if(d.locationPreference) h += '<div style="font-style:italic;font-size:'+(fsz-0.5)+'pt;color:#888">'+esc(d.locationPreference)+'</div>';
+    h += '</div></div>';
+
+  } else if (hs === 'plain-left') {
+    // Left-aligned, thin divider (minimal / compact)
+    h += '<div style="text-align:left;padding-bottom:10px;margin-bottom:8px;border-bottom:1px solid #ddd">';
+    h += '<div class="pv-name" style="text-align:left;font-size:20pt">'+esc(d.name)+'</div>';
+    h += '<div class="pv-contact" style="text-align:left">'+esc(d.phone)+' &middot; '+esc(d.email)+'</div>';
+    if(d.locationPreference) h += '<div class="pv-loc" style="text-align:left">'+esc(d.locationPreference)+'</div>';
+    h += '</div>';
+
+  } else {
+    // plain-center (classic, professional, academic, government fallback)
+    h += '<div style="text-align:center;padding-bottom:12px;margin-bottom:4px">';
+    h += '<div class="pv-name">'+esc(d.name)+'</div>';
+    h += '<div class="pv-contact">'+esc(d.phone)+' &middot; '+esc(d.email)+'</div>';
+    if(d.locationPreference) h += '<div class="pv-loc">'+esc(d.locationPreference)+'</div>';
+    h += '</div>';
+  }
+
+  // ── SECTION HEADER helper ──────────────────────────────────────────────
+  function secHdr(name){
+    var label = cfg.secCase === 'title' ? name : name.toUpperCase();
+    switch(cfg.secHdr){
+      case 'double':
+        return '<div style="font-weight:700;border-top:1px solid '+ac+';border-bottom:1px solid '+ac+';padding:3px 0;margin:16px 0 8px;color:'+ac+';font-size:10.5pt">'+esc(label)+'</div>';
+      case 'left-bar':
+        return '<div style="font-weight:700;border-left:3.5px solid '+ac+';padding:2px 0 2px 10px;margin:16px 0 8px;color:'+ac+';font-size:10.5pt">'+esc(label)+'</div>';
+      case 'block-bg':
+        return '<div style="font-weight:700;background:'+ac+';color:#fff;padding:5px 10px;margin:14px 0 8px;font-size:10pt;letter-spacing:.4px">'+esc(label)+'</div>';
+      case 'caps-gray':
+        return '<div style="font-weight:700;font-size:8.5pt;color:#888;letter-spacing:1.2px;margin:14px 0 5px;text-transform:uppercase;border-bottom:1px solid #eee;padding-bottom:3px">'+esc(name)+'</div>';
+      case 'dots':
+        return '<div style="font-weight:700;border-bottom:2px dotted '+ac+';margin:16px 0 8px;padding-bottom:4px;font-size:10.5pt;color:'+ac+';font-style:italic">'+esc(label)+'</div>';
+      case 'color-underline':
+        return '<div style="font-weight:700;border-bottom:2px solid '+ac+';margin:16px 0 8px;padding-bottom:3px;font-size:10.5pt;color:'+ac+'">'+esc(label)+'</div>';
+      default: // underline
+        return '<div style="font-weight:700;border-bottom:1.5px solid '+ac+';margin:16px 0 8px;padding-bottom:3px;font-size:10.5pt;color:'+ac+'">'+esc(label)+'</div>';
+    }
+  }
+
+  // ── SKILLS renderer ────────────────────────────────────────────────────
+  function renderSkills(items){
+    if(!items||!items.length) return '';
+    switch(cfg.skillsRender){
+      case 'pills':
+        var pH='<div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px">';
+        items.forEach(function(s){ pH+='<span style="background:'+ac+'1a;border:1px solid '+ac+'55;color:'+ac+';padding:2px 11px;border-radius:99px;font-size:9pt">'+esc(s)+'</span>'; });
+        return pH+'</div>';
+      case 'tags':
+        var tH='<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px">';
+        items.forEach(function(s){ tH+='<span style="background:#162032;color:#38bdf8;border:1px solid #38bdf8;padding:2px 9px;border-radius:3px;font-size:8.5pt;font-family:monospace">'+esc(s)+'</span>'; });
+        return tH+'</div>';
+      case 'inline':
+        return '<div style="margin-bottom:10px;color:#444;font-size:'+fsz+'pt">'+items.map(function(s){return esc(s);}).join(' &middot; ')+'</div>';
+      case 'single':
+        var sH='<div style="margin-bottom:10px">';
+        items.forEach(function(s){ sH+='<div style="font-size:'+fsz+'pt;margin-bottom:2px">&#8212; '+esc(s)+'</div>'; });
+        return sH+'</div>';
+      default: // grid2
+        var gH='<div style="display:grid;grid-template-columns:1fr 1fr;gap:2px 20px;margin-bottom:10px">';
+        items.forEach(function(s){ gH+='<div style="font-size:'+fsz+'pt;padding:1px 0">&bull; '+esc(s)+'</div>'; });
+        return gH+'</div>';
+    }
+  }
+
+  // ── SECTIONS in template order ────────────────────────────────────────
   cfg.order.forEach(function(sec){
     if(sec==='summary'){
-      h+='<div class="pv-sec" style="'+secStyle+'">'+esc(d.summaryTitle||cfg.names.summary)+'</div>';
+      h+=secHdr(d.summaryTitle||cfg.names.summary);
       h+='<div class="pv-para">'+esc(d.summary)+'</div>';
     } else if(sec==='skills'){
-      h+='<div class="pv-sec" style="'+secStyle+'">'+esc(cfg.names.skills)+'</div><div class="pv-grid2">';
-      (d.coreCompetencies||[]).forEach(function(c){h+='<div class="pv-comp">&bull; '+esc(c)+'</div>';});
-      h+='</div>';
+      h+=secHdr(cfg.names.skills);
+      h+=renderSkills(d.coreCompetencies);
     } else if(sec==='experience'){
-      h+='<div class="pv-sec" style="'+secStyle+'">'+esc(cfg.names.experience)+'</div>';
+      h+=secHdr(cfg.names.experience);
       (d.workExperience||[]).forEach(function(role){
         h+='<div class="pv-role-hdr"><span class="pv-rtitle">'+esc(role.title)+'&nbsp;&nbsp;|&nbsp;&nbsp;'+esc(role.company)+'&nbsp;&nbsp;|&nbsp;&nbsp;'+esc(role.location)+'</span><span class="pv-rdates">'+esc(role.dates)+'</span></div>';
-        var projs = role.projects||[];
-        projs.forEach(function(p){h+='<div class="pv-proj"><strong>'+esc(p.title)+':</strong> '+esc(p.description)+'</div>';});
+        var projs=role.projects||[];
+        projs.forEach(function(p){ h+='<div class="pv-proj"><strong>'+esc(p.title)+':</strong> '+esc(p.description)+'</div>'; });
         if((role.responsibilities||[]).length){
-          // Only show "Roles/Responsibilities" sub-label when project blocks sit above it
-          if(projs.length > 0) h+='<div class="pv-resp-lbl">Roles/Responsibilities</div>';
+          if(projs.length>0) h+='<div class="pv-resp-lbl">Roles/Responsibilities</div>';
           h+='<ul class="pv-ul">';
-          role.responsibilities.forEach(function(b){h+='<li>'+esc(b)+'</li>';});
+          role.responsibilities.forEach(function(b){ h+='<li>'+esc(b)+'</li>'; });
           h+='</ul>';
         }
       });
     } else if(sec==='tech'){
-      h+='<div class="pv-sec" style="'+secStyle+'">'+esc(cfg.names.tech)+'</div>';
-      (d.technicalSkills||[]).forEach(function(t){h+='<div class="pv-tech"><strong>'+esc(t.category)+':</strong> '+esc(t.items)+'</div>';});
+      h+=secHdr(cfg.names.tech);
+      (d.technicalSkills||[]).forEach(function(t){ h+='<div class="pv-tech"><strong>'+esc(t.category)+':</strong> '+esc(t.items)+'</div>'; });
     } else if(sec==='certs'){
-      h+='<div class="pv-sec" style="'+secStyle+'">'+esc(cfg.names.certs)+'</div><ul class="pv-ul">';
-      (d.certifications||[]).forEach(function(c){h+='<li>'+esc(c)+'</li>';});
+      h+=secHdr(cfg.names.certs);
+      h+='<ul class="pv-ul">';
+      (d.certifications||[]).forEach(function(c){ h+='<li>'+esc(c)+'</li>'; });
       h+='</ul>';
     } else if(sec==='edu'){
-      h+='<div class="pv-sec" style="'+secStyle+'">'+esc(cfg.names.edu)+'</div>';
-      (d.education||[]).forEach(function(e){h+='<div class="pv-edu"><strong>'+esc(e.degree)+'</strong>&nbsp;&nbsp;|&nbsp;&nbsp;'+esc(e.institution)+', <em>'+esc(e.location)+'</em></div>';});
+      h+=secHdr(cfg.names.edu);
+      (d.education||[]).forEach(function(e){ h+='<div class="pv-edu"><strong>'+esc(e.degree)+'</strong>&nbsp;&nbsp;|&nbsp;&nbsp;'+esc(e.institution)+', <em>'+esc(e.location)+'</em></div>'; });
     }
   });
+
+  h += '</div>';
   return h;
 }
 

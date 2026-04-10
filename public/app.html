@@ -94,6 +94,17 @@
     .badge.on { display:flex; }
     .badge .change { margin-left:auto; font-size:12px; color:var(--muted); cursor:pointer; text-decoration:underline; font-weight:400; }
 
+    /* ── Font toolbar ── */
+    .font-toolbar { display:flex; align-items:center; gap:10px; flex-wrap:wrap; background:#f8fafc; border:1.5px solid var(--border); border-radius:9px; padding:9px 14px; margin-top:12px; }
+    .ft-aa { font-size:17px; font-weight:900; color:var(--navy); flex-shrink:0; letter-spacing:-1px; }
+    .ft-group { display:flex; align-items:center; gap:5px; }
+    .ft-lbl { font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; white-space:nowrap; }
+    .ft-sel { padding:5px 8px; border:1.5px solid var(--border); border-radius:6px; font-size:13px; font-family:inherit; color:var(--text); background:#fff; outline:none; cursor:pointer; transition:border-color .15s; }
+    .ft-sel:focus { border-color:var(--mid); }
+    .ft-size-sel { width:72px; }
+    .ft-divider { width:1px; height:22px; background:var(--border); flex-shrink:0; }
+    .ft-preview { margin-left:auto; font-size:14px; color:var(--muted); font-style:italic; white-space:nowrap; }
+
     /* ── API key ── */
     .keyrow { display:flex; gap:8px; align-items:center; }
     .keyrow input { flex:1; }
@@ -711,263 +722,375 @@
     </div>
     <div class="template-grid">
 
-      <!-- 1. Classic -->
+      <!-- 1. Classic — plain centered, black underline sections, 2-col bullet skills -->
       <div class="template-card selected" data-template="classic">
         <div class="t-preview">
           <div class="tp">
-            <div class="tp-bar" style="background:#1e3a5f;width:100%"></div>
-            <div class="tp-name" style="width:58%;margin:0 auto 3px"></div>
-            <div class="tp-sub" style="width:70%;margin:0 auto 4px"></div>
-            <div class="tp-sec" style="background:#1e3a5f;border-bottom:2px solid #1e3a5f"></div>
-            <div class="tp-line" style="width:90%"></div>
-            <div class="tp-line" style="width:75%"></div>
-            <div class="tp-sec" style="background:#1e3a5f"></div>
+            <div class="tp-name" style="width:56%;margin:3px auto 2px;background:#111"></div>
+            <div class="tp-sub" style="width:70%;margin:0 auto 5px;background:#bbb"></div>
+            <div style="height:1px;background:#111;margin:3px 0 3px"></div>
+            <div class="tp-line" style="background:#999;width:38%;height:4px;margin-bottom:3px"></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px">
+              <div class="tp-line" style="width:90%"></div>
+              <div class="tp-line" style="width:85%"></div>
+              <div class="tp-line" style="width:75%"></div>
+              <div class="tp-line" style="width:95%"></div>
+            </div>
+            <div style="height:1px;background:#111;margin:3px 0 3px"></div>
+            <div class="tp-line" style="background:#999;width:42%;height:4px;margin-bottom:2px"></div>
             <div class="tp-line"></div>
           </div>
         </div>
         <div class="t-name">Classic</div>
-        <div class="t-desc">Traditional, centered</div>
+        <div class="t-desc">Traditional · centered</div>
         <button class="t-eye-btn" data-preview="classic">👁 Preview</button>
       </div>
 
-      <!-- 2. Executive -->
+      <!-- 2. Executive — dark green full-bleed banner, double-line sections, serif -->
       <div class="template-card" data-template="executive">
         <div class="t-preview">
-          <div class="tp">
-            <div class="tp-name" style="width:65%;margin:2px auto 3px;background:#1b3a2f;height:8px"></div>
-            <div class="tp-sub" style="width:50%;margin:0 auto 5px"></div>
-            <div class="tp-sec" style="background:#1b3a2f;height:5px;border-top:1px solid #1b3a2f;border-bottom:1px solid #1b3a2f"></div>
-            <div class="tp-line" style="width:95%"></div>
-            <div class="tp-line" style="width:80%"></div>
-            <div class="tp-sec" style="background:#1b3a2f;height:5px"></div>
-            <div class="tp-line"></div>
-            <div class="tp-line" style="width:85%"></div>
+          <div class="tp" style="padding:0">
+            <div style="background:#1b3a2f;padding:6px 7px 5px">
+              <div class="tp-name" style="width:60%;background:rgba(255,255,255,.9);margin-bottom:2px"></div>
+              <div class="tp-sub" style="width:75%;background:rgba(255,255,255,.45)"></div>
+            </div>
+            <div style="padding:5px 7px">
+              <div style="border-top:1px solid #1b3a2f;border-bottom:1px solid #1b3a2f;padding:1px 0;margin:2px 0 3px;height:4px;background:#1b3a2f;opacity:.12"></div>
+              <div class="tp-line" style="width:95%"></div>
+              <div class="tp-line" style="width:82%"></div>
+              <div style="border-top:1px solid #1b3a2f;border-bottom:1px solid #1b3a2f;padding:1px 0;margin:3px 0;height:4px;background:#1b3a2f;opacity:.12"></div>
+              <div class="tp-line"></div>
+              <div class="tp-line" style="width:88%"></div>
+            </div>
           </div>
         </div>
         <div class="t-name">Executive</div>
-        <div class="t-desc">Serif, double rule</div>
+        <div class="t-desc">Forest banner · serif · double rule</div>
         <button class="t-eye-btn" data-preview="executive">👁 Preview</button>
       </div>
 
-      <!-- 3. Modern -->
+      <!-- 3. Modern — indigo gradient banner, pill skills, colored underline sections -->
       <div class="template-card" data-template="modern">
         <div class="t-preview">
-          <div class="tp">
-            <div class="tp-bar" style="background:linear-gradient(90deg,#6366f1,#2d5a8e)"></div>
-            <div class="tp-name" style="width:52%"></div>
-            <div class="tp-sub" style="width:68%"></div>
-            <div style="display:flex;gap:2px;margin:4px 0"><div style="height:5px;width:20px;background:#eef2ff;border:1px solid #6366f1;border-radius:3px"></div><div style="height:5px;width:14px;background:#eef2ff;border:1px solid #6366f1;border-radius:3px"></div></div>
-            <div class="tp-sec" style="background:#6366f1;height:3px;opacity:.5"></div>
-            <div class="tp-line" style="width:90%"></div>
-            <div class="tp-line" style="width:70%"></div>
+          <div class="tp" style="padding:0">
+            <div style="background:linear-gradient(135deg,#6366f1,#2d5a8e);padding:7px 7px 5px;text-align:center">
+              <div class="tp-name" style="width:52%;margin:0 auto 2px;background:rgba(255,255,255,.9)"></div>
+              <div class="tp-sub" style="width:68%;margin:0 auto;background:rgba(255,255,255,.4)"></div>
+            </div>
+            <div style="padding:4px 7px">
+              <div style="display:flex;gap:2px;flex-wrap:wrap;margin:2px 0 3px">
+                <div style="height:5px;width:18px;background:#eef2ff;border:1px solid #6366f1;border-radius:99px"></div>
+                <div style="height:5px;width:14px;background:#eef2ff;border:1px solid #6366f1;border-radius:99px"></div>
+                <div style="height:5px;width:22px;background:#eef2ff;border:1px solid #6366f1;border-radius:99px"></div>
+              </div>
+              <div style="height:2px;background:#6366f1;margin:2px 0 3px"></div>
+              <div class="tp-line" style="width:92%"></div>
+              <div class="tp-line" style="width:72%"></div>
+            </div>
           </div>
         </div>
         <div class="t-name">Modern</div>
-        <div class="t-desc">Indigo accent bar</div>
+        <div class="t-desc">Indigo gradient · pill skills</div>
         <button class="t-eye-btn" data-preview="modern">👁 Preview</button>
       </div>
 
-      <!-- 4. Professional -->
+      <!-- 4. Professional — centered header, navy left-bar sections, 2-col grid -->
       <div class="template-card" data-template="professional">
-        <div class="t-preview" style="position:relative;overflow:hidden">
-          <div class="tp-side" style="background:#1e3a5f"></div>
-          <div class="tp-main">
-            <div class="tp-name" style="width:75%"></div>
-            <div class="tp-sub"></div>
-            <div class="tp-sub" style="width:60%"></div>
-            <div class="tp-sec" style="background:#d0dce8;opacity:.6;margin-top:6px"></div>
-            <div class="tp-line" style="width:90%"></div>
-            <div class="tp-line"></div>
+        <div class="t-preview">
+          <div class="tp">
+            <div style="text-align:center;margin-bottom:4px">
+              <div class="tp-name" style="width:60%;margin:0 auto 2px;background:#1e3a5f"></div>
+              <div class="tp-sub" style="width:78%;margin:0 auto;background:#c0cfe0"></div>
+            </div>
+            <div style="border-left:3px solid #1e3a5f;padding-left:5px;margin:4px 0 3px">
+              <div class="tp-line" style="background:#1e3a5f;width:50%;height:4px"></div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px;margin-bottom:3px">
+              <div class="tp-line"></div><div class="tp-line" style="width:85%"></div>
+              <div class="tp-line" style="width:90%"></div><div class="tp-line"></div>
+            </div>
+            <div style="border-left:3px solid #1e3a5f;padding-left:5px;margin:3px 0 2px">
+              <div class="tp-line" style="background:#1e3a5f;width:55%;height:4px"></div>
+            </div>
+            <div class="tp-line" style="width:95%"></div>
+            <div class="tp-line" style="width:80%"></div>
           </div>
         </div>
         <div class="t-name">Professional</div>
-        <div class="t-desc">Navy sidebar</div>
+        <div class="t-desc">Navy left-bar sections</div>
         <button class="t-eye-btn" data-preview="professional">👁 Preview</button>
       </div>
 
-      <!-- 5. Minimal -->
+      <!-- 5. Minimal — left-aligned, thin HR, gray caps labels, inline skills -->
       <div class="template-card" data-template="minimal">
         <div class="t-preview">
-          <div class="tp" style="background:#fff">
-            <div class="tp-name" style="width:45%;background:#111"></div>
-            <div class="tp-sub" style="width:65%;background:#ccc;margin-bottom:6px"></div>
-            <div style="height:1px;background:#e5e5e5;margin:3px 0 4px"></div>
-            <div class="tp-line" style="background:#999;width:40%;height:4px;font-weight:bold"></div>
-            <div class="tp-line" style="width:90%;background:#ddd;margin-top:3px"></div>
-            <div class="tp-line" style="width:75%;background:#ddd"></div>
+          <div class="tp">
+            <div class="tp-name" style="width:50%;background:#111;margin-bottom:2px"></div>
+            <div class="tp-sub" style="width:70%;background:#ccc;margin-bottom:6px"></div>
+            <div style="height:1px;background:#e5e5e5;margin-bottom:4px"></div>
+            <div class="tp-line" style="background:#aaa;width:32%;height:3px;margin-bottom:3px"></div>
+            <div class="tp-line" style="width:95%;background:#e0e0e0"></div>
             <div style="height:1px;background:#e5e5e5;margin:4px 0 3px"></div>
-            <div class="tp-line" style="background:#999;width:35%;height:4px"></div>
+            <div class="tp-line" style="background:#aaa;width:38%;height:3px;margin-bottom:3px"></div>
+            <div class="tp-line" style="width:90%;background:#e0e0e0"></div>
+            <div class="tp-line" style="width:78%;background:#e0e0e0"></div>
           </div>
         </div>
         <div class="t-name">Minimal</div>
-        <div class="t-desc">Clean, no borders</div>
+        <div class="t-desc">Clean · no borders · inline skills</div>
         <button class="t-eye-btn" data-preview="minimal">👁 Preview</button>
       </div>
 
-      <!-- 6. Tech First -->
+      <!-- 6. Tech — dark slate banner, blue left-bar, code tag skills -->
       <div class="template-card" data-template="tech">
         <div class="t-preview">
-          <div class="tp" style="background:#0f172a">
-            <div class="tp-name" style="background:#38bdf8;width:60%;height:6px"></div>
-            <div class="tp-sub" style="background:#475569;width:80%;margin:3px 0 5px"></div>
-            <div style="height:3px;background:#38bdf8;opacity:.4;margin-bottom:4px"></div>
-            <div style="display:flex;gap:3px;flex-wrap:wrap;margin-bottom:4px">
-              <div style="height:5px;width:18px;background:#1e3a5f;border:1px solid #38bdf8;border-radius:2px"></div>
-              <div style="height:5px;width:14px;background:#1e3a5f;border:1px solid #38bdf8;border-radius:2px"></div>
-              <div style="height:5px;width:20px;background:#1e3a5f;border:1px solid #38bdf8;border-radius:2px"></div>
+          <div class="tp" style="padding:0">
+            <div style="background:#0f172a;padding:7px 7px 5px">
+              <div class="tp-name" style="width:58%;background:#38bdf8;height:5px;margin-bottom:3px"></div>
+              <div class="tp-sub" style="width:78%;background:#475569"></div>
             </div>
-            <div class="tp-line" style="background:#334155;width:90%"></div>
-            <div class="tp-line" style="background:#334155;width:70%"></div>
+            <div style="padding:4px 7px">
+              <div style="border-left:3px solid #0284c7;padding-left:5px;margin:2px 0 3px">
+                <div class="tp-line" style="background:#0284c7;width:38%;height:3px"></div>
+              </div>
+              <div style="display:flex;gap:2px;flex-wrap:wrap;margin-bottom:3px">
+                <div style="height:4px;width:16px;background:#1e3a5f;border:1px solid #38bdf8;border-radius:2px"></div>
+                <div style="height:4px;width:12px;background:#1e3a5f;border:1px solid #38bdf8;border-radius:2px"></div>
+                <div style="height:4px;width:18px;background:#1e3a5f;border:1px solid #38bdf8;border-radius:2px"></div>
+                <div style="height:4px;width:14px;background:#1e3a5f;border:1px solid #38bdf8;border-radius:2px"></div>
+              </div>
+              <div style="border-left:3px solid #0284c7;padding-left:5px;margin:2px 0 2px">
+                <div class="tp-line" style="background:#0284c7;width:42%;height:3px"></div>
+              </div>
+              <div class="tp-line" style="width:90%"></div>
+            </div>
           </div>
         </div>
         <div class="t-name">Tech First</div>
-        <div class="t-desc">Skills lead, dark</div>
+        <div class="t-desc">Dark banner · code tag skills</div>
         <button class="t-eye-btn" data-preview="tech">👁 Preview</button>
       </div>
 
-      <!-- 7. Consulting -->
+      <!-- 7. Consulting — burgundy top stripe, thick left-bar sections -->
       <div class="template-card" data-template="consulting">
         <div class="t-preview">
-          <div class="tp">
-            <div class="tp-bar" style="background:#7f1d1d"></div>
-            <div class="tp-name" style="width:60%;margin:2px auto 2px;background:#7f1d1d"></div>
-            <div class="tp-sub" style="width:55%;margin:0 auto 4px"></div>
-            <div style="border-top:2px solid #7f1d1d;border-bottom:1px solid #7f1d1d;padding:1px 0;margin:3px 0 4px"></div>
-            <div class="tp-line" style="width:92%"></div>
-            <div class="tp-line" style="width:78%"></div>
-            <div style="border-top:2px solid #7f1d1d;border-bottom:1px solid #7f1d1d;padding:1px 0;margin:3px 0 4px"></div>
-            <div class="tp-line"></div>
+          <div class="tp" style="padding:0">
+            <div style="background:#7f1d1d;height:5px"></div>
+            <div style="padding:4px 7px;border-bottom:2px solid #7f1d1d;margin-bottom:3px;text-align:center">
+              <div class="tp-name" style="width:58%;margin:2px auto;background:#7f1d1d"></div>
+              <div class="tp-sub" style="width:72%;margin:0 auto;background:#c0a0a0"></div>
+            </div>
+            <div style="padding:0 7px">
+              <div style="border-left:3.5px solid #7f1d1d;padding-left:5px;margin:3px 0 2px">
+                <div class="tp-line" style="background:#7f1d1d;width:45%;height:4px"></div>
+              </div>
+              <div class="tp-line" style="width:92%"></div>
+              <div class="tp-line" style="width:78%"></div>
+              <div style="border-left:3.5px solid #7f1d1d;padding-left:5px;margin:3px 0 2px">
+                <div class="tp-line" style="background:#7f1d1d;width:50%;height:4px"></div>
+              </div>
+              <div class="tp-line"></div>
+            </div>
           </div>
         </div>
         <div class="t-name">Consulting</div>
-        <div class="t-desc">Burgundy, impact-first</div>
+        <div class="t-desc">Burgundy stripe · left-bar</div>
         <button class="t-eye-btn" data-preview="consulting">👁 Preview</button>
       </div>
 
-      <!-- 8. Academic -->
+      <!-- 8. Academic — centered, amber dotted sections, italic serif, single-col skills -->
       <div class="template-card" data-template="academic">
         <div class="t-preview">
           <div class="tp">
-            <div class="tp-name" style="width:60%;margin:2px auto 2px;background:#78350f"></div>
-            <div class="tp-sub" style="width:70%;margin:0 auto 4px"></div>
-            <div class="tp-sec" style="background:#78350f;height:4px;border-bottom:2px solid #78350f"></div>
+            <div style="text-align:center;margin-bottom:5px">
+              <div class="tp-name" style="width:62%;margin:2px auto 2px;background:#78350f"></div>
+              <div class="tp-sub" style="width:80%;margin:0 auto;background:#c4a882"></div>
+            </div>
+            <div style="border-bottom:2px dotted #78350f;margin:2px 0 4px"></div>
+            <div class="tp-line" style="background:#78350f;width:52%;height:4px;margin-bottom:3px;font-style:italic"></div>
+            <div class="tp-line" style="width:90%"></div>
+            <div class="tp-line" style="width:76%"></div>
+            <div style="border-bottom:2px dotted #78350f;margin:3px 0 3px"></div>
+            <div class="tp-line" style="background:#78350f;width:44%;height:4px;margin-bottom:2px"></div>
             <div class="tp-line" style="width:85%"></div>
-            <div class="tp-line" style="width:70%"></div>
-            <div class="tp-sec" style="background:#78350f;height:4px"></div>
-            <div class="tp-line"></div>
-            <div class="tp-line" style="width:60%"></div>
           </div>
         </div>
         <div class="t-name">Academic</div>
-        <div class="t-desc">Education first, serif</div>
+        <div class="t-desc">Serif · dotted amber · edu first</div>
         <button class="t-eye-btn" data-preview="academic">👁 Preview</button>
       </div>
 
-      <!-- 9. Entry Level -->
+      <!-- 9. Entry Level — pale blue banner, thin underline, 2-col grid skills -->
       <div class="template-card" data-template="entrylevel">
         <div class="t-preview">
-          <div class="tp">
-            <div class="tp-bar" style="background:#0369a1"></div>
-            <div class="tp-name" style="width:55%;margin:2px auto 2px;background:#0369a1"></div>
-            <div class="tp-sub" style="width:65%;margin:0 auto 4px"></div>
-            <div class="tp-sec" style="background:#0369a1;height:4px"></div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px;margin-bottom:4px">
-              <div class="tp-line" style="background:#bae6fd"></div>
-              <div class="tp-line" style="background:#bae6fd"></div>
-              <div class="tp-line" style="background:#bae6fd;width:80%"></div>
-              <div class="tp-line" style="background:#bae6fd;width:90%"></div>
+          <div class="tp" style="padding:0">
+            <div style="background:#e0f2fe;border-bottom:2px solid #0369a1;padding:6px 7px 5px;text-align:center">
+              <div class="tp-name" style="width:54%;margin:0 auto 2px;background:#0369a1"></div>
+              <div class="tp-sub" style="width:72%;margin:0 auto;background:#7ec8e3"></div>
             </div>
-            <div class="tp-sec" style="background:#0369a1;height:4px"></div>
-            <div class="tp-line"></div>
+            <div style="padding:4px 7px">
+              <div style="border-bottom:1.5px solid #0369a1;margin:2px 0 3px">
+                <div class="tp-line" style="background:#0369a1;width:42%;height:4px;margin-bottom:2px"></div>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px;margin-bottom:3px">
+                <div class="tp-line" style="background:#bae6fd"></div>
+                <div class="tp-line" style="background:#bae6fd;width:88%"></div>
+                <div class="tp-line" style="background:#bae6fd;width:92%"></div>
+                <div class="tp-line" style="background:#bae6fd"></div>
+              </div>
+              <div style="border-bottom:1.5px solid #0369a1;margin:1px 0 2px">
+                <div class="tp-line" style="background:#0369a1;width:38%;height:4px;margin-bottom:2px"></div>
+              </div>
+              <div class="tp-line" style="width:90%"></div>
+            </div>
           </div>
         </div>
         <div class="t-name">Entry Level</div>
-        <div class="t-desc">Education &amp; skills first</div>
+        <div class="t-desc">Sky banner · edu first</div>
         <button class="t-eye-btn" data-preview="entrylevel">👁 Preview</button>
       </div>
 
-      <!-- 10. Government -->
+      <!-- 10. Government — double navy border header, navy block-bg sections -->
       <div class="template-card" data-template="government">
         <div class="t-preview">
           <div class="tp">
-            <div class="tp-bar" style="background:#1e3a5f;height:7px"></div>
-            <div class="tp-name" style="width:58%;margin:3px auto 2px;background:#1e3a5f;height:7px"></div>
-            <div class="tp-sub" style="width:75%;margin:0 auto 2px"></div>
-            <div class="tp-sub" style="width:55%;margin:0 auto 4px"></div>
-            <div style="border-top:3px solid #1e3a5f;margin:3px 0 4px"></div>
-            <div class="tp-line" style="width:95%"></div>
-            <div class="tp-line" style="width:88%"></div>
-            <div class="tp-line" style="width:75%"></div>
-            <div style="border-top:2px solid #1e3a5f;margin:3px 0 3px"></div>
+            <div style="border-top:2.5px solid #1e3a5f;border-bottom:2.5px solid #1e3a5f;padding:5px 0;margin-bottom:4px;text-align:center">
+              <div class="tp-name" style="width:60%;margin:0 auto 2px;background:#1e3a5f;height:7px"></div>
+              <div class="tp-sub" style="width:78%;margin:0 auto;background:#8899bb"></div>
+            </div>
+            <div style="background:#1e3a5f;height:5px;border-radius:1px;margin-bottom:3px"></div>
+            <div class="tp-line" style="width:94%"></div>
+            <div class="tp-line" style="width:84%"></div>
+            <div class="tp-line" style="width:72%"></div>
+            <div style="background:#1e3a5f;height:5px;border-radius:1px;margin:3px 0"></div>
             <div class="tp-line"></div>
+            <div class="tp-line" style="width:80%"></div>
           </div>
         </div>
         <div class="t-name">Government</div>
-        <div class="t-desc">Formal, federal-style</div>
+        <div class="t-desc">Formal · navy block sections</div>
         <button class="t-eye-btn" data-preview="government">👁 Preview</button>
       </div>
 
-      <!-- 11. Creative -->
+      <!-- 11. Creative — teal vertical stripe, large left-aligned name, pill skills -->
       <div class="template-card" data-template="creative">
-        <div class="t-preview" style="position:relative;overflow:hidden">
-          <div style="position:absolute;left:0;top:0;bottom:0;width:4px;background:linear-gradient(180deg,#0d9488,#6366f1)"></div>
-          <div class="tp" style="padding-left:10px">
-            <div class="tp-name" style="width:60%;background:#111;text-align:left"></div>
-            <div class="tp-sub" style="width:70%;text-align:left;margin-bottom:5px"></div>
-            <div class="tp-sec" style="background:#0d9488;height:3px;opacity:.5"></div>
-            <div class="tp-line" style="width:90%"></div>
-            <div class="tp-line" style="width:75%"></div>
-            <div class="tp-sec" style="background:#0d9488;height:3px;opacity:.5"></div>
-            <div class="tp-line"></div>
+        <div class="t-preview" style="position:relative;overflow:hidden;padding:0">
+          <div style="display:flex;height:100%">
+            <div style="background:#0d9488;width:7px;flex-shrink:0"></div>
+            <div style="padding:6px 7px;flex:1">
+              <div class="tp-name" style="width:65%;background:#0d9488;margin-bottom:2px"></div>
+              <div class="tp-sub" style="width:80%;margin-bottom:5px"></div>
+              <div style="border-bottom:2px solid #0d9488;margin-bottom:3px">
+                <div class="tp-line" style="background:#0d9488;width:40%;height:3px;margin-bottom:2px"></div>
+              </div>
+              <div style="display:flex;gap:2px;flex-wrap:wrap;margin-bottom:3px">
+                <div style="height:4px;width:16px;background:#ccfbf1;border:1px solid #0d9488;border-radius:99px"></div>
+                <div style="height:4px;width:20px;background:#ccfbf1;border:1px solid #0d9488;border-radius:99px"></div>
+                <div style="height:4px;width:13px;background:#ccfbf1;border:1px solid #0d9488;border-radius:99px"></div>
+              </div>
+              <div class="tp-line" style="width:90%"></div>
+              <div class="tp-line" style="width:75%"></div>
+            </div>
           </div>
         </div>
         <div class="t-name">Creative</div>
-        <div class="t-desc">Teal left accent</div>
+        <div class="t-desc">Teal stripe · pill skills</div>
         <button class="t-eye-btn" data-preview="creative">👁 Preview</button>
       </div>
 
-      <!-- 12. Healthcare -->
+      <!-- 12. Healthcare — teal top stripe, centered, italic underline, dash-list skills -->
       <div class="template-card" data-template="healthcare">
         <div class="t-preview">
-          <div class="tp">
-            <div class="tp-bar" style="background:#0f766e"></div>
-            <div class="tp-name" style="width:58%;margin:2px auto 2px;background:#0f766e"></div>
-            <div class="tp-sub" style="width:68%;margin:0 auto 4px"></div>
-            <div class="tp-sec" style="background:#0f766e;height:4px"></div>
-            <div class="tp-line" style="width:92%"></div>
-            <div class="tp-line" style="width:78%"></div>
-            <div class="tp-sec" style="background:#0f766e;height:4px"></div>
-            <div class="tp-line"></div>
-            <div class="tp-line" style="width:70%"></div>
+          <div class="tp" style="padding:0">
+            <div style="border-top:4px solid #0f766e;padding:5px 7px 4px;text-align:center">
+              <div class="tp-name" style="width:60%;margin:0 auto 2px;background:#0f766e"></div>
+              <div class="tp-sub" style="width:74%;margin:0 auto;background:#99c4be"></div>
+            </div>
+            <div style="padding:3px 7px">
+              <div style="border-bottom:1.5px solid #0f766e;margin:2px 0 3px">
+                <div class="tp-line" style="background:#0f766e;width:55%;height:4px;margin-bottom:2px;font-style:italic"></div>
+              </div>
+              <div class="tp-line" style="width:90%"></div>
+              <div class="tp-line" style="width:76%"></div>
+              <div class="tp-line" style="width:84%"></div>
+              <div style="border-bottom:1.5px solid #0f766e;margin:3px 0 2px">
+                <div class="tp-line" style="background:#0f766e;width:48%;height:4px;margin-bottom:2px"></div>
+              </div>
+              <div class="tp-line" style="width:88%"></div>
+            </div>
           </div>
         </div>
         <div class="t-name">Healthcare</div>
-        <div class="t-desc">Clinical teal, clean</div>
+        <div class="t-desc">Teal stripe · clinical · dash list</div>
         <button class="t-eye-btn" data-preview="healthcare">👁 Preview</button>
       </div>
 
-      <!-- 13. Compact -->
+      <!-- 13. Compact — left-aligned, gray caps labels, dense inline skills, no wasted space -->
       <div class="template-card" data-template="compact">
         <div class="t-preview">
           <div class="tp">
-            <div class="tp-bar" style="background:#4b5563;height:3px"></div>
-            <div class="tp-name" style="width:50%;margin:2px auto 2px;background:#4b5563;height:5px"></div>
-            <div class="tp-sub" style="width:68%;margin:0 auto 3px;height:2px"></div>
-            <div class="tp-sec" style="background:#4b5563;height:3px;margin:3px 0 2px"></div>
-            <div class="tp-line" style="height:2px;margin-bottom:1px"></div>
-            <div class="tp-line" style="height:2px;margin-bottom:1px;width:88%"></div>
-            <div class="tp-line" style="height:2px;margin-bottom:1px;width:76%"></div>
-            <div class="tp-sec" style="background:#4b5563;height:3px;margin:3px 0 2px"></div>
-            <div class="tp-line" style="height:2px;margin-bottom:1px"></div>
-            <div class="tp-line" style="height:2px;width:90%"></div>
+            <div class="tp-name" style="width:52%;background:#333;height:5px;margin-bottom:2px"></div>
+            <div class="tp-sub" style="width:72%;background:#bbb;height:2px;margin-bottom:5px"></div>
+            <div style="height:1px;background:#eee;margin-bottom:2px"></div>
+            <div class="tp-line" style="background:#888;width:30%;height:3px;letter-spacing:1px;margin-bottom:2px"></div>
+            <div class="tp-line" style="width:96%;height:2px;margin-bottom:1px"></div>
+            <div style="height:1px;background:#eee;margin:2px 0"></div>
+            <div class="tp-line" style="background:#888;width:36%;height:3px;margin-bottom:2px"></div>
+            <div class="tp-line" style="width:94%;height:2px;margin-bottom:1px"></div>
+            <div class="tp-line" style="width:88%;height:2px;margin-bottom:1px"></div>
+            <div style="height:1px;background:#eee;margin:2px 0"></div>
+            <div class="tp-line" style="background:#888;width:28%;height:3px;margin-bottom:2px"></div>
+            <div class="tp-line" style="width:90%;height:2px"></div>
           </div>
         </div>
         <div class="t-name">Compact</div>
-        <div class="t-desc">Dense, 1-page optimised</div>
+        <div class="t-desc">Dense · gray caps · 1-page fit</div>
         <button class="t-eye-btn" data-preview="compact">👁 Preview</button>
       </div>
 
     </div>
+
+    <!-- ── Font / Typography toolbar ── -->
+    <div class="font-toolbar">
+      <span class="ft-aa">Aa</span>
+      <div class="ft-group">
+        <span class="ft-lbl">Font</span>
+        <select id="ftFont" class="ft-sel">
+          <option value="">Template default</option>
+          <option value="Calibri">Calibri</option>
+          <option value="Arial">Arial</option>
+          <option value="Georgia">Georgia</option>
+          <option value="Times New Roman">Times New Roman</option>
+          <option value="Garamond">Garamond</option>
+          <option value="Trebuchet MS">Trebuchet MS</option>
+          <option value="Verdana">Verdana</option>
+          <option value="Palatino Linotype">Palatino</option>
+        </select>
+      </div>
+      <div class="ft-divider"></div>
+      <div class="ft-group">
+        <span class="ft-lbl">Size</span>
+        <select id="ftSize" class="ft-sel ft-size-sel">
+          <option value="">Default</option>
+          <option value="18">9 pt</option>
+          <option value="20">10 pt</option>
+          <option value="22">11 pt</option>
+          <option value="24">12 pt</option>
+        </select>
+      </div>
+      <div class="ft-divider"></div>
+      <div class="ft-group">
+        <span class="ft-lbl">Style</span>
+        <select id="ftStyle" class="ft-sel">
+          <option value="">Normal</option>
+          <option value="italic">Italic</option>
+          <option value="bold">Bold</option>
+          <option value="bold-italic">Bold Italic</option>
+        </select>
+      </div>
+      <span class="ft-preview" id="ftSample">The quick brown fox</span>
+    </div>
+
   </div>
 
   <div class="alert" id="alert">

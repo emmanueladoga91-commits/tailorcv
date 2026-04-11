@@ -1795,7 +1795,7 @@ function step(n,state){
 }
 function showAlert(type,title,detail){
   var a=document.getElementById('alert'); a.className='alert on '+type;
-  document.getElementById('alertIcon').textContent=type==='error'?'❌':'⚠️';
+  document.getElementById('alertIcon').textContent=type==='error'?'❌':type==='info'?'ℹ️':'⚠️';
   document.getElementById('alertT').textContent=title;
   document.getElementById('alertD').textContent=detail;
 }

@@ -4,6 +4,8 @@ var resumeBlobRef = null, resumeNameRef = '';
 var tailoredRef = null, jdRef = '', atsResultRef = null;
 var selectedProfile = null;
 var selectedTemplate = 'classic';
+var clLength   = 'medium';  // 'short' | 'medium' | 'long'
+var clTemplate = 'classic'; // one of 10 cover letter template names
 var selectedFontFamily = '';   // '' = use template default
 var selectedFontSize   = 0;    // 0  = use template default (half-points)
 var selectedFontStyle  = '';   // '' | 'italic' | 'bold' | 'bold-italic'
@@ -1206,19 +1208,60 @@ function buildResumeDoc(d, tmplKey){
 }
 
 // Cover letter builder
-function buildCoverDoc(d){
-  var cfg = getTmplCfg('classic'); // cover letter always classic
-  var ch=[];
-  function r(t,o){ return new TextRun(Object.assign({text:t,size:cfg.B,font:cfg.FONT},o||{})); }
-  function lp(c,a){ return new Paragraph({children:c,alignment:AlignmentType.LEFT,spacing:{after:a||80}}); }
-  function bp(t,a){ return new Paragraph({children:[r(t)],alignment:AlignmentType.JUSTIFIED,spacing:{after:a||160}}); }
-  var cl=d.coverLetter||{};
-  ch.push(lp([r('Date: ',{bold:true}),r(cl.date||new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'}))],180));
-  ch.push(lp([r('To: ',{bold:true}),r((cl.recipientTitle||'Hiring Manager')+',')],40));
+// ── 10 Cover Letter Template Configurations ────────────────────────────────
+var CL_TMPL_DEFS = {
+  classic:    { label:'Classic',      font:'Calibri',          sz:20, bodyAfter:160, bodyAlign:AlignmentType.JUSTIFIED, margin:1080, accent:'000000', bold:true,  nameTop:null,           divider:false, prefix:'' },
+  modern:     { label:'Modern',       font:'Arial',            sz:20, bodyAfter:160, bodyAlign:AlignmentType.JUSTIFIED, margin:1080, accent:'1D4ED8', bold:true,  nameTop:null,           divider:true,  prefix:'' },
+  executive:  { label:'Executive',    font:'Arial',            sz:20, bodyAfter:180, bodyAlign:AlignmentType.JUSTIFIED, margin:1080, accent:'1F2937', bold:true,  nameTop:'center',       divider:false, prefix:'' },
+  minimalist: { label:'Minimalist',   font:'Arial',            sz:19, bodyAfter:200, bodyAlign:AlignmentType.LEFT,      margin:1200, accent:'9CA3AF', bold:false, nameTop:null,           divider:false, prefix:'' },
+  bold:       { label:'Bold',         font:'Arial',            sz:20, bodyAfter:160, bodyAlign:AlignmentType.JUSTIFIED, margin:1080, accent:'111827', bold:true,  nameTop:'left-big',     divider:false, prefix:'' },
+  creative:   { label:'Creative',     font:'Arial',            sz:20, bodyAfter:160, bodyAlign:AlignmentType.JUSTIFIED, margin:1080, accent:'7C3AED', bold:true,  nameTop:null,           divider:true,  prefix:'' },
+  technical:  { label:'Technical',    font:'Courier New',      sz:18, bodyAfter:120, bodyAlign:AlignmentType.LEFT,      margin:1080, accent:'0F766E', bold:false, nameTop:null,           divider:false, prefix:'// ' },
+  elegant:    { label:'Elegant',      font:'Georgia',          sz:20, bodyAfter:180, bodyAlign:AlignmentType.JUSTIFIED, margin:1080, accent:'92400E', bold:true,  nameTop:'center-italic',divider:false, prefix:'' },
+  corporate:  { label:'Corporate',    font:'Times New Roman',  sz:22, bodyAfter:160, bodyAlign:AlignmentType.JUSTIFIED, margin:1440, accent:'1E3A5F', bold:true,  nameTop:'sender-right', divider:false, prefix:'' },
+  compact:    { label:'Compact',      font:'Calibri',          sz:18, bodyAfter:100, bodyAlign:AlignmentType.JUSTIFIED, margin:864,  accent:'374151', bold:true,  nameTop:null,           divider:false, prefix:'' }
+};
+
+function buildCoverDoc(d, tmplName){
+  var tc = CL_TMPL_DEFS[tmplName] || CL_TMPL_DEFS.classic;
+  var cl = d.coverLetter || {};
+  // Use top-level date (overridden with today in build()), fall back to cl.date, then compute
+  var dateStr = d.date || cl.date || new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+  var ch = [];
+
+  function r(t,o){ return new TextRun(Object.assign({text:String(t||''),size:tc.sz,font:tc.font},o||{})); }
+  function lp(c,a,align){ return new Paragraph({children:c,alignment:align||AlignmentType.LEFT,spacing:{after:a||80}}); }
+  function bp(t,a){ return new Paragraph({children:[r(t)],alignment:tc.bodyAlign,spacing:{after:a||tc.bodyAfter}}); }
+  function lbl(text){ return r(tc.prefix+text,{bold:tc.bold,color:tc.accent}); }
+  function hr(){
+    return new Paragraph({border:{bottom:{style:BorderStyle.SINGLE,size:8,color:tc.accent,space:4}},spacing:{after:180}});
+  }
+
+  // ── Name header block (template-specific) ──
+  if(tc.nameTop==='center'){
+    ch.push(new Paragraph({children:[r(d.name||'',{bold:true,size:28})],alignment:AlignmentType.CENTER,spacing:{after:40}}));
+    ch.push(new Paragraph({children:[r([d.phone,d.email].filter(Boolean).join(' · '),{size:18,color:'666666'})],alignment:AlignmentType.CENTER,spacing:{after:180}}));
+  } else if(tc.nameTop==='center-italic'){
+    ch.push(new Paragraph({children:[r(d.name||'',{bold:true,italics:true,size:30,color:tc.accent})],alignment:AlignmentType.CENTER,spacing:{after:40}}));
+    ch.push(new Paragraph({children:[r([d.phone,d.email].filter(Boolean).join(' · '),{size:18,italics:true,color:tc.accent})],alignment:AlignmentType.CENTER,spacing:{after:180}}));
+  } else if(tc.nameTop==='left-big'){
+    ch.push(new Paragraph({children:[r(d.name||'',{bold:true,size:30})],alignment:AlignmentType.LEFT,spacing:{after:40}}));
+    ch.push(new Paragraph({children:[r([d.phone,d.email].filter(Boolean).join(' · '),{size:18,color:'555555'})],alignment:AlignmentType.LEFT,spacing:{after:180}}));
+  } else if(tc.nameTop==='sender-right'){
+    // Corporate: sender block right-aligned at top
+    [d.name,d.phone,d.email].filter(Boolean).forEach(function(v,i){
+      ch.push(lp([r(v,{bold:i===0})],i===0?4:i<2?4:180,AlignmentType.RIGHT));
+    });
+  }
+
+  // ── Main letter body ──
+  ch.push(lp([lbl('Date: '),r(dateStr)],180));
+  ch.push(lp([lbl('To: '),r((cl.recipientTitle||'Hiring Manager')+',')],40));
   if(cl.recipientDepartment) ch.push(lp([r(cl.recipientDepartment)],40));
   if(cl.recipientOrg)        ch.push(lp([r(cl.recipientOrg)],40));
   if(cl.recipientLocation)   ch.push(lp([r(cl.recipientLocation)],180));
-  if(cl.reLine) ch.push(lp([r('RE: ',{bold:true}),r(cl.reLine)],180));
+  if(cl.reLine)              ch.push(lp([lbl('RE: '),r(cl.reLine)],tc.divider?40:180));
+  if(tc.divider)             ch.push(hr());
   ch.push(lp([r('Dear Hiring Manager,')],160));
   if(cl.openingParagraph) ch.push(bp(cl.openingParagraph));
   if(cl.bodyParagraph1)   ch.push(bp(cl.bodyParagraph1));
@@ -1226,10 +1269,11 @@ function buildCoverDoc(d){
   if(cl.bodyParagraph3)   ch.push(bp(cl.bodyParagraph3));
   if(cl.closingParagraph) ch.push(bp(cl.closingParagraph,200));
   ch.push(lp([r('Warm regards,')],200));
-  ch.push(lp([r(d.name,{bold:true})],40));
-  ch.push(lp([r(d.phone)],40));
-  ch.push(lp([r(d.email)],40));
-  return new Document({sections:[{properties:{page:{size:{width:PW,height:PH},margin:{top:1080,right:1080,bottom:1080,left:1080}}},children:ch}]});
+  ch.push(lp([r(d.name||'',{bold:true})],40));
+  if(d.phone) ch.push(lp([r(d.phone)],40));
+  if(d.email) ch.push(lp([r(d.email)],40));
+
+  return new Document({sections:[{properties:{page:{size:{width:PW,height:PH},margin:{top:tc.margin,right:tc.margin,bottom:tc.margin,left:tc.margin}}},children:ch}]});
 }
 
 // ── Main build ─────────────────────────────────────────────────────────────
@@ -1278,6 +1322,15 @@ async function build(){
       '',
       'RESUME TEXT:',resumeText,
       '',
+      (function(){
+        var lInstr = {
+          short:  'COVER LETTER: Short (~150-200 words total). Write openingParagraph and bodyParagraph1 only. Leave bodyParagraph2 and bodyParagraph3 as empty strings "". closingParagraph is 1-2 sentences.',
+          medium: 'COVER LETTER: Medium (~300-350 words total). Write openingParagraph, bodyParagraph1, and bodyParagraph2. Leave bodyParagraph3 as empty string "".',
+          long:   'COVER LETTER: Long (~500-600 words total). Write all four body paragraphs (openingParagraph, bodyParagraph1, bodyParagraph2, bodyParagraph3), each 100-150 words.'
+        }[clLength] || 'COVER LETTER: Medium (~300-350 words). Fill openingParagraph, bodyParagraph1, bodyParagraph2. Leave bodyParagraph3 as empty string.';
+        return lInstr;
+      })(),
+      '',
       'Return this exact JSON structure (no em dashes anywhere):',
       '{',
       '  "name": "",',
@@ -1291,7 +1344,7 @@ async function build(){
       '  "technicalSkills": [{"category":"","items":""}],',
       '  "certifications": [""],',
       '  "education": [{"degree":"","institution":"","location":""}],',
-      '  "coverLetter": {"date":"Month DD, YYYY","recipientTitle":"Hiring Manager","recipientDepartment":"","recipientOrg":"","recipientLocation":"City, State","reLine":"[Job Title] - [Req ID if in JD]","openingParagraph":"","bodyParagraph1":"","bodyParagraph2":"","bodyParagraph3":"","closingParagraph":"Start with: Thank you for your time and consideration."}',
+      '  "coverLetter": {"date":"","recipientTitle":"Hiring Manager","recipientDepartment":"","recipientOrg":"","recipientLocation":"City, State","reLine":"[Job Title] - [Req ID if in JD]","openingParagraph":"","bodyParagraph1":"","bodyParagraph2":"","bodyParagraph3":"","closingParagraph":"Start with: Thank you for your time and consideration."}',
       '}'
     ].join('\n');
 
@@ -1309,9 +1362,13 @@ async function build(){
     // 4. Build cover letter
     step(4,'active');
     var today = new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+    // Always override AI-generated date with today's actual date
+    if(tailored.coverLetter) tailored.coverLetter.date = today;
     var clData = Object.assign({},tailored,tailored.coverLetter||{},{date:today});
-    var clBlob = await Packer.toBlob(buildCoverDoc(clData));
-    var cName = (tailored.name||'Resume').replace(/\s+/g,'_')+'_Cover_Letter_'+company.replace(/\s+/g,'_')+'.docx';
+    var clBlob = await Packer.toBlob(buildCoverDoc(clData, clTemplate));
+    _clBlobRef = clBlob;
+    _clNameRef = (tailored.name||'Resume').replace(/\s+/g,'_')+'_Cover_Letter_'+company.replace(/\s+/g,'_')+'.docx';
+    var cName = _clNameRef;
     step(4,'done');
 
     // Show downloads
@@ -2696,37 +2753,92 @@ async function fetchJdFromUrl() {
 var _clBlobRef = null;
 var _clNameRef = null;
 
-function buildCoverLetterHtml(tailored) {
-  var cl = (tailored && tailored.coverLetter) ? tailored.coverLetter : {};
-  var name = tailored ? (tailored.name || '') : '';
+// ── HTML preview template configurations ──────────────────────────────────
+var CL_HTML_DEFS = {
+  classic:    { font:"Calibri,sans-serif",           accent:'#1e3a5f', bold:true,  pad:'32px 40px', nameTop:null,            divider:false, prefix:'' },
+  modern:     { font:"Arial,sans-serif",             accent:'#1D4ED8', bold:true,  pad:'32px 40px', nameTop:null,            divider:true,  prefix:'' },
+  executive:  { font:"Arial,sans-serif",             accent:'#1F2937', bold:true,  pad:'32px 40px', nameTop:'center',        divider:false, prefix:'' },
+  minimalist: { font:"Arial,sans-serif",             accent:'#9ca3af', bold:false, pad:'40px 50px', nameTop:null,            divider:false, prefix:'' },
+  bold:       { font:"Arial,sans-serif",             accent:'#111827', bold:true,  pad:'32px 40px', nameTop:'left-big',      divider:false, prefix:'' },
+  creative:   { font:"Arial,sans-serif",             accent:'#7C3AED', bold:true,  pad:'32px 40px', nameTop:null,            divider:true,  prefix:'' },
+  technical:  { font:"'Courier New',monospace",      accent:'#0F766E', bold:false, pad:'32px 40px', nameTop:null,            divider:false, prefix:'// ' },
+  elegant:    { font:"Georgia,serif",                accent:'#92400E', bold:true,  pad:'36px 44px', nameTop:'center-italic', divider:false, prefix:'' },
+  corporate:  { font:"'Times New Roman',Times,serif",accent:'#1E3A5F', bold:true,  pad:'32px 48px', nameTop:'sender-right',  divider:false, prefix:'' },
+  compact:    { font:"Calibri,sans-serif",           accent:'#374151', bold:true,  pad:'24px 30px', nameTop:null,            divider:false, prefix:'' }
+};
+
+function buildCoverLetterHtml(tailored, tmpl) {
+  tmpl = tmpl || clTemplate || 'classic';
+  var hc = CL_HTML_DEFS[tmpl] || CL_HTML_DEFS.classic;
+  var cl   = (tailored && tailored.coverLetter) ? tailored.coverLetter : {};
+  var name  = tailored ? (tailored.name  || '') : '';
   var phone = tailored ? (tailored.phone || '') : '';
   var email = tailored ? (tailored.email || '') : '';
+  // Always use today's date — never the AI-generated placeholder
+  var today = new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+  var es = function(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); };
 
   function p(text, style) {
     if (!text) return '';
+    return '<p style="margin:0 0 14px;' + (style||'') + '">' + es(text) + '</p>';
+  }
+  function lbl(labelText, restText, style) {
+    if (!restText && restText !== '') return '';
+    var bw = hc.bold ? '700' : '400';
     return '<p style="margin:0 0 14px;' + (style||'') + '">' +
-      String(text).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') +
-      '</p>';
+      '<span style="font-weight:'+bw+';color:'+hc.accent+'">' + hc.prefix + es(labelText) + '</span>' +
+      es(restText) + '</p>';
   }
 
-  return [
-    p(cl.date || '', 'margin-bottom:20px'),
-    p((cl.recipientTitle || 'Hiring Manager') + ','),
-    cl.recipientDepartment ? p(cl.recipientDepartment, 'margin-bottom:2px') : '',
-    cl.recipientOrg        ? p(cl.recipientOrg,        'margin-bottom:2px') : '',
-    cl.recipientLocation   ? p(cl.recipientLocation,   'margin-bottom:20px') : '',
-    cl.reLine ? p('<strong>RE: ' + String(cl.reLine).replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</strong>', 'margin-bottom:20px') : '',
-    p('Dear Hiring Manager,'),
-    p(cl.openingParagraph),
-    p(cl.bodyParagraph1),
-    p(cl.bodyParagraph2),
-    p(cl.bodyParagraph3),
-    p(cl.closingParagraph),
-    '<p style="margin:20px 0 4px">Warm regards,</p>',
-    '<p style="margin:0;font-weight:700">' + String(name).replace(/</g,'&lt;') + '</p>',
-    phone ? '<p style="margin:2px 0">' + String(phone).replace(/</g,'&lt;') + '</p>' : '',
-    email ? '<p style="margin:2px 0">' + String(email).replace(/</g,'&lt;') + '</p>' : '',
-  ].join('');
+  var out = '<div style="font-family:' + hc.font + ';font-size:13.5px;line-height:1.75;color:#1a1a2e;padding:' + hc.pad + '">';
+
+  // Name / contact header for templates that use it
+  if(hc.nameTop === 'center'){
+    out += '<p style="text-align:center;font-size:20px;font-weight:700;margin:0 0 4px">' + es(name) + '</p>';
+    out += '<p style="text-align:center;color:#888;font-size:12px;margin:0 0 24px">' + es([phone,email].filter(Boolean).join(' · ')) + '</p>';
+  } else if(hc.nameTop === 'center-italic'){
+    out += '<p style="text-align:center;font-size:22px;font-weight:700;font-style:italic;color:'+hc.accent+';margin:0 0 4px">' + es(name) + '</p>';
+    out += '<p style="text-align:center;color:'+hc.accent+';opacity:.7;font-size:12px;font-style:italic;margin:0 0 24px">' + es([phone,email].filter(Boolean).join(' · ')) + '</p>';
+  } else if(hc.nameTop === 'left-big'){
+    out += '<p style="font-size:22px;font-weight:700;margin:0 0 4px">' + es(name) + '</p>';
+    out += '<p style="color:#888;font-size:12px;margin:0 0 24px">' + es([phone,email].filter(Boolean).join(' · ')) + '</p>';
+  } else if(hc.nameTop === 'sender-right'){
+    [name,phone,email].filter(Boolean).forEach(function(v,i){
+      out += '<p style="text-align:right;margin:0 0 2px;font-weight:' + (i===0?'700':'400') + '">' + es(v) + '</p>';
+    });
+    out += '<div style="margin-bottom:20px"></div>';
+  }
+
+  // Main letter content
+  out += lbl('Date: ', today, 'margin-bottom:20px');
+  out += lbl('To: ', (cl.recipientTitle || 'Hiring Manager') + ',');
+  if(cl.recipientDepartment) out += p(cl.recipientDepartment, 'margin-bottom:2px');
+  if(cl.recipientOrg)        out += p(cl.recipientOrg,        'margin-bottom:2px');
+  if(cl.recipientLocation)   out += p(cl.recipientLocation,   'margin-bottom:20px');
+
+  // RE: line — "RE: " is bold/colored; the rest is plain weight (the bug was escaping <strong>)
+  if(cl.reLine){
+    out += '<p style="margin:0 0 14px;margin-bottom:' + (hc.divider ? '4px' : '20px') + '">' +
+      '<strong style="font-weight:700;color:'+hc.accent+'">' + hc.prefix + 'RE: </strong>' + es(cl.reLine) + '</p>';
+  }
+
+  // Divider line (modern / creative templates)
+  if(hc.divider){
+    out += '<hr style="border:none;border-top:2px solid '+hc.accent+';margin:8px 0 20px"/>';
+  }
+
+  out += p('Dear Hiring Manager,');
+  out += p(cl.openingParagraph);
+  out += p(cl.bodyParagraph1);
+  out += p(cl.bodyParagraph2);
+  out += p(cl.bodyParagraph3);
+  out += p(cl.closingParagraph);
+  out += '<p style="margin:20px 0 4px">Warm regards,</p>';
+  out += '<p style="margin:0;font-weight:700">' + es(name) + '</p>';
+  if(phone) out += '<p style="margin:2px 0">' + es(phone) + '</p>';
+  if(email) out += '<p style="margin:2px 0">' + es(email) + '</p>';
+  out += '</div>';
+  return out;
 }
 
 function openCoverPreview() {
@@ -2734,7 +2846,7 @@ function openCoverPreview() {
   var page  = document.getElementById('clPvPage');
   if (!modal || !page) return;
 
-  page.innerHTML = tailoredRef ? buildCoverLetterHtml(tailoredRef) : '<p style="color:#888">Cover letter not available.</p>';
+  page.innerHTML = tailoredRef ? buildCoverLetterHtml(tailoredRef, clTemplate) : '<p style="color:#888">Cover letter not available.</p>';
 
   // Wire download buttons
   var dlBtn  = document.getElementById('clDlBtn');
@@ -2764,17 +2876,18 @@ function downloadCoverPDF(e) {
   var cl = tailoredRef.coverLetter || {};
   var win = window.open('', '_blank');
   if (!win) { alert('Please allow pop-ups for PDF export.'); return; }
+  var hcPdf = CL_HTML_DEFS[clTemplate] || CL_HTML_DEFS.classic;
   win.document.write([
     '<!DOCTYPE html><html><head><meta charset="UTF-8">',
     '<title>Cover Letter</title>',
     '<style>',
-    '  body{font-family:Calibri,Georgia,serif;font-size:12pt;line-height:1.7;',
+    '  body{font-family:'+hcPdf.font+';font-size:12pt;line-height:1.7;',
     '       color:#1a1a2e;max-width:720px;margin:40px auto;padding:0 40px}',
     '  p{margin:0 0 12pt}',
     '  @media print{body{margin:0;padding:20pt 40pt}}',
     '</style>',
     '</head><body>',
-    buildCoverLetterHtml(tailoredRef),
+    buildCoverLetterHtml(tailoredRef, clTemplate),
     '<script>window.onload=function(){window.print();}<\/script>',
     '</body></html>',
   ].join(''));
@@ -2786,6 +2899,38 @@ document.addEventListener('click', function(e) {
   var modal = document.getElementById('clPreviewModal');
   if (modal && e.target === modal) closeCoverPreview();
 });
+
+// ── Cover Letter Settings ─────────────────────────────────────────────────
+function setCLLength(len) {
+  clLength = len;
+  document.querySelectorAll('.cl-len-btn').forEach(function(b){ b.classList.toggle('active', b.dataset.len === len); });
+  var hints = { short:'~150-200 words · 2 paragraphs', medium:'~300-350 words · 3 paragraphs', long:'~500-600 words · 4 paragraphs' };
+  var hint = document.getElementById('clLenHint');
+  if(hint) hint.textContent = hints[len] || '';
+}
+
+function setCLTemplate(tmpl) {
+  clTemplate = tmpl;
+  // Update chip UI
+  document.querySelectorAll('.cl-tmpl-chip').forEach(function(c){ c.classList.toggle('active', c.dataset.tmpl === tmpl); });
+  // Update preview modal strip
+  document.querySelectorAll('.cl-pv-tmpl-chip').forEach(function(c){ c.classList.toggle('active', c.dataset.tmpl === tmpl); });
+  // Live-update the preview if open
+  var page = document.getElementById('clPvPage');
+  if(page && document.getElementById('clPreviewModal') && document.getElementById('clPreviewModal').style.display !== 'none'){
+    if(tailoredRef) page.innerHTML = buildCoverLetterHtml(tailoredRef, tmpl);
+  }
+  // Rebuild the DOCX blob so the download button reflects the new template
+  if(tailoredRef && tailoredRef.coverLetter){
+    var today = new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+    var clData = Object.assign({},tailoredRef,tailoredRef.coverLetter,{date:today});
+    Packer.toBlob(buildCoverDoc(clData, tmpl)).then(function(blob){
+      _clBlobRef = blob;
+      var nm = (tailoredRef.name||'Resume').replace(/\s+/g,'_');
+      _clNameRef = nm+'_Cover_Letter_'+CL_TMPL_DEFS[tmpl].label+'.docx';
+    });
+  }
+}
 
 // ════════════════════════════════════════════════════════════════
 //  CAREER DATA VAULT

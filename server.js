@@ -86,6 +86,8 @@ const pool = new Pool({
   `);
   // Unique index (idempotent)
   await pool.query(`CREATE UNIQUE INDEX IF NOT EXISTS users_referral_code_idx ON users(referral_code);`);
+  // Career Data Vault — JSONB column on users (stored alongside the user row)
+  await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS career_vault JSONB;`);
   console.log('Database ready.');
 })().catch(err => { console.error('DB init error:', err); process.exit(1); });
 
@@ -1087,6 +1089,63 @@ app.get('/api/referral', requireAuth, async (req, res) => {
   } catch (err) {
     console.error('Referral API error:', err);
     res.status(500).json({ error: 'Could not load referral info.' });
+  }
+});
+
+// ══════════════════════════════════════════════════════════════
+//  CAREER DATA VAULT
+//  Persistent store for a user's complete career history.
+//  Stored as a JSONB blob on the users table (no separate tables
+//  needed — keeps the schema simple and the data portable).
+//
+//  Shape of career_vault JSON:
+//  {
+//    name, email, phone, location, linkedin, website, summary,
+//    skills: [string, …],
+//    jobs: [{ id, title, company, location, start, end, current, bullets:[…] }, …],
+//    education: [{ id, degree, school, year, gpa }, …],
+//    certs: [{ id, name, issuer, year }, …],
+//    updatedAt: ISO string
+//  }
+// ══════════════════════════════════════════════════════════════
+
+// GET /api/career — return the user's vault (null if empty)
+app.get('/api/career', requireAuth, async (req, res) => {
+  try {
+    const result = await pool.query(
+      'SELECT career_vault FROM users WHERE id = $1',
+      [req.user.id]
+    );
+    const vault = result.rows[0]?.career_vault || null;
+    res.json({ vault });
+  } catch (err) {
+    console.error('Career vault GET error:', err);
+    res.status(500).json({ error: 'Could not load career vault.' });
+  }
+});
+
+// POST /api/career — save/update the vault (full upsert)
+app.post('/api/career', requireAuth, async (req, res) => {
+  try {
+    const vault = req.body?.vault;
+    if (!vault || typeof vault !== 'object') {
+      return res.status(400).json({ error: 'vault object is required.' });
+    }
+    // Stamp the update time server-side
+    vault.updatedAt = new Date().toISOString();
+    // Basic size guard (~500 KB raw)
+    const raw = JSON.stringify(vault);
+    if (raw.length > 500000) {
+      return res.status(400).json({ error: 'Career vault data is too large (max 500 KB).' });
+    }
+    await pool.query(
+      'UPDATE users SET career_vault = $1, updated_at = NOW() WHERE id = $2',
+      [vault, req.user.id]
+    );
+    res.json({ ok: true, vault });
+  } catch (err) {
+    console.error('Career vault POST error:', err);
+    res.status(500).json({ error: 'Could not save career vault.' });
   }
 });
 

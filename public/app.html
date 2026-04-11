@@ -846,6 +846,158 @@
     }
     .lib-save-btn:hover { opacity:.9; transform:translateY(-1px); }
     .lib-save-btn:disabled { opacity:.5; cursor:not-allowed; transform:none; }
+    /* ── Career Data Vault ── */
+    /* vault-pane uses flex layout when active; display is still controlled by .upload-pane/.upload-pane.active */
+    .upload-pane.vault-pane.active { display:flex; flex-direction:column; gap:0; }
+    .vault-header {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:12px 0 14px; border-bottom:1px solid rgba(91,99,240,.12);
+      margin-bottom:16px;
+    }
+    .vault-header-left { display:flex; align-items:center; gap:10px; }
+    .vault-header-icon { font-size:26px; }
+    .vault-header-title { font-size:15px; font-weight:800; color:var(--navy); }
+    .vault-header-sub   { font-size:12px; color:var(--muted); margin-top:1px; }
+    .vault-status-dot {
+      width:9px; height:9px; border-radius:50%;
+      background:#d1d5db; flex-shrink:0;
+      transition:background .3s;
+    }
+    .vault-status-dot.partial { background:#f59e0b; }
+    .vault-status-dot.complete { background:#22c55e; }
+    .vault-status-label { font-size:11px; color:var(--muted); font-weight:600; }
+    .vault-section {
+      margin-bottom:18px;
+      border:1px solid rgba(91,99,240,.1);
+      border-radius:var(--r-sm);
+      overflow:hidden;
+      background:rgba(255,255,255,.6);
+    }
+    .vault-sec-hdr {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:11px 14px; cursor:pointer;
+      background:rgba(91,99,240,.04);
+      border-bottom:1px solid rgba(91,99,240,.08);
+      user-select:none; transition:background var(--t);
+    }
+    .vault-sec-hdr:hover { background:rgba(91,99,240,.08); }
+    .vault-sec-hdr-left { display:flex; align-items:center; gap:8px; font-size:13px; font-weight:700; color:var(--navy); }
+    .vault-sec-hdr-count { font-size:11px; font-weight:600; color:var(--muted); background:rgba(91,99,240,.1); padding:2px 7px; border-radius:99px; }
+    .vault-sec-toggle { font-size:12px; color:var(--muted); transition:transform .2s; }
+    .vault-sec-toggle.open { transform:rotate(180deg); }
+    .vault-sec-body { padding:14px; display:none; }
+    .vault-sec-body.open { display:block; }
+    .vault-field-row { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px; }
+    .vault-field { display:flex; flex-direction:column; gap:4px; flex:1; min-width:140px; }
+    .vault-field label { font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; }
+    .vault-field input, .vault-field textarea, .vault-field select {
+      padding:9px 11px; border:1px solid rgba(91,99,240,.2); border-radius:var(--r-xs);
+      font-size:13px; font-family:inherit; color:var(--text);
+      background:rgba(255,255,255,.9); transition:border-color var(--t), box-shadow var(--t);
+      resize:vertical;
+    }
+    .vault-field input:focus, .vault-field textarea:focus {
+      outline:none; border-color:var(--accent);
+      box-shadow:0 0 0 3px rgba(91,99,240,.1);
+    }
+    .vault-field textarea { min-height:72px; }
+    .vault-entry {
+      border:1px solid rgba(91,99,240,.12); border-radius:var(--r-sm);
+      padding:13px 14px; margin-bottom:10px;
+      background:rgba(255,255,255,.7);
+      position:relative;
+    }
+    .vault-entry:last-child { margin-bottom:0; }
+    .vault-entry-hdr {
+      display:flex; align-items:center; justify-content:space-between;
+      margin-bottom:10px;
+    }
+    .vault-entry-title { font-size:13px; font-weight:700; color:var(--navy); }
+    .vault-entry-del {
+      background:none; border:none; color:var(--muted); cursor:pointer;
+      font-size:16px; line-height:1; padding:2px 5px;
+      border-radius:4px; transition:all var(--t);
+    }
+    .vault-entry-del:hover { color:var(--red); background:var(--red-bg); }
+    .vault-add-btn {
+      display:inline-flex; align-items:center; gap:6px; cursor:pointer;
+      font-size:12px; font-weight:700; color:var(--accent);
+      background:rgba(91,99,240,.06); border:1.5px dashed rgba(91,99,240,.3);
+      border-radius:var(--r-sm); padding:9px 14px; width:100%;
+      justify-content:center; transition:all var(--t); margin-top:8px;
+    }
+    .vault-add-btn:hover { background:rgba(91,99,240,.12); border-color:var(--accent); }
+    .vault-bullets-label { font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; margin:8px 0 5px; }
+    .vault-bullet-row { display:flex; gap:6px; margin-bottom:5px; align-items:flex-start; }
+    .vault-bullet-row input {
+      flex:1; padding:7px 10px; border:1px solid rgba(91,99,240,.18);
+      border-radius:var(--r-xs); font-size:12.5px; font-family:inherit;
+      color:var(--text); background:rgba(255,255,255,.85);
+      transition:border-color var(--t), box-shadow var(--t);
+    }
+    .vault-bullet-row input:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 2px rgba(91,99,240,.1); }
+    .vault-bullet-del {
+      background:none; border:none; color:var(--muted-light); cursor:pointer;
+      font-size:15px; padding:5px 4px; line-height:1; flex-shrink:0;
+      transition:color var(--t);
+    }
+    .vault-bullet-del:hover { color:var(--red); }
+    .vault-add-bullet {
+      font-size:11px; color:var(--accent); cursor:pointer; font-weight:600;
+      background:none; border:none; padding:3px 0; display:inline-flex;
+      align-items:center; gap:4px; margin-top:2px; font-family:inherit;
+      transition:opacity var(--t);
+    }
+    .vault-add-bullet:hover { opacity:.75; }
+    .vault-skills-input {
+      width:100%; padding:9px 11px; border:1px solid rgba(91,99,240,.2);
+      border-radius:var(--r-xs); font-size:13px; font-family:inherit;
+      color:var(--text); background:rgba(255,255,255,.9);
+      transition:border-color var(--t), box-shadow var(--t);
+    }
+    .vault-skills-input:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(91,99,240,.1); }
+    .vault-skills-hint { font-size:11px; color:var(--muted); margin-top:4px; }
+    .vault-actions {
+      display:flex; gap:10px; padding-top:14px;
+      border-top:1px solid rgba(91,99,240,.1); margin-top:4px;
+      flex-wrap:wrap;
+    }
+    .vault-save-btn {
+      flex:1; min-width:120px; padding:12px 18px;
+      background:linear-gradient(135deg,var(--navy),var(--mid));
+      color:#fff; border:none; border-radius:var(--r-sm);
+      font-size:13px; font-weight:700; font-family:inherit;
+      cursor:pointer; transition:all var(--t);
+      box-shadow:0 4px 14px rgba(30,58,95,.3);
+      display:flex; align-items:center; justify-content:center; gap:7px;
+    }
+    .vault-save-btn:hover { opacity:.9; transform:translateY(-1px); }
+    .vault-save-btn:disabled { opacity:.5; cursor:not-allowed; transform:none; }
+    .vault-use-btn {
+      flex:1; min-width:120px; padding:12px 18px;
+      background:linear-gradient(135deg,#059669,#047857);
+      color:#fff; border:none; border-radius:var(--r-sm);
+      font-size:13px; font-weight:700; font-family:inherit;
+      cursor:pointer; transition:all var(--t);
+      box-shadow:0 4px 14px rgba(5,150,105,.3);
+      display:flex; align-items:center; justify-content:center; gap:7px;
+    }
+    .vault-use-btn:hover { opacity:.9; transform:translateY(-1px); }
+    .vault-use-btn:disabled { opacity:.5; cursor:not-allowed; transform:none; }
+    .vault-save-msg { font-size:12px; color:var(--green); font-weight:600; display:flex; align-items:center; gap:5px; }
+    .vault-empty-hint {
+      text-align:center; padding:28px 16px; color:var(--muted);
+      font-size:13px; line-height:1.7;
+    }
+    .vault-empty-hint .veh-icon { font-size:44px; display:block; margin-bottom:12px; }
+    /* vault status tab badge */
+    #tabVault .vault-tab-dot {
+      width:7px; height:7px; border-radius:50%; background:#d1d5db;
+      display:inline-block; margin-left:4px; vertical-align:middle;
+      transition:background .3s;
+    }
+    #tabVault .vault-tab-dot.partial { background:#f59e0b; }
+    #tabVault .vault-tab-dot.complete { background:#22c55e; }
     /* LinkedIn import pane */
     .li-import-box {
       border:2px dashed var(--accent-bd); border-radius:var(--r);
@@ -1137,6 +1289,7 @@
       <button class="upload-tab active" id="tabUpload"   onclick="switchUploadTab('upload')">📎 Upload File</button>
       <button class="upload-tab"        id="tabLibrary"  onclick="switchUploadTab('library')">📚 My Library</button>
       <button class="upload-tab"        id="tabLinkedin" onclick="switchUploadTab('linkedin')">🔗 LinkedIn PDF</button>
+      <button class="upload-tab"        id="tabVault"    onclick="switchUploadTab('vault')">🗄️ Career Vault<span class="vault-tab-dot"></span></button>
     </div>
 
     <!-- Pane 1: Upload -->
@@ -1184,6 +1337,146 @@
         <div style="font-size:11px;color:var(--muted);margin-top:10px">Your data stays private — processed on our secure server, never stored.</div>
       </div>
     </div>
+
+    <!-- Pane 4: Career Vault -->
+    <div class="upload-pane vault-pane" id="paneVault">
+
+      <!-- Vault header -->
+      <div class="vault-header">
+        <div class="vault-header-left">
+          <span class="vault-header-icon">🗄️</span>
+          <div>
+            <div class="vault-header-title">Career Data Vault</div>
+            <div class="vault-header-sub">Store your full career history once — AI tailors from it every time</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:7px">
+          <span class="vault-status-dot" id="vaultStatusDot"></span>
+          <span class="vault-status-label" id="vaultStatusLabel">Empty</span>
+        </div>
+      </div>
+
+      <!-- ── Personal Info ── -->
+      <div class="vault-section">
+        <div class="vault-sec-hdr" onclick="toggleVaultSec(this)">
+          <div class="vault-sec-hdr-left">👤 Personal Info</div>
+          <span class="vault-sec-toggle open">▼</span>
+        </div>
+        <div class="vault-sec-body open">
+          <div class="vault-field-row">
+            <div class="vault-field"><label>Full Name</label><input type="text" id="vName" placeholder="Jane Smith" /></div>
+            <div class="vault-field"><label>Email</label><input type="email" id="vEmail" placeholder="jane@example.com" /></div>
+          </div>
+          <div class="vault-field-row">
+            <div class="vault-field"><label>Phone</label><input type="tel" id="vPhone" placeholder="+1 (555) 000-0000" /></div>
+            <div class="vault-field"><label>Location</label><input type="text" id="vLocation" placeholder="San Francisco, CA" /></div>
+          </div>
+          <div class="vault-field-row">
+            <div class="vault-field"><label>LinkedIn URL</label><input type="url" id="vLinkedin" placeholder="linkedin.com/in/janesmith" /></div>
+            <div class="vault-field"><label>Website / Portfolio</label><input type="url" id="vWebsite" placeholder="janesmith.com" /></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Professional Summary ── -->
+      <div class="vault-section">
+        <div class="vault-sec-hdr" onclick="toggleVaultSec(this)">
+          <div class="vault-sec-hdr-left">📝 Professional Summary</div>
+          <span class="vault-sec-toggle">▼</span>
+        </div>
+        <div class="vault-sec-body">
+          <div class="vault-field">
+            <label>Summary</label>
+            <textarea id="vSummary" rows="4" placeholder="Results-driven software engineer with 8+ years building scalable web products…"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Skills ── -->
+      <div class="vault-section">
+        <div class="vault-sec-hdr" onclick="toggleVaultSec(this)">
+          <div class="vault-sec-hdr-left">
+            ⚡ Skills
+            <span class="vault-sec-hdr-count" id="vSkillCount">0</span>
+          </div>
+          <span class="vault-sec-toggle">▼</span>
+        </div>
+        <div class="vault-sec-body">
+          <input type="text" class="vault-skills-input" id="vSkills"
+            placeholder="JavaScript, React, Node.js, Python, SQL, AWS, Docker…"
+            oninput="updateVaultSkillCount()" />
+          <div class="vault-skills-hint">Separate skills with commas. Include both technical and soft skills.</div>
+        </div>
+      </div>
+
+      <!-- ── Work Experience ── -->
+      <div class="vault-section">
+        <div class="vault-sec-hdr" onclick="toggleVaultSec(this)">
+          <div class="vault-sec-hdr-left">
+            💼 Work Experience
+            <span class="vault-sec-hdr-count" id="vJobCount">0</span>
+          </div>
+          <span class="vault-sec-toggle">▼</span>
+        </div>
+        <div class="vault-sec-body" id="vJobList">
+          <div class="vault-empty-hint" id="vJobEmpty">
+            <span class="veh-icon">💼</span>
+            No jobs added yet. Click below to add your most recent position.
+          </div>
+          <button class="vault-add-btn" onclick="addVaultJob()">＋ Add Position</button>
+        </div>
+      </div>
+
+      <!-- ── Education ── -->
+      <div class="vault-section">
+        <div class="vault-sec-hdr" onclick="toggleVaultSec(this)">
+          <div class="vault-sec-hdr-left">
+            🎓 Education
+            <span class="vault-sec-hdr-count" id="vEduCount">0</span>
+          </div>
+          <span class="vault-sec-toggle">▼</span>
+        </div>
+        <div class="vault-sec-body" id="vEduList">
+          <div class="vault-empty-hint" id="vEduEmpty">
+            <span class="veh-icon">🎓</span>
+            No education added yet.
+          </div>
+          <button class="vault-add-btn" onclick="addVaultEdu()">＋ Add Education</button>
+        </div>
+      </div>
+
+      <!-- ── Certifications ── -->
+      <div class="vault-section">
+        <div class="vault-sec-hdr" onclick="toggleVaultSec(this)">
+          <div class="vault-sec-hdr-left">
+            🏅 Certifications
+            <span class="vault-sec-hdr-count" id="vCertCount">0</span>
+          </div>
+          <span class="vault-sec-toggle">▼</span>
+        </div>
+        <div class="vault-sec-body" id="vCertList">
+          <div class="vault-empty-hint" id="vCertEmpty">
+            <span class="veh-icon">🏅</span>
+            No certifications added yet.
+          </div>
+          <button class="vault-add-btn" onclick="addVaultCert()">＋ Add Certification</button>
+        </div>
+      </div>
+
+      <!-- ── Vault actions ── -->
+      <div class="vault-actions">
+        <button class="vault-save-btn" id="vaultSaveBtn" onclick="saveVault()">
+          💾 Save Vault
+        </button>
+        <button class="vault-use-btn" id="vaultUseBtn" onclick="useVaultAsResume()">
+          ✅ Use as Resume
+        </button>
+      </div>
+      <div id="vaultSaveMsg" style="display:none;padding:8px 2px 0">
+        <span class="vault-save-msg">✅ Vault saved successfully!</span>
+      </div>
+
+    </div><!-- /paneVault -->
   </div>
 
   <!-- Step 2: Job details -->

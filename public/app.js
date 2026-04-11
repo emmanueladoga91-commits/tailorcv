@@ -1,5 +1,5 @@
 // ── State ──────────────────────────────────────────────────────────────────
-var fileBuffer = null, fileName = '', busy = false, selectedPages = 2;
+var fileBuffer = null, fileName = '', busy = false, selectedPages = 2, extractedText = '';
 var resumeBlobRef = null, resumeNameRef = '';
 var tailoredRef = null, jdRef = '', atsResultRef = null;
 var selectedProfile = null;
@@ -233,6 +233,8 @@ function loadCurrentUser() {
         currentUser = d.user;
         localStorage.setItem('tc_user', JSON.stringify(d.user));
         renderUserMenu();
+        // Load vault in background once we know user is authenticated
+        setTimeout(eagerLoadVault, 600);
       }
     }).catch(function(){});
 }
@@ -826,7 +828,7 @@ function setStepDone(idx) {
 }
 function refreshStepper() {
   if (selectedProfile)                                    setStepDone(0);
-  if (fileBuffer)                                         setStepDone(1);
+  if (fileBuffer || extractedText)                        setStepDone(1);
   if (document.getElementById('jd').value.trim())         setStepDone(2);
   if (selectedTemplate)                                   setStepDone(3);
 }
@@ -852,7 +854,7 @@ function loadFile(file) {
   reader.readAsArrayBuffer(file);
 }
 function resetFile() {
-  fileBuffer = null; fileName = '';
+  fileBuffer = null; fileName = ''; extractedText = '';
   var dz = document.getElementById('dz');
   dz.classList.remove('loaded');
   document.getElementById('dzIcon').textContent  = '📎';
@@ -1239,11 +1241,9 @@ async function build(){
   var role    = document.getElementById('role').value.trim()||'the role';
   var jd      = document.getElementById('jd').value.trim();
 
-  if(!selectedProfile)             return showAlert('warn','No profile selected.','Choose a professional profile at Step 1.');
-  if(!fileBuffer)                  return showAlert('warn','No resume uploaded.','Drop your .docx or .pdf in Step 2.');
-  if(!jd)                          return showAlert('warn','Job description missing.','Paste the job description in Step 3.');
-  
-  
+  if(!selectedProfile)                  return showAlert('warn','No profile selected.','Choose a professional profile at Step 1.');
+  if(!fileBuffer && !extractedText)     return showAlert('warn','No resume loaded.','Upload a file in Step 2, or load your Career Vault.');
+  if(!jd)                               return showAlert('warn','Job description missing.','Paste the job description in Step 3.');
 
   busy=true;
   document.getElementById('buildBtn').disabled=true;
@@ -1251,9 +1251,9 @@ async function build(){
   document.getElementById('prog').classList.add('on');
 
   try {
-    // 1. Extract text
+    // 1. Extract text (or use vault text directly)
     step(1,'active');
-    var resumeText = await extractText(fileBuffer,fileName);
+    var resumeText = extractedText && !fileBuffer ? extractedText : await extractText(fileBuffer, fileName);
     step(1,'done');
 
     // 2. Tailor with Claude
@@ -2292,15 +2292,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Load resume library from server
   loadResumeLibrary();
+
+  // Eager-load career vault in background (silent — populates form before user opens tab)
+  setTimeout(eagerLoadVault, 800);
 });
 
 // ── Upload tab switching ────────────────────────────────────────────────────
 function switchUploadTab(name) {
-  ['upload','library','linkedin'].forEach(function(t) {
-    document.getElementById('tab'+capitalize(t)).classList.toggle('active', t===name);
-    document.getElementById('pane'+capitalize(t)).classList.toggle('active', t===name);
+  ['upload','library','linkedin','vault'].forEach(function(t) {
+    var tabEl  = document.getElementById('tab'+capitalize(t));
+    var paneEl = document.getElementById('pane'+capitalize(t));
+    if (tabEl)  tabEl.classList.toggle('active', t===name);
+    if (paneEl) paneEl.classList.toggle('active', t===name);
   });
   if (name === 'library') loadResumeLibrary();
+  if (name === 'vault')   openVaultPane();
 }
 function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
 
@@ -2471,9 +2477,9 @@ build = async function() {
 // ── Pre-Tailoring Match Score ───────────────────────────────────────────────
 async function checkMatchScore() {
   var jd = document.getElementById('jd').value.trim();
-  // For match score we need either a real file or pre-extracted text
-  var hasResume = fileBuffer || window._preExtractedResumeText;
-  if (!hasResume) return showAlert('warn', 'Upload your resume first.', 'Load your resume in Step 2, then check your match score.');
+  // For match score we need either a real file, vault text, or pre-extracted text
+  var hasResume = fileBuffer || extractedText || window._preExtractedResumeText;
+  if (!hasResume) return showAlert('warn', 'Upload your resume first.', 'Load your resume in Step 2 or use your Career Vault, then check your match score.');
   if (!jd)        return showAlert('warn', 'Paste a job description first.', 'Add the job description in Step 3 before checking your match.');
 
   var btn = document.getElementById('checkMatchBtn');
@@ -2483,11 +2489,12 @@ async function checkMatchScore() {
 
   try {
     var resumeText;
-    if (window._preExtractedResumeText) {
+    if (extractedText && !fileBuffer) {
+      resumeText = extractedText; // vault-loaded text
+    } else if (window._preExtractedResumeText) {
       resumeText = window._preExtractedResumeText;
     } else {
       resumeText = await extractText(fileBuffer, fileName);
-      // After extraction keep for future use
     }
 
     var sys = 'You are a resume ATS specialist. Quickly assess how well a resume matches a job description BEFORE tailoring. Return ONLY valid JSON.';
@@ -2779,3 +2786,538 @@ document.addEventListener('click', function(e) {
   var modal = document.getElementById('clPreviewModal');
   if (modal && e.target === modal) closeCoverPreview();
 });
+
+// ════════════════════════════════════════════════════════════════
+//  CAREER DATA VAULT
+//  Persistent storage for the user's complete career history.
+//  Lets the AI tailor from saved data instead of requiring a
+//  fresh file upload every session.
+// ════════════════════════════════════════════════════════════════
+
+// In-memory mirror of the vault (synced on load/save)
+var _vault = {
+  name:'', email:'', phone:'', location:'', linkedin:'', website:'',
+  summary:'', skills:'',
+  jobs:[], education:[], certs:[],
+  updatedAt: null
+};
+var _vaultLoaded = false; // true once we've fetched from server
+var _vaultJobIdCounter  = 0;
+var _vaultEduIdCounter  = 0;
+var _vaultCertIdCounter = 0;
+
+// ── Helpers ────────────────────────────────────────────────────
+function vaultEl(id) { return document.getElementById(id); }
+
+function setVaultStatusUI(status) {
+  // status: 'empty' | 'partial' | 'complete'
+  var dot   = vaultEl('vaultStatusDot');
+  var label = vaultEl('vaultStatusLabel');
+  var tabDot = document.querySelector('#tabVault .vault-tab-dot');
+  if (!dot || !label) return;
+  dot.className   = 'vault-status-dot' + (status !== 'empty' ? ' ' + status : '');
+  label.textContent = status === 'complete' ? 'Complete' : status === 'partial' ? 'Partial' : 'Empty';
+  if (tabDot) tabDot.className = 'vault-tab-dot' + (status !== 'empty' ? ' ' + status : '');
+}
+
+function vaultComputeStatus() {
+  var hasContact = (_vault.name || '').trim().length > 0;
+  var hasJobs    = _vault.jobs.length > 0;
+  var hasSkills  = (_vault.skills || '').trim().length > 0;
+  if (hasContact && hasJobs && hasSkills) return 'complete';
+  if (hasContact || hasJobs || hasSkills) return 'partial';
+  return 'empty';
+}
+
+// ── Accordion toggle ────────────────────────────────────────────
+function toggleVaultSec(hdrEl) {
+  var body   = hdrEl.nextElementSibling;
+  var toggle = hdrEl.querySelector('.vault-sec-toggle');
+  var isOpen = body.classList.contains('open');
+  body.classList.toggle('open', !isOpen);
+  if (toggle) toggle.classList.toggle('open', !isOpen);
+}
+
+// ── Skills count badge ──────────────────────────────────────────
+function updateVaultSkillCount() {
+  var val = (vaultEl('vSkills') || {}).value || '';
+  var count = val.split(',').map(function(s){ return s.trim(); }).filter(Boolean).length;
+  var badge = vaultEl('vSkillCount');
+  if (badge) badge.textContent = count;
+  _vault.skills = val;
+  setVaultStatusUI(vaultComputeStatus());
+}
+
+// ── Jobs ───────────────────────────────────────────────────────
+function addVaultJob(data) {
+  data = data || {};
+  var id = data.id || ('j' + (++_vaultJobIdCounter));
+  var emptyEl = vaultEl('vJobEmpty');
+  var listEl  = vaultEl('vJobList');
+  if (!listEl) return;
+
+  var entry = document.createElement('div');
+  entry.className = 'vault-entry';
+  entry.dataset.vid = id;
+  // Bullets HTML
+  var bulletsHtml = '';
+  var bullets = data.bullets || [''];
+  bullets.forEach(function(b) {
+    bulletsHtml += bulletRowHtml(b);
+  });
+
+  entry.innerHTML = [
+    '<div class="vault-entry-hdr">',
+      '<div class="vault-entry-title">Position</div>',
+      '<button class="vault-entry-del" title="Remove" onclick="removeVaultJob(this)">✕</button>',
+    '</div>',
+    '<div class="vault-field-row">',
+      '<div class="vault-field"><label>Job Title</label><input type="text" class="vj-title" placeholder="Senior Software Engineer" value="'+vaultEsc(data.title||'')+'"/></div>',
+      '<div class="vault-field"><label>Company</label><input type="text" class="vj-company" placeholder="Acme Corp" value="'+vaultEsc(data.company||'')+'"/></div>',
+    '</div>',
+    '<div class="vault-field-row">',
+      '<div class="vault-field"><label>Location</label><input type="text" class="vj-location" placeholder="Remote / San Francisco, CA" value="'+vaultEsc(data.location||'')+'"/></div>',
+      '<div class="vault-field" style="max-width:115px"><label>Start</label><input type="text" class="vj-start" placeholder="Jan 2021" value="'+vaultEsc(data.start||'')+'"/></div>',
+      '<div class="vault-field" style="max-width:115px"><label>End</label><input type="text" class="vj-end" placeholder="Present" value="'+vaultEsc(data.end||'Present')+'"/></div>',
+    '</div>',
+    '<div class="vault-bullets-label">Key Achievements / Responsibilities</div>',
+    '<div class="vj-bullets">',
+      bulletsHtml,
+    '</div>',
+    '<button class="vault-add-bullet" onclick="addBulletToJob(this)">＋ Add bullet</button>',
+  ].join('');
+
+  // Insert before the "Add Position" button (last child of listEl)
+  var addBtn = listEl.querySelector('.vault-add-btn');
+  if (addBtn) listEl.insertBefore(entry, addBtn);
+  else listEl.appendChild(entry);
+
+  if (emptyEl) emptyEl.style.display = 'none';
+  updateVaultJobCount();
+}
+
+function bulletRowHtml(text) {
+  return '<div class="vault-bullet-row"><input type="text" class="vj-bullet-input" placeholder="Led team of 6 to deliver X, resulting in 30% improvement…" value="'+vaultEsc(text)+'"/><button class="vault-bullet-del" onclick="removeBullet(this)" title="Remove">✕</button></div>';
+}
+
+function addBulletToJob(btn) {
+  var container = btn.previousElementSibling; // .vj-bullets
+  var row = document.createElement('div');
+  row.innerHTML = bulletRowHtml('');
+  container.appendChild(row.firstElementChild);
+}
+
+function removeBullet(btn) {
+  var row = btn.parentElement;
+  var container = row.parentElement;
+  if (container.querySelectorAll('.vault-bullet-row').length > 1) {
+    row.remove();
+  } else {
+    // Keep at least one empty bullet
+    row.querySelector('.vj-bullet-input').value = '';
+  }
+}
+
+function removeVaultJob(btn) {
+  var entry = btn.closest('.vault-entry');
+  if (entry) entry.remove();
+  var listEl  = vaultEl('vJobList');
+  var emptyEl = vaultEl('vJobEmpty');
+  if (emptyEl && listEl && listEl.querySelectorAll('.vault-entry').length === 0) {
+    emptyEl.style.display = '';
+  }
+  updateVaultJobCount();
+}
+
+function updateVaultJobCount() {
+  var listEl = vaultEl('vJobList');
+  var count  = listEl ? listEl.querySelectorAll('.vault-entry').length : 0;
+  var badge  = vaultEl('vJobCount');
+  if (badge) badge.textContent = count;
+  setVaultStatusUI(vaultComputeStatus());
+}
+
+// ── Education ─────────────────────────────────────────────────
+function addVaultEdu(data) {
+  data = data || {};
+  var id = data.id || ('e' + (++_vaultEduIdCounter));
+  var emptyEl = vaultEl('vEduEmpty');
+  var listEl  = vaultEl('vEduList');
+  if (!listEl) return;
+
+  var entry = document.createElement('div');
+  entry.className = 'vault-entry';
+  entry.dataset.vid = id;
+  entry.innerHTML = [
+    '<div class="vault-entry-hdr">',
+      '<div class="vault-entry-title">Education</div>',
+      '<button class="vault-entry-del" onclick="removeVaultEdu(this)">✕</button>',
+    '</div>',
+    '<div class="vault-field-row">',
+      '<div class="vault-field"><label>Degree / Qualification</label><input type="text" class="ve-degree" placeholder="B.Sc. Computer Science" value="'+vaultEsc(data.degree||'')+'"/></div>',
+      '<div class="vault-field"><label>School / University</label><input type="text" class="ve-school" placeholder="MIT" value="'+vaultEsc(data.school||'')+'"/></div>',
+    '</div>',
+    '<div class="vault-field-row">',
+      '<div class="vault-field" style="max-width:110px"><label>Year</label><input type="text" class="ve-year" placeholder="2019" value="'+vaultEsc(data.year||'')+'"/></div>',
+      '<div class="vault-field" style="max-width:110px"><label>GPA (optional)</label><input type="text" class="ve-gpa" placeholder="3.8 / 4.0" value="'+vaultEsc(data.gpa||'')+'"/></div>',
+    '</div>',
+  ].join('');
+
+  var addBtn = listEl.querySelector('.vault-add-btn');
+  if (addBtn) listEl.insertBefore(entry, addBtn);
+  else listEl.appendChild(entry);
+
+  if (emptyEl) emptyEl.style.display = 'none';
+  updateVaultEduCount();
+}
+
+function removeVaultEdu(btn) {
+  var entry = btn.closest('.vault-entry');
+  if (entry) entry.remove();
+  var listEl  = vaultEl('vEduList');
+  var emptyEl = vaultEl('vEduEmpty');
+  if (emptyEl && listEl && listEl.querySelectorAll('.vault-entry').length === 0) emptyEl.style.display = '';
+  updateVaultEduCount();
+}
+
+function updateVaultEduCount() {
+  var listEl = vaultEl('vEduList');
+  var count  = listEl ? listEl.querySelectorAll('.vault-entry').length : 0;
+  var badge  = vaultEl('vEduCount');
+  if (badge) badge.textContent = count;
+}
+
+// ── Certifications ────────────────────────────────────────────
+function addVaultCert(data) {
+  data = data || {};
+  var id = data.id || ('c' + (++_vaultCertIdCounter));
+  var emptyEl = vaultEl('vCertEmpty');
+  var listEl  = vaultEl('vCertList');
+  if (!listEl) return;
+
+  var entry = document.createElement('div');
+  entry.className = 'vault-entry';
+  entry.dataset.vid = id;
+  entry.innerHTML = [
+    '<div class="vault-entry-hdr">',
+      '<div class="vault-entry-title">Certification</div>',
+      '<button class="vault-entry-del" onclick="removeVaultCert(this)">✕</button>',
+    '</div>',
+    '<div class="vault-field-row">',
+      '<div class="vault-field"><label>Certification Name</label><input type="text" class="vc-name" placeholder="AWS Solutions Architect – Associate" value="'+vaultEsc(data.name||'')+'"/></div>',
+      '<div class="vault-field"><label>Issuing Body</label><input type="text" class="vc-issuer" placeholder="Amazon / Google / PMI…" value="'+vaultEsc(data.issuer||'')+'"/></div>',
+      '<div class="vault-field" style="max-width:100px"><label>Year</label><input type="text" class="vc-year" placeholder="2023" value="'+vaultEsc(data.year||'')+'"/></div>',
+    '</div>',
+  ].join('');
+
+  var addBtn = listEl.querySelector('.vault-add-btn');
+  if (addBtn) listEl.insertBefore(entry, addBtn);
+  else listEl.appendChild(entry);
+
+  if (emptyEl) emptyEl.style.display = 'none';
+  updateVaultCertCount();
+}
+
+function removeVaultCert(btn) {
+  var entry = btn.closest('.vault-entry');
+  if (entry) entry.remove();
+  var listEl  = vaultEl('vCertList');
+  var emptyEl = vaultEl('vCertEmpty');
+  if (emptyEl && listEl && listEl.querySelectorAll('.vault-entry').length === 0) emptyEl.style.display = '';
+  updateVaultCertCount();
+}
+
+function updateVaultCertCount() {
+  var listEl = vaultEl('vCertList');
+  var count  = listEl ? listEl.querySelectorAll('.vault-entry').length : 0;
+  var badge  = vaultEl('vCertCount');
+  if (badge) badge.textContent = count;
+}
+
+// ── HTML escape helper (vault-specific) ───────────────────────
+function vaultEsc(str) {
+  return String(str || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ── Read vault data from DOM form ──────────────────────────────
+function readVaultFromForm() {
+  var vault = {
+    name:     (vaultEl('vName')     || {}).value || '',
+    email:    (vaultEl('vEmail')    || {}).value || '',
+    phone:    (vaultEl('vPhone')    || {}).value || '',
+    location: (vaultEl('vLocation') || {}).value || '',
+    linkedin: (vaultEl('vLinkedin') || {}).value || '',
+    website:  (vaultEl('vWebsite')  || {}).value || '',
+    summary:  (vaultEl('vSummary')  || {}).value || '',
+    skills:   (vaultEl('vSkills')   || {}).value || '',
+    jobs: [], education: [], certs: []
+  };
+
+  // Jobs
+  var jobEntries = document.querySelectorAll('#vJobList .vault-entry');
+  jobEntries.forEach(function(entry) {
+    var bullets = [];
+    entry.querySelectorAll('.vj-bullet-input').forEach(function(inp) {
+      if (inp.value.trim()) bullets.push(inp.value.trim());
+    });
+    vault.jobs.push({
+      id:       entry.dataset.vid,
+      title:    (entry.querySelector('.vj-title')    || {}).value || '',
+      company:  (entry.querySelector('.vj-company')  || {}).value || '',
+      location: (entry.querySelector('.vj-location') || {}).value || '',
+      start:    (entry.querySelector('.vj-start')    || {}).value || '',
+      end:      (entry.querySelector('.vj-end')      || {}).value || '',
+      bullets:  bullets
+    });
+  });
+
+  // Education
+  var eduEntries = document.querySelectorAll('#vEduList .vault-entry');
+  eduEntries.forEach(function(entry) {
+    vault.education.push({
+      id:     entry.dataset.vid,
+      degree: (entry.querySelector('.ve-degree') || {}).value || '',
+      school: (entry.querySelector('.ve-school') || {}).value || '',
+      year:   (entry.querySelector('.ve-year')   || {}).value || '',
+      gpa:    (entry.querySelector('.ve-gpa')    || {}).value || ''
+    });
+  });
+
+  // Certs
+  var certEntries = document.querySelectorAll('#vCertList .vault-entry');
+  certEntries.forEach(function(entry) {
+    vault.certs.push({
+      id:     entry.dataset.vid,
+      name:   (entry.querySelector('.vc-name')   || {}).value || '',
+      issuer: (entry.querySelector('.vc-issuer') || {}).value || '',
+      year:   (entry.querySelector('.vc-year')   || {}).value || ''
+    });
+  });
+
+  return vault;
+}
+
+// ── Populate vault form from data object ───────────────────────
+function populateVaultForm(vault) {
+  if (!vault) return;
+  _vault = vault;
+
+  var set = function(id, val) { var el = vaultEl(id); if (el) el.value = val || ''; };
+  set('vName',     vault.name);
+  set('vEmail',    vault.email);
+  set('vPhone',    vault.phone);
+  set('vLocation', vault.location);
+  set('vLinkedin', vault.linkedin);
+  set('vWebsite',  vault.website);
+  set('vSummary',  vault.summary);
+  set('vSkills',   vault.skills);
+
+  // Clear existing dynamic entries
+  var clearSection = function(listId, emptyId, addBtnClass) {
+    var listEl = vaultEl(listId);
+    if (!listEl) return;
+    listEl.querySelectorAll('.vault-entry').forEach(function(e){ e.remove(); });
+    var emptyEl = vaultEl(emptyId);
+    if (emptyEl) emptyEl.style.display = '';
+  };
+  clearSection('vJobList',  'vJobEmpty');
+  clearSection('vEduList',  'vEduEmpty');
+  clearSection('vCertList', 'vCertEmpty');
+  _vaultJobIdCounter  = 0;
+  _vaultEduIdCounter  = 0;
+  _vaultCertIdCounter = 0;
+
+  (vault.jobs       || []).forEach(function(j) { addVaultJob(j); });
+  (vault.education  || []).forEach(function(e) { addVaultEdu(e); });
+  (vault.certs      || []).forEach(function(c) { addVaultCert(c); });
+
+  updateVaultSkillCount();
+  setVaultStatusUI(vaultComputeStatus());
+}
+
+// ── Save vault to server ───────────────────────────────────────
+async function saveVault() {
+  var btn = vaultEl('vaultSaveBtn');
+  var msgEl = vaultEl('vaultSaveMsg');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Saving…'; }
+  if (msgEl) msgEl.style.display = 'none';
+
+  var vault = readVaultFromForm();
+  _vault = vault;
+
+  var tok = getToken();
+  if (!tok) {
+    showAlert('warn', 'Sign in required', 'Please sign in to save your Career Vault.');
+    if (btn) { btn.disabled = false; btn.innerHTML = '💾 Save Vault'; }
+    return;
+  }
+
+  try {
+    var res = await fetch('/api/career', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + tok },
+      body: JSON.stringify({ vault: vault })
+    });
+    if (!res.ok) {
+      var err = await res.json().catch(function(){ return {}; });
+      throw new Error(err.error || 'Save failed');
+    }
+    var data = await res.json();
+    _vault = data.vault;
+    setVaultStatusUI(vaultComputeStatus());
+    if (msgEl) { msgEl.style.display = 'block'; setTimeout(function(){ msgEl.style.display='none'; }, 4000); }
+  } catch(e) {
+    showAlert('error', 'Save failed', 'Could not save vault: ' + e.message);
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = '💾 Save Vault'; }
+  }
+}
+
+// ── Convert vault to plain-text resume ─────────────────────────
+function vaultToResumeText(vault) {
+  var lines = [];
+
+  // Header
+  var header = [vault.name, vault.email, vault.phone, vault.location].filter(Boolean).join(' | ');
+  if (header) lines.push(header);
+  var links = [vault.linkedin, vault.website].filter(Boolean).join(' | ');
+  if (links) lines.push(links);
+  if (lines.length) lines.push('');
+
+  // Summary
+  if ((vault.summary || '').trim()) {
+    lines.push('PROFESSIONAL SUMMARY');
+    lines.push(vault.summary.trim());
+    lines.push('');
+  }
+
+  // Skills
+  if ((vault.skills || '').trim()) {
+    lines.push('KEY SKILLS');
+    lines.push(vault.skills.trim());
+    lines.push('');
+  }
+
+  // Experience
+  if ((vault.jobs || []).length) {
+    lines.push('WORK EXPERIENCE');
+    vault.jobs.forEach(function(job) {
+      var titleLine = [job.title, job.company].filter(Boolean).join(' — ');
+      if (job.location) titleLine += ' | ' + job.location;
+      lines.push(titleLine);
+      var dates = [job.start, job.end].filter(Boolean).join(' – ');
+      if (dates) lines.push(dates);
+      (job.bullets || []).filter(Boolean).forEach(function(b) {
+        lines.push('• ' + b);
+      });
+      lines.push('');
+    });
+  }
+
+  // Education
+  if ((vault.education || []).length) {
+    lines.push('EDUCATION');
+    vault.education.forEach(function(edu) {
+      var line = [edu.degree, edu.school].filter(Boolean).join(', ');
+      if (edu.year) line += ' (' + edu.year + ')';
+      if (edu.gpa)  line += ' — GPA: ' + edu.gpa;
+      lines.push(line);
+    });
+    lines.push('');
+  }
+
+  // Certifications
+  if ((vault.certs || []).length) {
+    lines.push('CERTIFICATIONS');
+    vault.certs.forEach(function(cert) {
+      var line = cert.name || '';
+      if (cert.issuer) line += ' — ' + cert.issuer;
+      if (cert.year)   line += ' (' + cert.year + ')';
+      lines.push(line);
+    });
+    lines.push('');
+  }
+
+  return lines.join('\n').trim();
+}
+
+// ── Use vault as resume ────────────────────────────────────────
+function useVaultAsResume() {
+  var vault = readVaultFromForm();
+  _vault = vault;
+
+  var status = vaultComputeStatus();
+  if (status === 'empty') {
+    showAlert('warn', 'Vault is empty', 'Fill in your Career Vault with at least your name and one work experience before using it.');
+    return;
+  }
+
+  var text = vaultToResumeText(vault);
+  if (!text || text.length < 30) {
+    showAlert('warn', 'Not enough data', 'Add more information to your vault — at least a name, skills, and one position.');
+    return;
+  }
+
+  // Store in the global resume buffer as text
+  extractedText = text;
+  fileBuffer    = null; // clear any previous file
+
+  // Show the badge
+  var badge     = vaultEl('badge');
+  var badgeName = vaultEl('badgeName');
+  var dz        = vaultEl('dz');
+  var dzIcon    = vaultEl('dzIcon');
+  var dzTitle   = vaultEl('dzTitle');
+
+  if (badgeName) badgeName.textContent = 'Career Vault (' + (vault.name || 'Profile') + ')';
+  if (badge)     badge.classList.add('on');
+  if (dz)        dz.classList.add('loaded');
+  if (dzIcon)    dzIcon.textContent = '🗄️';
+  if (dzTitle)   dzTitle.textContent = 'Career Vault loaded';
+
+  // Switch to the upload tab to show the badge
+  switchUploadTab('upload');
+
+  // Show success alert
+  showAlert('info', 'Career Vault loaded!', 'Your vault data is ready. Fill in the job details and hit Build Resume.');
+
+  // Trigger match score update if JD is present
+  var jdEl = vaultEl('jd');
+  if (jdEl && jdEl.value.trim().length > 80) setTimeout(checkMatchScore, 300);
+}
+
+// ── Load vault from server (called when vault tab is opened) ──
+async function openVaultPane() {
+  if (_vaultLoaded) return; // already fetched
+  var tok = getToken();
+  if (!tok) return;
+
+  try {
+    var res = await fetch('/api/career', { headers: { Authorization: 'Bearer ' + tok } });
+    if (!res.ok) return;
+    var data = await res.json();
+    if (data.vault) {
+      populateVaultForm(data.vault);
+    }
+    _vaultLoaded = true;
+  } catch(e) {
+    // silently ignore — user can still fill in the form
+  }
+}
+
+// ── Eager-load vault in background after auth ──────────────────
+function eagerLoadVault() {
+  var tok = getToken();
+  if (!tok || _vaultLoaded) return;
+  fetch('/api/career', { headers: { Authorization: 'Bearer ' + tok } })
+    .then(function(res) { return res.ok ? res.json() : null; })
+    .then(function(data) {
+      if (data && data.vault) {
+        populateVaultForm(data.vault);
+        _vaultLoaded = true;
+        // Sync status tab dot even if vault pane not open
+        setVaultStatusUI(vaultComputeStatus());
+      }
+    })
+    .catch(function(){ /* silent */ });
+}

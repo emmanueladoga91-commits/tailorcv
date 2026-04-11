@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TailorCV — Job Application Tracker</title>
+  <title>TailorCV | Job Application Tracker</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -202,7 +202,7 @@
 
 <script>
 // ══════════════════════════════════════════════════════════════
-//  TailorCV Job Tracker — Full-Page View
+//  TailorCV Job Tracker · Full-Page View
 //  Reads/writes from the same localStorage key as the sidebar
 // ══════════════════════════════════════════════════════════════
 
@@ -286,7 +286,7 @@ function renderTable() {
 
   var h = '';
   filtered.forEach(function(e) {
-    var atsHtml = '—';
+    var atsHtml = '·';
     if (e.atsScore !== null && e.atsScore !== undefined) {
       var cls = e.atsScore >= 80 ? 'ats-g' : e.atsScore >= 60 ? 'ats-a' : 'ats-r';
       atsHtml = '<span class="ats-chip '+cls+'">'+e.atsScore+'%</span>';
@@ -300,7 +300,7 @@ function renderTable() {
     h += '<tr>'
        + '<td class="td-company">'+esc(e.company)+'</td>'
        + '<td class="td-role">'+esc(e.role)+'</td>'
-       + '<td class="td-date hide-sm">'+esc(e.date||'—')+'</td>'
+       + '<td class="td-date hide-sm">'+esc(e.date||'·')+'</td>'
        + '<td class="td-ats hide-sm">'+atsHtml+'</td>'
        + '<td><select class="status-select" data-id="'+e.id+'" style="color:'+sc+';background:'+sbg+'">'+opts+'</select></td>'
        + '<td class="td-notes"><textarea data-notes-id="'+e.id+'" placeholder="Add notes…">'+esc(e.notes||'')+'</textarea></td>'

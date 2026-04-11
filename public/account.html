@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TailorCV — My Account</title>
+  <title>TailorCV | My Account</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -119,7 +119,7 @@
         <div class="stat-l">Current plan</div>
       </div>
       <div class="stat-box">
-        <div class="stat-n" id="statStatus">—</div>
+        <div class="stat-n" id="statStatus">·</div>
         <div class="stat-l">Status</div>
       </div>
     </div>
@@ -134,7 +134,7 @@
 
   <!-- Referral Card -->
   <div class="card" id="referralCard">
-    <div class="card-title">🎁 Refer a Friend — Earn Free Tailorings</div>
+    <div class="card-title">🎁 Refer a Friend · Earn Free Tailorings</div>
     <p style="font-size:.9rem;color:var(--gray600);margin-bottom:16px;line-height:1.6">Share your personal link. When a friend signs up and builds their first resume, <strong>you both get 1 free bonus tailoring</strong>. Works even on the free plan.</p>
 
     <div style="display:flex;gap:8px;align-items:center;margin-bottom:16px;flex-wrap:wrap">
@@ -149,15 +149,15 @@
 
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:4px">
       <div class="stat-box">
-        <div class="stat-n" id="refStatCount">—</div>
+        <div class="stat-n" id="refStatCount">·</div>
         <div class="stat-l">Friends referred</div>
       </div>
       <div class="stat-box" style="border-color:#86efac;background:#f0fdf4">
-        <div class="stat-n" style="color:#166534" id="refStatCredits">—</div>
+        <div class="stat-n" style="color:#166534" id="refStatCredits">·</div>
         <div class="stat-l">Free tailorings earned</div>
       </div>
       <div class="stat-box">
-        <div class="stat-n" id="refStatCode" style="font-size:1.2rem;letter-spacing:.05em">—</div>
+        <div class="stat-n" id="refStatCode" style="font-size:1.2rem;letter-spacing:.05em">·</div>
         <div class="stat-l">Your referral code</div>
       </div>
     </div>
@@ -192,11 +192,11 @@
     <div class="card-title">Account Details</div>
     <div class="info-row">
       <span class="info-label">Email</span>
-      <span class="info-val" id="infoEmail">—</span>
+      <span class="info-val" id="infoEmail">·</span>
     </div>
     <div class="info-row">
       <span class="info-label">Member since</span>
-      <span class="info-val" id="infoSince">—</span>
+      <span class="info-val" id="infoSince">·</span>
     </div>
     <div class="info-row" style="border-bottom:none;padding-top:16px;">
       <button class="btn btn-danger" onclick="logout()">Sign out</button>
@@ -264,7 +264,7 @@
 
     document.getElementById('userEmail').textContent = user.email;
     document.getElementById('infoEmail').textContent = user.email;
-    document.getElementById('infoSince').textContent = user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'}) : '—';
+    document.getElementById('infoSince').textContent = user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'}) : '·';
     document.getElementById('statTailors').textContent = user.tailoringCount || 0;
     document.getElementById('statPlan').textContent = isPro ? 'Pro' : 'Free';
     document.getElementById('statStatus').textContent = isPro ? 'Active' : isPastDue ? 'Past Due' : 'Free';
@@ -391,7 +391,7 @@
       document.getElementById('referralLinkInput').value = link;
       document.getElementById('refStatCount').textContent   = d.referral_count   ?? 0;
       document.getElementById('refStatCredits').textContent = d.referral_credits ?? 0;
-      document.getElementById('refStatCode').textContent    = d.referral_code    || '—';
+      document.getElementById('refStatCode').textContent    = d.referral_code    || '·';
     } catch(e) { /* silent */ }
   }
 

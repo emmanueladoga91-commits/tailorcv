@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TailorCV — Admin</title>
+  <title>TailorCV | Admin</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -110,19 +110,19 @@
 
   <!-- Stats row -->
   <div class="stats" id="statsRow">
-    <div class="stat-card"><div class="stat-n" id="statUsers">—</div><div class="stat-l">Total Users</div></div>
-    <div class="stat-card"><div class="stat-n" id="statPro">—</div><div class="stat-l">Pro / Beta</div></div>
-    <div class="stat-card"><div class="stat-n" id="statCodes">—</div><div class="stat-l">Codes Generated</div></div>
-    <div class="stat-card"><div class="stat-n" id="statActive">—</div><div class="stat-l">Active Codes</div></div>
+    <div class="stat-card"><div class="stat-n" id="statUsers">·</div><div class="stat-l">Total Users</div></div>
+    <div class="stat-card"><div class="stat-n" id="statPro">·</div><div class="stat-l">Pro / Beta</div></div>
+    <div class="stat-card"><div class="stat-n" id="statCodes">·</div><div class="stat-l">Codes Generated</div></div>
+    <div class="stat-card"><div class="stat-n" id="statActive">·</div><div class="stat-l">Active Codes</div></div>
   </div>
 
   <!-- Generate code -->
   <div class="card">
     <div class="card-title">🎟️ Generate Beta Code</div>
-    <div class="card-sub">Each code gives a new user full Pro access for 24 hours. Single-use — once redeemed it cannot be reused.</div>
+    <div class="card-sub">Each code gives a new user full Pro access for 24 hours. Single-use · once redeemed it cannot be reused.</div>
     <div id="genAlert" class="alert error" style="display:none;"></div>
     <div class="gen-area">
-      <div class="generated-code" id="generatedCode">—</div>
+      <div class="generated-code" id="generatedCode">·</div>
       <button class="btn btn-green btn-sm" onclick="generateCode()">⚡ Generate New Code</button>
       <button class="copy-btn" id="copyBtn" onclick="copyCode()" style="display:none;">Copy</button>
     </div>
@@ -244,7 +244,7 @@
           '<td>' + created.toLocaleString() + '</td>' +
           '<td>' + exp.toLocaleString() + '</td>' +
           '<td>' + status + '</td>' +
-          '<td style="color:var(--gray600);font-size:.83rem">' + (c.used_by || '—') + '</td>' +
+          '<td style="color:var(--gray600);font-size:.83rem">' + (c.used_by || '·') + '</td>' +
           '</tr>';
       }).join('');
     });
@@ -270,7 +270,7 @@
               ? '<span class="badge badge-beta">Beta</span>'
               : '<span class="badge badge-pro">Pro</span>')
           : '<span class="badge badge-free">Free</span>';
-        var statusText = u.subscription_status || '—';
+        var statusText = u.subscription_status || '·';
         var joined = new Date(u.created_at).toLocaleDateString();
         return '<tr>' +
           '<td style="font-weight:600">' + u.email + '</td>' +

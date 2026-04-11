@@ -62,7 +62,7 @@
       background-size: 28px 28px;
     }
 
-    /* Floating glow blob 1 — top-left indigo */
+    /* Floating glow blob 1 · top-left indigo */
     body::after {
       content:'';
       position:fixed; z-index:0; pointer-events:none;
@@ -82,7 +82,7 @@
       position:relative; z-index:1;
     }
 
-    /* Floating glow blob 2 — bottom-right teal (on main) */
+    /* Floating glow blob 2 · bottom-right teal (on main) */
     main::before {
       content:'';
       position:fixed; z-index:0; pointer-events:none;
@@ -93,7 +93,7 @@
       animation:blob2 20s ease-in-out infinite;
     }
 
-    /* Floating glow blob 3 — mid-page purple accent */
+    /* Floating glow blob 3 · mid-page purple accent */
     main::after {
       content:'';
       position:fixed; z-index:0; pointer-events:none;
@@ -155,7 +155,7 @@
     .step-item.s-active .step-label { color:var(--navy); font-weight:700; }
     .step-item.s-done   .step-label { color:var(--green); }
 
-    /* ── Cards — glassmorphism ── */
+    /* ── Cards · glassmorphism ── */
     .card {
       background:rgba(255,255,255,.9);
       backdrop-filter:blur(18px) saturate(1.6);
@@ -1147,7 +1147,7 @@
   <div id="guideCard">
     <div class="guide-top">
       <div>
-        <div class="guide-headline">🚀 Land your next role — in 5 steps</div>
+        <div class="guide-headline">🚀 Land your next role · in 5 steps</div>
         <div class="guide-sub">ProResume AI tailors your resume to every job description. Here's how it works:</div>
       </div>
       <button class="guide-dismiss" id="guideDismiss">Got it ✓</button>
@@ -1159,35 +1159,35 @@
         <span class="gs-icon">🎯</span>
         <div class="gs-num">Step 1</div>
         <div class="gs-title">Pick your niche</div>
-        <div class="gs-desc">Choose from 18 career profiles — the AI writes differently for each one</div>
+        <div class="gs-desc">Choose from 18 career profiles · the AI writes differently for each one</div>
       </div>
 
       <div class="guide-step">
         <span class="gs-icon">📄</span>
         <div class="gs-num">Step 2</div>
         <div class="gs-title">Upload your resume</div>
-        <div class="gs-desc">Drop in your existing .docx or .pdf — we extract and rewrite it for you</div>
+        <div class="gs-desc">Drop in your existing .docx or .pdf · we extract and rewrite it for you</div>
       </div>
 
       <div class="guide-step">
         <span class="gs-icon">🏢</span>
         <div class="gs-num">Step 3</div>
         <div class="gs-title">Paste the job ad</div>
-        <div class="gs-desc">Copy the full job description — the AI matches your experience to every requirement</div>
+        <div class="gs-desc">Copy the full job description · the AI matches your experience to every requirement</div>
       </div>
 
       <div class="guide-step">
         <span class="gs-icon">🎨</span>
         <div class="gs-num">Step 4</div>
         <div class="gs-title">Pick template</div>
-        <div class="gs-desc">14 templates — choose your style, then customise font and layout</div>
+        <div class="gs-desc">14 templates · choose your style, then customise font and layout</div>
       </div>
 
       <div class="guide-step">
         <span class="gs-icon">⚡</span>
         <div class="gs-num">Step 5</div>
         <div class="gs-title">Build &amp; download</div>
-        <div class="gs-desc">Get a tailored resume, cover letter, ATS score, skills gap &amp; interview prep — all at once</div>
+        <div class="gs-desc">Get a tailored resume, cover letter, ATS score, skills gap &amp; interview prep · all at once</div>
       </div>
 
     </div>
@@ -1195,7 +1195,7 @@
     <div class="guide-tip">
       <span style="font-size:18px">💡</span>
       <div class="guide-tip-text">
-        <strong>Pro tip:</strong> Use a fresh job description every time you apply. The AI re-tailors your resume for each role — your tracker remembers every application.
+        <strong>Pro tip:</strong> Use a fresh job description every time you apply. The AI re-tailors your resume for each role · your tracker remembers every application.
         After building, use <strong>💾 Save Progress</strong> to pick up exactly where you left off next time.
       </div>
     </div>
@@ -1209,13 +1209,13 @@
     <div class="step-item"          id="st3"><div class="step-dot">4</div><div class="step-label">Build</div></div>
   </div>
 
-  <!-- Step 0: Professional Profile — 18 niches in 6×3 grid -->
+  <!-- Step 0: Professional Profile · 18 niches in 6×3 grid -->
   <div class="card">
     <div class="sec-hdr">
       <div class="sec-num" id="sn0">1</div>
       <div class="sec-hdr-text">
         <h2>Choose your professional profile</h2>
-        <p>Tailors the AI writing style to your field — 18 career niches available</p>
+        <p>Tailors the AI writing style to your field · 18 career niches available</p>
       </div>
     </div>
     <div class="profile-grid">
@@ -1292,7 +1292,7 @@
         <div class="profile-name">Real Estate &amp; Property</div>
       </div>
     </div>
-    <!-- Recommendation message — populated by JS on profile select -->
+    <!-- Recommendation message · populated by JS on profile select -->
     <div id="profileRecMsg" class="profile-rec-msg">
       <span class="prm-icon">✨</span>
       <div class="prm-body">
@@ -1355,14 +1355,14 @@
           <strong>How to export your LinkedIn profile as PDF:</strong><br>
           1. Go to <strong>linkedin.com</strong> → click the <strong>Me</strong> icon (top right) → <strong>View Profile</strong><br>
           2. On your profile page, click the <strong>More</strong> button (below your name &amp; headline)<br>
-          3. Select <strong>Save to PDF</strong> from the dropdown — LinkedIn downloads the file<br>
+          3. Select <strong>Save to PDF</strong> from the dropdown · LinkedIn downloads the file<br>
           4. Upload that PDF here ↓
         </div>
         <button class="li-upload-btn" onclick="document.getElementById('fileInputLi').click()">
           ⬆ Upload LinkedIn PDF
         </button>
         <input type="file" id="fileInputLi" accept=".pdf" style="display:none">
-        <div style="font-size:11px;color:var(--muted);margin-top:10px">Your data stays private — processed on our secure server, never stored.</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:10px">Your data stays private · processed on our secure server, never stored.</div>
       </div>
     </div>
 
@@ -1375,7 +1375,7 @@
           <span class="vault-header-icon">🗄️</span>
           <div>
             <div class="vault-header-title">Career Data Vault</div>
-            <div class="vault-header-sub">Store your full career history once — AI tailors from it every time</div>
+            <div class="vault-header-sub">Store your full career history once · AI tailors from it every time</div>
           </div>
         </div>
         <div style="display:flex;align-items:center;gap:7px">
@@ -1390,7 +1390,7 @@
           <span style="font-size:18px">⬆</span>
           <div>
             <div class="vault-import-title">Auto-fill from resume</div>
-            <div class="vault-import-sub">Upload a .docx or .pdf — AI extracts your career data into the vault</div>
+            <div class="vault-import-sub">Upload a .docx or .pdf · AI extracts your career data into the vault</div>
           </div>
         </div>
         <label class="vault-import-btn" id="vaultImportBtn">
@@ -1535,7 +1535,7 @@
     <div class="f"><label>Company</label><input type="text" id="company" placeholder="e.g. Shopify"></div>
     <div class="f"><label>Role you're applying for</label><input type="text" id="role" placeholder="e.g. Senior Business Analyst"></div>
     <div class="f">
-      <label>Job description URL <span style="font-weight:400;text-transform:none;font-size:11px">optional — paste a link to auto-fill</span></label>
+      <label>Job description URL <span style="font-weight:400;text-transform:none;font-size:11px">optional · paste a link to auto-fill</span></label>
       <div style="display:flex;gap:8px;align-items:center">
         <input type="url" id="jdUrl" placeholder="https://jobs.example.com/role/12345" style="flex:1" oninput="onJdUrlInput()" />
         <button type="button" id="fetchJdBtn" onclick="fetchJdFromUrl()" style="white-space:nowrap;padding:11px 16px;background:var(--navy);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;transition:opacity .15s" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
@@ -1560,18 +1560,18 @@
     </div>
   </div>
 
-  <!-- Step 3: Template — 13 templates in 4-col grid -->
+  <!-- Step 3: Template · 13 templates in 4-col grid -->
   <div class="card">
     <div class="sec-hdr">
       <div class="sec-num" id="sn3">4</div>
       <div class="sec-hdr-text">
         <h2>Choose a template style</h2>
-        <p>14 templates — all ATS-compatible · use the font toolbar to customise typography</p>
+        <p>14 templates · all ATS-compatible · use the font toolbar to customise typography</p>
       </div>
     </div>
     <div class="template-grid">
 
-      <!-- 1. Classic — plain centered, black underline sections, 2-col bullet skills -->
+      <!-- 1. Classic · plain centered, black underline sections, 2-col bullet skills -->
       <div class="template-card selected" data-template="classic">
         <div class="t-preview">
           <div class="tp">
@@ -1595,7 +1595,7 @@
         <button class="t-eye-btn" data-preview="classic">👁 Preview</button>
       </div>
 
-      <!-- 2. Executive — dark green full-bleed banner, double-line sections, serif -->
+      <!-- 2. Executive · dark green full-bleed banner, double-line sections, serif -->
       <div class="template-card" data-template="executive">
         <div class="t-preview">
           <div class="tp" style="padding:0">
@@ -1618,7 +1618,7 @@
         <button class="t-eye-btn" data-preview="executive">👁 Preview</button>
       </div>
 
-      <!-- 3. Modern — indigo gradient banner, pill skills, colored underline sections -->
+      <!-- 3. Modern · indigo gradient banner, pill skills, colored underline sections -->
       <div class="template-card" data-template="modern">
         <div class="t-preview">
           <div class="tp" style="padding:0">
@@ -1643,7 +1643,7 @@
         <button class="t-eye-btn" data-preview="modern">👁 Preview</button>
       </div>
 
-      <!-- 4. Professional — centered header, navy left-bar sections, 2-col grid -->
+      <!-- 4. Professional · centered header, navy left-bar sections, 2-col grid -->
       <div class="template-card" data-template="professional">
         <div class="t-preview">
           <div class="tp">
@@ -1670,7 +1670,7 @@
         <button class="t-eye-btn" data-preview="professional">👁 Preview</button>
       </div>
 
-      <!-- 5. Minimal — left-aligned, thin HR, gray caps labels, inline skills -->
+      <!-- 5. Minimal · left-aligned, thin HR, gray caps labels, inline skills -->
       <div class="template-card" data-template="minimal">
         <div class="t-preview">
           <div class="tp">
@@ -1690,7 +1690,7 @@
         <button class="t-eye-btn" data-preview="minimal">👁 Preview</button>
       </div>
 
-      <!-- 6. Tech — dark slate banner, blue left-bar, code tag skills -->
+      <!-- 6. Tech · dark slate banner, blue left-bar, code tag skills -->
       <div class="template-card" data-template="tech">
         <div class="t-preview">
           <div class="tp" style="padding:0">
@@ -1720,7 +1720,7 @@
         <button class="t-eye-btn" data-preview="tech">👁 Preview</button>
       </div>
 
-      <!-- 7. Consulting — burgundy top stripe, thick left-bar sections -->
+      <!-- 7. Consulting · burgundy top stripe, thick left-bar sections -->
       <div class="template-card" data-template="consulting">
         <div class="t-preview">
           <div class="tp" style="padding:0">
@@ -1747,7 +1747,7 @@
         <button class="t-eye-btn" data-preview="consulting">👁 Preview</button>
       </div>
 
-      <!-- 8. Academic — centered, amber dotted sections, italic serif, single-col skills -->
+      <!-- 8. Academic · centered, amber dotted sections, italic serif, single-col skills -->
       <div class="template-card" data-template="academic">
         <div class="t-preview">
           <div class="tp">
@@ -1769,7 +1769,7 @@
         <button class="t-eye-btn" data-preview="academic">👁 Preview</button>
       </div>
 
-      <!-- 9. Entry Level — pale blue banner, thin underline, 2-col grid skills -->
+      <!-- 9. Entry Level · pale blue banner, thin underline, 2-col grid skills -->
       <div class="template-card" data-template="entrylevel">
         <div class="t-preview">
           <div class="tp" style="padding:0">
@@ -1799,7 +1799,7 @@
         <button class="t-eye-btn" data-preview="entrylevel">👁 Preview</button>
       </div>
 
-      <!-- 10. Government — double navy border header, navy block-bg sections -->
+      <!-- 10. Government · double navy border header, navy block-bg sections -->
       <div class="template-card" data-template="government">
         <div class="t-preview">
           <div class="tp">
@@ -1821,7 +1821,7 @@
         <button class="t-eye-btn" data-preview="government">👁 Preview</button>
       </div>
 
-      <!-- 11. Creative — teal vertical stripe, large left-aligned name, pill skills -->
+      <!-- 11. Creative · teal vertical stripe, large left-aligned name, pill skills -->
       <div class="template-card" data-template="creative">
         <div class="t-preview" style="position:relative;overflow:hidden;padding:0">
           <div style="display:flex;height:100%">
@@ -1847,7 +1847,7 @@
         <button class="t-eye-btn" data-preview="creative">👁 Preview</button>
       </div>
 
-      <!-- 12. Healthcare — teal top stripe, centered, italic underline, dash-list skills -->
+      <!-- 12. Healthcare · teal top stripe, centered, italic underline, dash-list skills -->
       <div class="template-card" data-template="healthcare">
         <div class="t-preview">
           <div class="tp" style="padding:0">
@@ -1874,7 +1874,7 @@
         <button class="t-eye-btn" data-preview="healthcare">👁 Preview</button>
       </div>
 
-      <!-- 13. Compact — left-aligned, gray caps labels, dense inline skills, no wasted space -->
+      <!-- 13. Compact · left-aligned, gray caps labels, dense inline skills, no wasted space -->
       <div class="template-card" data-template="compact">
         <div class="t-preview">
           <div class="tp">
@@ -1899,7 +1899,7 @@
 
     </div>
 
-      <!-- 14. Custom ✦ — design from scratch -->
+      <!-- 14. Custom ✦ · design from scratch -->
       <div class="template-card" data-template="custom">
         <div class="t-preview" style="overflow:hidden;position:relative">
           <div style="position:absolute;left:0;top:0;bottom:0;width:6px;background:linear-gradient(180deg,#6366f1,#0d9488)"></div>
@@ -1969,7 +1969,7 @@
 
     <!-- ── Template Customizer (shown when Custom ✦ selected) ── -->
     <div id="custPanel" class="cust-panel">
-      <div class="cust-hdr"><span>✦</span> Design your own template — changes apply live to preview</div>
+      <div class="cust-hdr"><span>✦</span> Design your own template · changes apply live to preview</div>
       <div class="cust-grid">
         <!-- Header layout -->
         <div class="cust-group">
@@ -2022,7 +2022,7 @@
         <div class="cust-group">
           <div class="cust-lbl">Section dividers</div>
           <div class="cst-btns">
-            <button class="cst-btn on" data-sechdr="underline">— Underline</button>
+            <button class="cst-btn on" data-sechdr="underline">· Underline</button>
             <button class="cst-btn" data-sechdr="double">= Double</button>
             <button class="cst-btn" data-sechdr="left-bar">| Left bar</button>
             <button class="cst-btn" data-sechdr="block-bg">▬ Block</button>
@@ -2046,7 +2046,7 @@
             <button class="cst-btn" data-skills="pills">◉ Pills</button>
             <button class="cst-btn" data-skills="tags">‹› Tags</button>
             <button class="cst-btn" data-skills="inline">· Inline</button>
-            <button class="cst-btn" data-skills="single">— List</button>
+            <button class="cst-btn" data-skills="single">· List</button>
           </div>
         </div>
         <!-- Page spacing -->
@@ -2060,7 +2060,7 @@
         </div>
         <!-- Section order -->
         <div class="cust-group cust-full">
-          <div class="cust-lbl">Section order — drag to rearrange · 👁 toggle visibility · rename labels</div>
+          <div class="cust-lbl">Section order · drag to rearrange · 👁 toggle visibility · rename labels</div>
           <div class="sec-ord-list" id="custSecList">
             <div class="sec-ord-item" data-sec="summary" draggable="true"><span class="sec-ord-handle">⣿</span><span class="sec-ord-icon">📄</span><input class="sec-ord-rename" value="PROFESSIONAL SUMMARY" data-sec="summary"><button class="sec-vis-btn" data-sec="summary">👁</button></div>
             <div class="sec-ord-item" data-sec="skills" draggable="true"><span class="sec-ord-handle">⣿</span><span class="sec-ord-icon">⭐</span><input class="sec-ord-rename" value="KEY SKILLS" data-sec="skills"><button class="sec-vis-btn" data-sec="skills">👁</button></div>
@@ -2088,7 +2088,7 @@
   <div id="matchPanel">
     <div class="mp-hdr">
       <span style="font-size:18px">🎯</span>
-      <div class="mp-title">Match Score — Before Tailoring</div>
+      <div class="mp-title">Match Score · Before Tailoring</div>
       <button class="mp-close" onclick="document.getElementById('matchPanel').classList.remove('on')">✕</button>
     </div>
     <div id="matchContent"></div>
@@ -2148,14 +2148,14 @@
     <div class="sec-hdr" style="margin-bottom:4px">
       <span style="font-size:20px">💬</span><h2 style="margin-left:10px">Interview Prep Questions</h2>
     </div>
-    <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Most likely questions based on this role — with coaching tips.</p>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Most likely questions based on this role · with coaching tips.</p>
     <div id="iqContent"></div>
     <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border)">
       <a id="practiceInterviewBtn" href="interview.html"
          style="display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff;font-size:14px;font-weight:700;padding:12px 22px;border-radius:10px;text-decoration:none;box-shadow:0 4px 14px rgba(99,102,241,.35);transition:opacity .15s,transform .15s">
         🎤 Practice with AI Interview Coach <span style="font-size:11px;background:rgba(255,255,255,.25);border-radius:99px;padding:2px 8px">PRO</span>
       </a>
-      <p style="font-size:12px;color:var(--muted);margin-top:8px">Interactive flashcards with model answers, STAR coaching &amp; self-rating — tailored to this exact JD.</p>
+      <p style="font-size:12px;color:var(--muted);margin-top:8px">Interactive flashcards with model answers, STAR coaching &amp; self-rating · tailored to this exact JD.</p>
     </div>
   </div>
 
@@ -2166,7 +2166,7 @@
   <div class="tpv-wrap">
     <div class="tpv-bar">
       <span style="font-size:16px">🎨</span>
-      <div class="tpv-title" id="tpvTitle">Classic — Traditional, centered</div>
+      <div class="tpv-title" id="tpvTitle">Classic · Traditional, centered</div>
       <div class="tpv-nav">
         <button id="tpvPrev">&#8592; Prev</button>
         <button id="tpvNext">Next &#8594;</button>
@@ -2247,7 +2247,7 @@
 <script src="docx.iife.js"></script>
 <script src="jszip.min.js"></script>
 <script>
-  // Auth guard — redirect if not logged in
+  // Auth guard · redirect if not logged in
   (function() {
     var token = localStorage.getItem('tc_token');
     if (!token) { window.location.href = '/auth.html'; }

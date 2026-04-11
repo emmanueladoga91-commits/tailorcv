@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Interview Coach — TailorCV</title>
+  <title>Interview Coach | TailorCV</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -336,14 +336,14 @@
     <div style="display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap">
       <span style="font-size:2rem;line-height:1">🎁</span>
       <div style="flex:1;min-width:200px">
-        <div style="font-weight:800;font-size:1rem;color:#92400e;margin-bottom:4px">Free Preview — 3 Questions</div>
-        <div style="font-size:.9rem;color:#78350f;line-height:1.55">You get 3 tailored interview questions with full model answers and STAR coaching — completely free. Upgrade to Pro to unlock all 10 questions, self-rating tools, session saves, and PDF export.</div>
+        <div style="font-weight:800;font-size:1rem;color:#92400e;margin-bottom:4px">Free Preview · 3 Questions</div>
+        <div style="font-size:.9rem;color:#78350f;line-height:1.55">You get 3 tailored interview questions with full model answers and STAR coaching · completely free. Upgrade to Pro to unlock all 10 questions, self-rating tools, session saves, and PDF export.</div>
       </div>
       <a class="btn-upgrade" href="account.html" style="flex-shrink:0;font-size:.9rem;padding:10px 20px">⚡ Upgrade to Pro</a>
     </div>
   </div>
 
-  <!-- Gate screen (legacy — not shown for free users anymore) -->
+  <!-- Gate screen (legacy · not shown for free users anymore) -->
   <div class="card" id="gateScreen" style="display:none">
     <div class="gate-icon">🔒</div>
     <h2>Interview Coach is a Pro Feature</h2>
@@ -361,7 +361,7 @@
     <!-- Auto-loaded context banner -->
     <div class="context-banner" id="contextBanner" style="display:none">
       <span>✅</span>
-      <div>Job context loaded from your resume build — <strong id="contextJobTitle">this role</strong>. You can edit below or generate directly.</div>
+      <div>Job context loaded from your resume build · <strong id="contextJobTitle">this role</strong>. You can edit below or generate directly.</div>
     </div>
 
     <!-- No context note -->
@@ -382,7 +382,7 @@
     </div>
     <div class="f" style="margin-bottom:16px">
       <label>Job Description</label>
-      <textarea id="jdInput" placeholder="Paste the full job description here — the more detail, the better the questions…"></textarea>
+      <textarea id="jdInput" placeholder="Paste the full job description here · the more detail, the better the questions…"></textarea>
     </div>
 
     <div style="display:flex; gap:10px; flex-wrap:wrap">
@@ -462,12 +462,12 @@
   <div id="freeUpgradeNudge" style="display:none;background:linear-gradient(135deg,#1a2744,#243057);border-radius:16px;padding:32px;text-align:center;margin:16px 0">
     <div style="font-size:2.5rem;margin-bottom:12px">🔒</div>
     <h3 style="color:#fff;font-size:1.3rem;font-weight:800;margin-bottom:8px">7 more questions await in Pro</h3>
-    <p style="color:rgba(255,255,255,.7);font-size:.95rem;max-width:480px;margin:0 auto 20px;line-height:1.6">You've seen 3 questions — just a taste of what TailorCV Interview Coach can do. Upgrade to unlock all 10 tailored questions, self-rating (Got It / Almost / Need Work), session saves, and one-click PDF export.</p>
+    <p style="color:rgba(255,255,255,.7);font-size:.95rem;max-width:480px;margin:0 auto 20px;line-height:1.6">You've seen 3 questions · just a taste of what TailorCV Interview Coach can do. Upgrade to unlock all 10 tailored questions, self-rating (Got It / Almost / Need Work), session saves, and one-click PDF export.</p>
     <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
-      <a class="btn-upgrade" href="account.html" style="font-size:1rem;padding:14px 32px">⚡ Upgrade to Pro — $9/mo</a>
+      <a class="btn-upgrade" href="account.html" style="font-size:1rem;padding:14px 32px">⚡ Upgrade to Pro · $9/mo</a>
       <a href="account.html" style="display:inline-flex;align-items:center;color:rgba(255,255,255,.6);font-size:.9rem;text-decoration:underline;padding:14px 0">See what Pro includes →</a>
     </div>
-    <p style="margin-top:16px;font-size:.8rem;color:rgba(255,255,255,.35)">No credit card risk — cancel anytime · 30-day money-back guarantee</p>
+    <p style="margin-top:16px;font-size:.8rem;color:rgba(255,255,255,.35)">No credit card risk · cancel anytime · 30-day money-back guarantee</p>
   </div>
 
   <!-- Complete Banner -->
@@ -489,7 +489,7 @@
     <p>Give this session a name so you can find it later.</p>
     <div class="f">
       <label>Session Name</label>
-      <input type="text" id="saveNameInput" placeholder="e.g. Google PM Interview — Apr 2026" maxlength="80"
+      <input type="text" id="saveNameInput" placeholder="e.g. Google PM Interview · Apr 2026" maxlength="80"
              onkeydown="if(event.key==='Enter')confirmSave()" />
     </div>
     <div class="save-modal-actions">
@@ -501,14 +501,14 @@
 
 <script>
 // ═══════════════════════════════════════════════════════════════
-//  TailorCV — Interview Coach
+//  TailorCV · Interview Coach
 // ═══════════════════════════════════════════════════════════════
 
 var _questions    = [];   // array of question objects
 var _ratings      = {};   // { idx: 'got-it' | 'almost' | 'need-work' }
 var _currentCat   = 'All';
 var _revealState  = {};   // { idx: bool }
-var _openState    = {};   // { idx: bool } — answer panel open/closed
+var _openState    = {};   // { idx: bool } · answer panel open/closed
 
 // ── Auth + plan check ──────────────────────────────────────────
 async function init() {
@@ -528,7 +528,7 @@ async function init() {
     window._icIsPro = isPro;
 
     if (!isPro) {
-      // Free users get a preview — show banner, hide Pro-only actions
+      // Free users get a preview · show banner, hide Pro-only actions
       document.getElementById('freePreviewBanner').style.display = 'block';
       document.querySelectorAll('.free-hide').forEach(function(el){ el.style.display='none'; });
     }
@@ -537,7 +537,7 @@ async function init() {
     return;
   }
 
-  // Load saved session from localStorage (Pro only — don't load stale free-session data)
+  // Load saved session from localStorage (Pro only · don't load stale free-session data)
   if (window._icIsPro) {
     var savedSession = localStorage.getItem('tc_interview_session');
     if (savedSession) {
@@ -587,14 +587,14 @@ async function generateQuestions() {
 
   var systemPrompt = [
     'You are an expert interview coach. Generate targeted interview questions for this role.',
-    'Return ONLY a valid JSON array — no markdown, no explanation, nothing else.',
+    'Return ONLY a valid JSON array · no markdown, no explanation, nothing else.',
     'Each element must follow this exact structure (keep all string values concise):',
     '{',
     '  "category": "Behavioral|Technical|Situational|Company|Role",',
     '  "difficulty": "Easy|Medium|Hard",',
     '  "question": "The question (1-2 sentences)",',
     '  "why_asked": "What the interviewer is assessing (1 sentence max)",',
-    '  "model_answer": "Strong model answer (3-4 sentences max — be concise)",',
+    '  "model_answer": "Strong model answer (3-4 sentences max · be concise)",',
     '  "star_situation": "Brief STAR situation (Behavioral/Situational only, else empty string)",',
     '  "star_task": "Brief STAR task (else empty string)",',
     '  "star_action": "Brief STAR action (else empty string)",',
@@ -603,8 +603,8 @@ async function generateQuestions() {
     '}',
     '',
     (window._icIsPro
-      ? 'Generate exactly 10 questions — 2 per category in this order:\n1. Behavioral (STAR format)\n2. Technical (role-specific skills)\n3. Situational (hypothetical scenarios)\n4. Company (culture, why this company)\n5. Role (responsibilities, fit)'
-      : 'Generate exactly 3 questions — 1 Behavioral, 1 Technical, 1 Situational. These are a free preview.'),
+      ? 'Generate exactly 10 questions · 2 per category in this order:\n1. Behavioral (STAR format)\n2. Technical (role-specific skills)\n3. Situational (hypothetical scenarios)\n4. Company (culture, why this company)\n5. Role (responsibilities, fit)'
+      : 'Generate exactly 3 questions · 1 Behavioral, 1 Technical, 1 Situational. These are a free preview.'),
     '',
     'All questions must be specific to this exact role and company.',
     'IMPORTANT: Keep answers short. The entire JSON response must stay well under 4000 tokens.',
@@ -935,7 +935,7 @@ function shuffleQuestions() {
   // Re-index ratings
   var newRatings = {};
   Object.keys(_ratings).forEach(function(k){
-    var q = _questions[parseInt(k)]; // this won't work after shuffle — re-map
+    var q = _questions[parseInt(k)]; // this won't work after shuffle · re-map
   });
   _ratings = {}; // reset ratings after shuffle (indices changed)
   _openState = {}; _revealState = {};
@@ -1051,7 +1051,7 @@ function openSaveModal() {
   var role    = (document.getElementById('jobTitleInput').value || '').trim();
   var company = (document.getElementById('companyInput').value  || '').trim();
   var today   = new Date().toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'});
-  var suggested = [role, company, today].filter(Boolean).join(' — ');
+  var suggested = [role, company, today].filter(Boolean).join(' · ');
   document.getElementById('saveNameInput').value = suggested;
   document.getElementById('saveModal').classList.add('on');
   setTimeout(function(){ document.getElementById('saveNameInput').focus(); }, 60);
@@ -1184,7 +1184,7 @@ function exportSessionPDF() {
       '</div>';
   }
 
-  var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Interview Session — ' + escPdf(role || 'TailorCV') + '</title>' +
+  var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Interview Session | ' + escPdf(role || 'TailorCV') + '</title>' +
     '<style>' +
     'body{font-family:Calibri,Georgia,serif;font-size:13px;color:#1a1a2e;max-width:820px;margin:0 auto;padding:32px 40px}' +
     'h1{font-size:22px;color:#1e3a5f;margin-bottom:4px}' +

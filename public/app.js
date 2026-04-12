@@ -2537,7 +2537,31 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Eager-load career vault in background (silent — populates form before user opens tab)
   setTimeout(eagerLoadVault, 800);
+
+  // Inject real template HTML previews into the template grid cards
+  setTimeout(initTemplatePreviews, 0);
 });
+
+// ── Real template thumbnail previews ─────────────────────────────────────────
+function initTemplatePreviews() {
+  var grid = document.getElementById('resumeTemplateGrid');
+  if(!grid) return;
+  var cards = grid.querySelectorAll('.template-card[data-template]');
+  // Temporarily force tab to 'resume' for _tmcBuildHtml cache key
+  var prevTab = _tmcTab;
+  _tmcTab = 'resume';
+  cards.forEach(function(card) {
+    var key = card.getAttribute('data-template');
+    if(key === 'custom') return; // custom has its own placeholder
+    var previewEl = card.querySelector('.t-preview');
+    if(!previewEl) return;
+    var cardW = previewEl.offsetWidth || previewEl.parentElement.offsetWidth || 200;
+    var scale = (cardW / 860).toFixed(4);
+    var html = _tmcBuildHtml(key);
+    previewEl.innerHTML = '<div class="t-preview-scaler" style="width:860px;transform:scale('+scale+')">' + html + '</div>';
+  });
+  _tmcTab = prevTab;
+}
 
 // ── Upload tab switching ────────────────────────────────────────────────────
 function switchUploadTab(name) {

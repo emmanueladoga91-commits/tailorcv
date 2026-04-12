@@ -1308,13 +1308,14 @@
     .tmcz-page-wrap {
       background:#fff; border-radius:12px;
       box-shadow:0 20px 70px rgba(0,0,0,.6);
-      overflow:hidden;
+      overflow:visible;
       transition:zoom .22s cubic-bezier(.4,0,.2,1);
-      /* default 100% — set to 860px natural resume width */
+      /* Match the natural preview width templates are designed for */
       width:860px;
     }
+    /* No extra padding — each template's HTML already carries its own margins */
     .tmcz-page-inner {
-      padding:52px 62px;
+      padding:0;
       font-family:Calibri,Georgia,serif;
       font-size:10pt; line-height:1.45; color:#111;
     }

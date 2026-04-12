@@ -2314,7 +2314,7 @@ function openTmcZoom() {
     : (TEMPLATE_LABELS[key]||key).split('\u2014')[0].trim();
   var subtitle = _tmcTab === 'cl' ? 'Cover letter' : 'Resume';
   var titleEl = document.getElementById('tmczTitle');
-  if(titleEl) titleEl.innerHTML = es(label) + '<span class="tmcz-subtitle"> \u00b7 ' + subtitle + ' template</span>';
+  if(titleEl) titleEl.innerHTML = esc(label) + '<span class="tmcz-subtitle"> \u00b7 ' + subtitle + ' template</span>';
   var inner = document.getElementById('tmczPageInner');
   if(inner) inner.innerHTML = _tmcBuildHtml(key);
   setTmcZoom(_tmcZoomLevel);
@@ -2332,12 +2332,9 @@ function setTmcZoom(level) {
   document.querySelectorAll('.tmcz-zoom-btn').forEach(function(b) {
     b.classList.toggle('active', b.textContent.trim() === level + '%');
   });
+  // CSS zoom resizes the element AND its layout footprint — scroll works correctly
   var wrap = document.getElementById('tmczPageWrap');
-  if(wrap) {
-    wrap.style.transform = 'scale(' + (level / 100) + ')';
-    // Adjust container height so scrollbar reflects actual content size
-    wrap.style.marginBottom = level === 75 ? '-25%' : level === 125 ? '25%' : '0';
-  }
+  if(wrap) wrap.style.zoom = level + '%';
 }
 
 // ══════════════════════════════════════════════════════════════════════════════

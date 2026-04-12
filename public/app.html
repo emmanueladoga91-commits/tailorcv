@@ -1309,8 +1309,7 @@
       background:#fff; border-radius:12px;
       box-shadow:0 20px 70px rgba(0,0,0,.6);
       overflow:hidden;
-      transform-origin:top center;
-      transition:transform .22s cubic-bezier(.4,0,.2,1), width .22s;
+      transition:zoom .22s cubic-bezier(.4,0,.2,1);
       /* default 100% — set to 860px natural resume width */
       width:860px;
     }
@@ -2512,7 +2511,7 @@
       <!-- Center card (active) -->
       <div class="tmc-slot tmc-slot-center" id="tmcCenter">
         <div id="tmcCenterContent"></div>
-        <button class="tmc-zoom-trigger" onclick="openTmcZoom()" title="View full size">🔍 Zoom</button>
+        <button class="tmc-zoom-trigger" onclick="openTmcZoom()" title="View full size">🔍</button>
         <div class="tmc-center-foot">
           <div class="tmc-center-name" id="tmcCenterLabel">Classic</div>
           <button class="tmc-use-btn" onclick="tmcUseTemplate()">✓ Use This Template</button>

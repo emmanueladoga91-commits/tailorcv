@@ -397,562 +397,202 @@
       margin-bottom: 60px;
     }
 
-    /* ─── TEMPLATE GALLERY ────────────────────────────── */
-    .templates-section { background: white; }
-    .templates-inner {
-      max-width: 1160px; margin: 0 auto;
-      padding: 96px 24px;
-    }
-    .templates-header { text-align: center; margin-bottom: 56px; }
-    .templates-header .section-label { justify-content: center; }
-    .templates-header .section-label::before { display: none; }
-    .templates-header .section-sub { margin: 0 auto; text-align: center; }
-
-    .tmpl-gallery {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
-      gap: 20px;
-    }
-    /* CSS-rendered document thumbnails */
-    .tmpl-card {
-      border: 1.5px solid var(--gray200);
-      border-radius: 12px;
-      overflow: hidden;
-      cursor: default;
-      transition: transform .22s, box-shadow .22s, border-color .22s;
-      background: white;
-      box-shadow: 0 2px 10px rgba(0,0,0,.05);
-    }
-    .tmpl-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 14px 40px rgba(79,110,247,.18);
-      border-color: var(--indigo);
-    }
-    .tmpl-card.featured {
-      border-color: var(--indigo);
-      box-shadow: 0 4px 20px rgba(79,110,247,.15);
-    }
-    .tmpl-thumb {
-      height: 160px;
-      position: relative;
-      overflow: hidden;
-    }
-    /* Generic doc lines inside thumb */
-    .tmpl-doc {
-      position: absolute; inset: 0;
-      padding: 12px 10px 10px;
-      display: flex; flex-direction: column;
-      gap: 3px;
-      font-size: 0;
-    }
-    .doc-band {
-      border-radius: 2px;
-      flex-shrink: 0;
-    }
-    .doc-line {
-      height: 3px; border-radius: 2px;
-      background: rgba(0,0,0,.12);
-      flex-shrink: 0;
-    }
-    .doc-line.h { background: rgba(0,0,0,.22); height: 4px; }
-    .doc-line.s { width: 55%; }
-    .doc-line.m { width: 75%; }
-    .doc-line.f { width: 100%; }
-    .doc-line.light { background: rgba(0,0,0,.07); }
-    .doc-spacer { height: 5px; flex-shrink: 0; }
-
-    /* Per-template color themes */
-    .tt-classic .tmpl-thumb { background: #f8fafc; }
-    .tt-classic .doc-band.top { height: 28px; background: #1a2744; border-radius: 0; }
-    .tt-classic .doc-line.h { background: rgba(26,39,68,.5); }
-    .tt-classic .doc-line { background: rgba(26,39,68,.15); }
-    .tt-classic .doc-line.light { background: rgba(26,39,68,.07); }
-
-    .tt-tech .tmpl-thumb { background: #0d1117; }
-    .tt-tech .doc-band.top { height: 24px; background: linear-gradient(90deg,#00d2ff,#0ea5e9); border-radius: 0; }
-    .tt-tech .doc-line.h { background: rgba(56,189,248,.6); }
-    .tt-tech .doc-line { background: rgba(255,255,255,.18); }
-    .tt-tech .doc-line.light { background: rgba(255,255,255,.08); }
-
-    .tt-modern .tmpl-thumb { background: #fafaff; }
-    .tt-modern .doc-band.top { height: 22px; background: linear-gradient(90deg, #4f6ef7, #818cf8); border-radius: 0; }
-    .tt-modern .doc-line.h { background: rgba(79,110,247,.5); }
-    .tt-modern .doc-line { background: rgba(79,110,247,.15); }
-    .tt-modern .doc-line.light { background: rgba(79,110,247,.07); }
-    .tt-modern .doc-band.side { width: 28px; height: 100%; position: absolute; left: 0; top: 0; background: linear-gradient(180deg, #4f6ef7, #818cf8); }
-
-    .tt-health .tmpl-thumb { background: #f0fdf4; }
-    .tt-health .doc-band.top { height: 24px; background: #0d9488; border-radius: 0; }
-    .tt-health .doc-line.h { background: rgba(13,148,136,.55); }
-    .tt-health .doc-line { background: rgba(13,148,136,.18); }
-    .tt-health .doc-line.light { background: rgba(13,148,136,.08); }
-
-    .tt-consult .tmpl-thumb { background: #fafaf7; }
-    .tt-consult .doc-band.top { height: 20px; background: #1c1917; border-radius: 0; }
-    .tt-consult .doc-band.accent { height: 3px; background: #d97706; border-radius: 0; margin-top: 0; flex-shrink: 0; }
-    .tt-consult .doc-line.h { background: rgba(28,25,23,.5); }
-    .tt-consult .doc-line { background: rgba(28,25,23,.14); }
-    .tt-consult .doc-line.light { background: rgba(28,25,23,.06); }
-
-    .tt-legal .tmpl-thumb { background: #f8f9ff; }
-    .tt-legal .doc-band.top { height: 32px; background: #1e3a5f; border-radius: 0; }
-    .tt-legal .doc-line.h { background: rgba(30,58,95,.5); }
-    .tt-legal .doc-line { background: rgba(30,58,95,.15); }
-    .tt-legal .doc-line.light { background: rgba(30,58,95,.07); }
-
-    .tt-academic .tmpl-thumb { background: #fdf8f8; }
-    .tt-academic .doc-band.top { height: 20px; background: #7c2d12; border-radius: 0; }
-    .tt-academic .doc-line.h { background: rgba(124,45,18,.5); }
-    .tt-academic .doc-line { background: rgba(124,45,18,.16); }
-    .tt-academic .doc-line.light { background: rgba(124,45,18,.07); }
-
-    .tt-minimal .tmpl-thumb { background: #ffffff; }
-    .tt-minimal .doc-band.top { height: 0; }
-    .tt-minimal .doc-band.accent-left { width: 3px; position: absolute; left: 10px; top: 12px; bottom: 10px; background: #94a3b8; border-radius: 2px; }
-    .tt-minimal .doc-line.h { background: rgba(51,65,85,.45); }
-    .tt-minimal .doc-line { background: rgba(51,65,85,.13); }
-    .tt-minimal .doc-line.light { background: rgba(51,65,85,.06); }
-
-    .tt-gov .tmpl-thumb { background: #f7f8ff; }
-    .tt-gov .doc-band.top { height: 28px; background: #1d4ed8; border-radius: 0; }
-    .tt-gov .doc-band.stripe { height: 4px; background: #dc2626; border-radius: 0; flex-shrink: 0; }
-    .tt-gov .doc-line.h { background: rgba(29,78,216,.5); }
-    .tt-gov .doc-line { background: rgba(29,78,216,.15); }
-    .tt-gov .doc-line.light { background: rgba(29,78,216,.07); }
-
-    .tt-creative .tmpl-thumb { background: linear-gradient(135deg, #fdf4ff 0%, #f0f9ff 100%); }
-    .tt-creative .doc-band.side { width: 22px; height: 100%; position: absolute; left: 0; top: 0; background: linear-gradient(180deg, #a855f7, #ec4899); border-radius: 0; }
-    .tt-creative .doc-line.h { background: rgba(168,85,247,.5); }
-    .tt-creative .doc-line { background: rgba(168,85,247,.18); }
-    .tt-creative .doc-line.light { background: rgba(168,85,247,.08); }
-
-    .tt-compact .tmpl-thumb { background: #fffbf5; }
-    .tt-compact .doc-band.top { height: 18px; background: #ea580c; border-radius: 0; }
-    .tt-compact .doc-line.h { background: rgba(234,88,12,.5); }
-    .tt-compact .doc-line { background: rgba(234,88,12,.15); }
-    .tt-compact .doc-line.light { background: rgba(234,88,12,.07); }
-
-    .tt-pro .tmpl-thumb { background: #f5f7ff; }
-    .tt-pro .doc-band.top { height: 24px; background: #4338ca; border-radius: 0; }
-    .tt-pro .doc-line.h { background: rgba(67,56,202,.5); }
-    .tt-pro .doc-line { background: rgba(67,56,202,.16); }
-    .tt-pro .doc-line.light { background: rgba(67,56,202,.07); }
-
-    .tt-exec .tmpl-thumb { background: #f9f8f6; }
-    .tt-exec .doc-band.top { height: 30px; background: linear-gradient(90deg, #0c0c0c, #1c1c1c); border-radius: 0; }
-    .tt-exec .doc-band.gold-line { height: 2px; background: linear-gradient(90deg, #d97706, #f59e0b); border-radius: 0; flex-shrink: 0; }
-    .tt-exec .doc-line.h { background: rgba(12,12,12,.45); }
-    .tt-exec .doc-line { background: rgba(12,12,12,.13); }
-    .tt-exec .doc-line.light { background: rgba(12,12,12,.06); }
-
-    .tmpl-footer {
-      padding: 10px 12px;
-      border-top: 1px solid var(--gray100);
-      display: flex; align-items: center; justify-content: space-between;
-    }
-    .tmpl-name { font-size: .78rem; font-weight: 700; color: var(--navy); }
-    .tmpl-badge {
-      font-size: .65rem; font-weight: 700;
-      padding: 2px 8px; border-radius: 50px;
-      text-transform: uppercase; letter-spacing: .05em;
-    }
-    .tmpl-badge.new { background: #ede9fe; color: #7c3aed; }
-    .tmpl-badge.top { background: #ecfdf5; color: #059669; }
-    .tmpl-badge.hot { background: #fff7ed; color: #ea580c; }
-
-    /* ─── HOW IT WORKS ────────────────────────────────── */
-    .steps-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 0;
-      position: relative;
-    }
-    .steps-grid::before {
-      content: '';
-      position: absolute;
-      top: 26px; left: 20px; right: 20px;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, var(--indigo), transparent);
-      z-index: 0;
-    }
-    .step-card {
-      background: var(--white);
-      border: 1.5px solid var(--gray200);
-      border-radius: var(--radius);
-      padding: 28px 22px;
-      position: relative;
-      z-index: 1;
-      transition: border-color .22s, box-shadow .22s, transform .22s;
-    }
-    .step-card:hover {
-      border-color: var(--indigo);
-      box-shadow: 0 8px 30px rgba(79,110,247,.12);
-      transform: translateY(-3px);
-    }
-    .steps-grid { gap: 20px; }
-    .steps-grid::before { display: none; }
-    .step-num {
-      width: 42px; height: 42px; border-radius: 12px;
-      background: linear-gradient(135deg, var(--indigo), #818cf8);
-      color: var(--white);
-      font-weight: 800; font-size: .9rem;
-      display: flex; align-items: center; justify-content: center;
-      margin-bottom: 18px;
-      box-shadow: 0 4px 14px rgba(79,110,247,.35);
-    }
-    .step-card h3 {
-      font-size: .97rem; font-weight: 700;
-      color: var(--navy); margin-bottom: 10px;
-    }
-    .step-card p {
-      font-size: .88rem; color: var(--gray600); line-height: 1.65;
-    }
-
-    /* ─── FEATURES ────────────────────────────────────── */
-    .features-bg {
+    /* ─── LANDING CAROUSEL ───────────────────────────── */
+    .lc-section {
       background: linear-gradient(160deg, #060e26 0%, #0f1c3f 60%, #0a1530 100%);
-      position: relative; overflow: hidden;
+      padding: 80px 0 96px; position: relative; overflow: hidden;
     }
-    .features-bg::before {
-      content:'';
-      position: absolute; inset: 0;
-      background-image: radial-gradient(rgba(79,110,247,.15) 1px, transparent 1px);
-      background-size: 28px 28px;
-      opacity: .5;
+    .lc-section::before {
+      content:''; position: absolute; inset: 0;
+      background-image: radial-gradient(rgba(79,110,247,.12) 1px, transparent 1px);
+      background-size: 28px 28px; pointer-events: none;
     }
-    .features-section {
-      max-width: 1160px; margin: 0 auto;
-      padding: 96px 24px;
-      color: var(--white);
-      position: relative; z-index: 1;
+    .lc-inner { position: relative; z-index: 1; text-align: center; }
+    .lc-pill {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: rgba(79,110,247,.2); border: 1px solid rgba(79,110,247,.4);
+      color: #a5b4fc; font-size: .85rem; font-weight: 700;
+      padding: 10px 24px; border-radius: 50px; margin-bottom: 32px;
     }
-    .features-section .section-label { color: #a5b4fc; }
-    .features-section .section-label::before { background: #818cf8; }
-    .features-section .section-title { color: var(--white); }
-    .features-section .section-sub { color: rgba(255,255,255,.55); }
-    .features-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 20px;
+    .lc-tabs {
+      display: inline-flex; align-items: center;
+      border-bottom: 1px solid rgba(255,255,255,.12);
+      position: relative; margin-bottom: 44px;
     }
-    .feat-card {
-      background: rgba(255,255,255,.04);
-      border: 1px solid rgba(255,255,255,.08);
-      border-radius: var(--radius);
-      padding: 26px 24px;
-      transition: background .22s, border-color .22s, transform .22s;
+    .lc-tab {
+      background: none; border: none; cursor: pointer;
+      font-family: 'Inter', sans-serif; font-size: 1rem; font-weight: 600;
+      color: rgba(255,255,255,.38); padding: 14px 36px; transition: color .2s;
     }
-    .feat-card:hover {
-      background: rgba(79,110,247,.1);
-      border-color: rgba(79,110,247,.45);
-      transform: translateY(-3px);
+    .lc-tab.active { color: white; }
+    .lc-tab-underline {
+      position: absolute; bottom: -1px; height: 3px;
+      background: var(--indigo); border-radius: 3px 3px 0 0;
+      transition: left .3s ease, width .3s ease;
     }
-    .feat-ico {
-      width: 44px; height: 44px; border-radius: 12px;
-      background: rgba(79,110,247,.18);
-      border: 1px solid rgba(79,110,247,.3);
+    .lc-stage {
       display: flex; align-items: center; justify-content: center;
-      font-size: 1.3rem; margin-bottom: 18px;
+      gap: 16px; padding: 0 24px;
     }
-    .feat-card h3 {
-      font-size: 1.02rem; font-weight: 700;
-      color: var(--white); margin-bottom: 10px;
-    }
-    .feat-card p {
-      font-size: .88rem; color: rgba(255,255,255,.55); line-height: 1.7;
-    }
-    .feat-tag {
-      display: inline-block;
-      background: rgba(79,110,247,.2);
-      border: 1px solid rgba(79,110,247,.35);
-      color: #a5b4fc;
-      font-size: .68rem; font-weight: 700;
-      text-transform: uppercase; letter-spacing: .08em;
-      padding: 3px 10px; border-radius: 50px;
-      margin-top: 14px;
-    }
-
-    /* ATS Demo */
-    .ats-demo-wrap {
-      background: rgba(255,255,255,.04);
-      border: 1px solid rgba(255,255,255,.1);
-      border-radius: 20px;
-      padding: 36px 40px;
+    .lc-arrow {
+      width: 52px; height: 52px; border-radius: 50%;
+      background: rgba(255,255,255,.09); border: 1px solid rgba(255,255,255,.15);
+      color: white; font-size: 1.1rem; cursor: pointer;
       display: flex; align-items: center; justify-content: center;
-      gap: 40px; flex-wrap: wrap;
-      margin-bottom: 56px;
+      flex-shrink: 0; transition: background .2s, transform .15s;
     }
-    .ats-rings { display: flex; gap: 24px; align-items: center; flex-wrap: wrap; }
-    .ats-ring-wrap { text-align: center; }
-    .ats-ring-wrap svg { display: block; margin: 0 auto 8px; }
-    .ats-ring-label { font-size: .75rem; font-weight: 600; color: rgba(255,255,255,.4); }
-    .ring-score { font-size: 1.2rem; font-weight: 900; fill: white; }
-    .ats-desc {
-      color: rgba(255,255,255,.65); max-width: 320px; font-size: .95rem; line-height: 1.75;
+    .lc-arrow:hover { background: rgba(79,110,247,.45); transform: scale(1.07); }
+    .lc-arrow:active { transform: scale(.95); }
+    .lc-cards { display: flex; align-items: center; gap: 20px; }
+    .lc-slot { border-radius: 12px; overflow: hidden; position: relative; flex-shrink: 0; }
+    .lc-slot-center {
+      width: 440px; height: 608px;
+      box-shadow: 0 28px 80px rgba(0,0,0,.7);
+      border: 2px solid rgba(79,110,247,.5);
+      cursor: zoom-in; transition: border-color .2s;
     }
-    .ats-desc strong { color: white; }
-
-    /* ─── NICHES ──────────────────────────────────────── */
-    .niches-wrap {
-      background: var(--gray50);
-      border-top: 1px solid var(--gray100);
-      border-bottom: 1px solid var(--gray100);
-      padding: 80px 24px;
+    .lc-slot-center:hover { border-color: rgba(79,110,247,.9); }
+    .lc-slot-side {
+      width: 278px; height: 384px;
+      opacity: .35; filter: brightness(.6);
+      pointer-events: none; cursor: pointer;
     }
-    .niches-inner { max-width: 1160px; margin: 0 auto; }
-    .niches-grid {
-      display: flex; flex-wrap: wrap; gap: 10px;
-      margin-top: 40px;
-    }
-    .niche-chip {
-      background: var(--white);
-      border: 1.5px solid var(--gray200);
-      border-radius: 50px;
-      padding: 9px 18px;
-      font-size: .85rem; font-weight: 600;
-      color: var(--gray700);
-      transition: border-color .2s, background .2s, color .2s, transform .2s;
-      cursor: default;
-    }
-    .niche-chip:hover {
-      border-color: var(--indigo);
-      background: #eef2ff;
-      color: var(--indigo);
-      transform: translateY(-2px);
-    }
-
-    /* ─── TESTIMONIALS ────────────────────────────────── */
-    .testi-section { padding: 96px 24px; }
-    .testi-inner { max-width: 1160px; margin: 0 auto; }
-    .testi-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 24px; margin-top: 56px;
-    }
-    .testi-card {
-      background: var(--white);
-      border: 1.5px solid var(--gray200);
-      border-radius: var(--radius-lg);
-      padding: 30px;
-      position: relative;
-      transition: border-color .22s, box-shadow .22s, transform .22s;
-    }
-    .testi-card:hover {
-      border-color: var(--indigo);
-      box-shadow: 0 12px 40px rgba(79,110,247,.12);
-      transform: translateY(-4px);
-    }
-    .testi-card::before {
-      content: '\201C';
-      position: absolute; top: 18px; right: 24px;
-      font-size: 4rem; line-height: 1;
-      color: var(--gray100); font-family: Georgia, serif;
-      pointer-events: none;
-    }
-    .testi-stars { color: var(--gold); font-size: .9rem; margin-bottom: 16px; letter-spacing: 2px; }
-    .testi-text {
-      font-size: .93rem; color: var(--gray700);
-      line-height: 1.75; margin-bottom: 22px;
-      position: relative; z-index: 1;
-    }
-    .testi-author { display: flex; align-items: center; gap: 14px; }
-    .testi-avatar {
-      width: 46px; height: 46px;
-      border-radius: 50%;
+    .lc-doc-wrap { position: absolute; top: 0; left: 0; transform-origin: top left; width: 860px; }
+    .lc-info {
       display: flex; align-items: center; justify-content: center;
-      font-weight: 800; font-size: 1rem; color: var(--white);
-      flex-shrink: 0;
-      box-shadow: 0 4px 12px rgba(0,0,0,.15);
+      gap: 14px; margin-top: 22px;
     }
-    .av-1 { background: linear-gradient(135deg, #4f46e5, #818cf8); }
-    .av-2 { background: linear-gradient(135deg, #0d9488, #34d399); }
-    .av-3 { background: linear-gradient(135deg, #dc2626, #f87171); }
-    .av-4 { background: linear-gradient(135deg, #d97706, #fbbf24); }
-    .av-5 { background: linear-gradient(135deg, #7c3aed, #c084fc); }
-    .testi-name { font-weight: 700; font-size: .9rem; color: var(--navy); }
-    .testi-role { font-size: .78rem; color: var(--gray400); margin-top: 2px; }
-    .testi-company {
-      display: inline-flex; align-items: center; gap: 4px;
-      font-size: .72rem; font-weight: 600; color: var(--indigo);
-      background: #eef2ff; padding: 2px 8px; border-radius: 50px;
-      margin-top: 4px;
+    .lc-tmpl-name {
+      font-size: .92rem; font-weight: 800; letter-spacing: .14em;
+      color: white; text-transform: uppercase;
     }
-
-    /* ─── PRICING ─────────────────────────────────────── */
-    .pricing-bg {
-      background: linear-gradient(160deg, #f0f4ff 0%, var(--gray50) 100%);
-      border-top: 1px solid var(--gray100);
+    .lc-zoom-btn {
+      background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.18);
+      color: rgba(255,255,255,.65); font-size: .76rem; font-weight: 600;
+      padding: 6px 14px; border-radius: 50px; cursor: pointer;
+      font-family: 'Inter', sans-serif; transition: all .2s;
     }
-    .pricing-section { max-width: 1000px; margin: 0 auto; padding: 96px 24px; text-align: center; }
-    .pricing-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
-      gap: 24px; margin-top: 56px; text-align: left;
-    }
-    .price-card {
-      background: var(--white);
-      border: 2px solid var(--gray200);
-      border-radius: 20px;
-      padding: 38px 34px;
-      position: relative;
-      transition: box-shadow .22s, border-color .22s, transform .22s;
-    }
-    .price-card:hover { box-shadow: 0 12px 48px rgba(79,110,247,.12); transform: translateY(-3px); }
-    .price-card.popular {
-      border-color: var(--indigo);
-      box-shadow: 0 12px 48px rgba(79,110,247,.18);
-    }
-    .popular-badge {
-      position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
-      background: linear-gradient(90deg, var(--indigo), #818cf8);
-      color: var(--white);
-      font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em;
-      padding: 5px 20px; border-radius: 50px;
-      white-space: nowrap;
-      box-shadow: 0 4px 14px rgba(79,110,247,.4);
-    }
-    .price-name { font-size: 1rem; font-weight: 700; color: var(--gray600); margin-bottom: 8px; }
-    .price-amount {
-      font-size: 3.2rem; font-weight: 900; color: var(--navy);
-      line-height: 1; margin-bottom: 6px;
-    }
-    .price-amount sup { font-size: 1.5rem; vertical-align: top; margin-top: 8px; }
-    .price-period { font-size: .85rem; color: var(--gray400); margin-bottom: 28px; }
-    .price-divider { border: none; border-top: 1px solid var(--gray100); margin: 24px 0; }
-    .price-features { list-style: none; }
-    .price-features li {
-      display: flex; align-items: flex-start; gap: 10px;
-      font-size: .9rem; color: var(--gray600);
-      padding: 7px 0;
-    }
-    .price-features li .chk { color: var(--green); font-weight: 800; flex-shrink: 0; font-size: .95rem; }
-    .price-features li .x   { color: var(--gray300); flex-shrink: 0; }
-    .price-btn {
-      display: block; text-align: center;
-      margin-top: 32px; padding: 15px;
-      border-radius: 50px;
-      font-size: 1rem; font-weight: 700;
-      text-decoration: none;
-      transition: transform .15s, box-shadow .15s, background .2s, border-color .2s;
-    }
-    .price-btn-outline {
-      border: 2px solid var(--gray200);
-      color: var(--navy);
-    }
-    .price-btn-outline:hover { border-color: var(--indigo); color: var(--indigo); background: #eef2ff; }
-    .price-btn-filled {
-      background: var(--indigo);
-      color: var(--white);
-      box-shadow: 0 6px 24px rgba(79,110,247,.4);
-    }
-    .price-btn-filled:hover { background: var(--indigo2); transform: translateY(-2px); box-shadow: 0 10px 32px rgba(79,110,247,.55); }
-    .price-note { margin-top: 48px; font-size: .85rem; color: var(--gray400); }
-
-    /* ─── FAQ ─────────────────────────────────────────── */
-    .faq-wrap { background: white; }
-    .faq-section { max-width: 760px; margin: 0 auto; padding: 96px 24px; }
-    .faq-item { border-bottom: 1px solid var(--gray200); }
-    .faq-q {
-      width: 100%; background: none; border: none;
-      text-align: left; cursor: pointer;
-      font-size: .97rem; font-weight: 700; color: var(--navy);
-      padding: 22px 0;
-      display: flex; justify-content: space-between; align-items: center;
-      gap: 12px; font-family: 'Inter', system-ui, sans-serif;
-      transition: color .2s;
-    }
-    .faq-q:hover { color: var(--indigo); }
-    .faq-q .arr {
-      color: var(--indigo); font-size: 1.1rem;
-      transition: transform .28s;
-      flex-shrink: 0;
-      width: 26px; height: 26px; border-radius: 50%;
-      background: #eef2ff;
+    .lc-zoom-btn:hover { background: rgba(255,255,255,.2); color: white; }
+    .lc-dots {
       display: flex; align-items: center; justify-content: center;
-      font-size: .75rem;
+      gap: 6px; margin-top: 18px;
     }
-    .faq-q.open .arr { transform: rotate(180deg); background: var(--indigo); color: white; }
-    .faq-a {
-      font-size: .93rem; color: var(--gray600);
-      line-height: 1.78;
-      max-height: 0; overflow: hidden;
-      transition: max-height .35s ease, padding .35s ease;
-      padding: 0;
+    .lc-dot {
+      height: 7px; width: 7px; border-radius: 50%;
+      background: rgba(255,255,255,.2); transition: all .25s; cursor: pointer;
     }
-    .faq-a.open { max-height: 400px; padding-bottom: 24px; }
+    .lc-dot.active { width: 22px; border-radius: 4px; background: var(--indigo); }
+    .lc-use-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      margin-top: 28px; background: var(--indigo); color: white;
+      font-size: .97rem; font-weight: 700; padding: 14px 38px;
+      border-radius: 50px; text-decoration: none;
+      box-shadow: 0 6px 24px rgba(79,110,247,.45);
+      transition: background .2s, transform .2s;
+    }
+    .lc-use-btn:hover { background: var(--indigo2); transform: translateY(-2px); }
+    /* Zoom modal */
+    .lcz-modal {
+      display: none; position: fixed; inset: 0; z-index: 1000;
+      background: rgba(6,14,38,.93); backdrop-filter: blur(10px);
+      overflow-y: auto;
+    }
+    .lcz-modal.open { display: block; }
+    .lcz-inner {
+      max-width: 960px; margin: 32px auto;
+      background: #dde3ef; border-radius: 16px; overflow: hidden;
+      box-shadow: 0 40px 100px rgba(0,0,0,.8);
+    }
+    .lcz-bar {
+      background: var(--navy); display: flex; align-items: center;
+      justify-content: space-between; padding: 14px 20px;
+      border-bottom: 1px solid rgba(255,255,255,.07);
+    }
+    .lcz-bar-left { display: flex; align-items: center; gap: 16px; }
+    .lcz-title { font-size: .9rem; font-weight: 700; color: white; }
+    .lcz-subtitle { font-size: .76rem; color: rgba(255,255,255,.38); }
+    .lcz-controls { display: flex; align-items: center; gap: 8px; }
+    .lcz-zbtn {
+      background: rgba(255,255,255,.09); border: 1px solid rgba(255,255,255,.18);
+      color: rgba(255,255,255,.65); font-size: .76rem; font-weight: 700;
+      padding: 5px 11px; border-radius: 7px; cursor: pointer;
+      font-family: 'Inter', sans-serif; transition: all .15s;
+    }
+    .lcz-zbtn.active, .lcz-zbtn:hover { background: var(--indigo); color: white; border-color: var(--indigo); }
+    .lcz-close {
+      background: rgba(255,255,255,.09); border: 1px solid rgba(255,255,255,.18);
+      color: rgba(255,255,255,.65); font-size: 1rem;
+      width: 32px; height: 32px; border-radius: 50%; cursor: pointer;
+      font-family: 'Inter', sans-serif; display: flex; align-items: center;
+      justify-content: center; transition: all .15s;
+    }
+    .lcz-close:hover { background: #f43f5e; color: white; border-color: #f43f5e; }
+    .lcz-body {
+      padding: 28px 24px; display: flex; justify-content: center;
+      background: #dde3ef; min-height: 500px; overflow-x: auto;
+    }
+    .lcz-page {
+      width: 860px; min-height: 1122px; background: white; flex-shrink: 0;
+      box-shadow: 0 8px 40px rgba(0,0,0,.25); border-radius: 4px;
+      overflow: hidden; transform-origin: top left;
+    }
+    .lcz-nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 20px; background: var(--navy);
+      border-top: 1px solid rgba(255,255,255,.07);
+    }
+    .lcz-nav-btn {
+      background: rgba(255,255,255,.09); border: 1px solid rgba(255,255,255,.18);
+      color: rgba(255,255,255,.65); font-size: .82rem; font-weight: 600;
+      padding: 8px 20px; border-radius: 50px; cursor: pointer;
+      font-family: 'Inter', sans-serif; transition: all .15s;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .lcz-nav-btn:hover { background: rgba(79,110,247,.4); color: white; }
+    .lcz-nav-name { font-size: .82rem; font-weight: 700; color: white; letter-spacing: .1em; text-transform: uppercase; }
+    /* Document element styles */
+    .lcd { position: relative; overflow: hidden; width: 860px; min-height: 1200px;
+           font-family: Calibri, Georgia, serif; background: white; }
+    .lcd-band { width: 100%; flex-shrink: 0; display: block; }
+    .lcd-side { position: absolute; left: 0; top: 0; bottom: 0; }
+    .lcd-body { padding: 0 56px 40px; box-sizing: border-box; }
+    .lcd-body.with-side { padding-left: 96px; }
+    .lcd-name-line { height: 18px; border-radius: 4px; margin: 22px 0 8px; width: 52%; }
+    .lcd-role-line { height: 10px; border-radius: 3px; margin-bottom: 7px; width: 38%; opacity: .75; }
+    .lcd-contact-line { height: 7px; border-radius: 3px; margin-bottom: 0; width: 64%; opacity: .5; }
+    .lcd-hr { border: none; height: 1.5px; margin: 16px 0 14px; }
+    .lcd-sec-h { height: 9px; border-radius: 3px; width: 30%; margin-bottom: 11px; }
+    .lcd-line { border-radius: 3px; margin-bottom: 5px; }
+    .lcd-line.f { width: 100%; height: 7px; }
+    .lcd-line.l { width: 88%; height: 7px; }
+    .lcd-line.m { width: 72%; height: 7px; }
+    .lcd-line.s { width: 55%; height: 7px; }
+    .lcd-line.xs { width: 36%; height: 7px; }
+    .lcd-line.bold { height: 9px; }
+    .lcd-entry { margin-bottom: 14px; }
+    .lcd-entry-top { display: flex; justify-content: space-between; margin-bottom: 6px; }
+    .lcd-et-l { height: 9px; border-radius: 3px; width: 42%; }
+    .lcd-et-r { height: 7px; border-radius: 3px; width: 22%; opacity: .55; }
+    .lcd-et-sub { height: 7px; border-radius: 3px; width: 30%; margin-bottom: 7px; opacity: .7; }
+    .lcd-bullet { margin-left: 14px; }
+    .lcd-row2 { display: flex; gap: 20px; }
+    .lcd-row2 > div { flex: 1; }
+    .lcd-sec { margin-top: 18px; }
+    /* Cover letter extras */
+    .lcd-cl-date { height: 7px; border-radius: 3px; width: 26%; margin-bottom: 20px; opacity: .5; }
+    .lcd-cl-greeting { height: 7px; border-radius: 3px; width: 42%; margin-bottom: 18px; }
+    .lcd-cl-para { margin-bottom: 18px; }
+    .lcd-cl-sign { margin-top: 28px; }
+    @media (max-width: 900px) {
+      .lc-slot-side { display: none; }
+      .lc-slot-center { width: min(440px, 90vw); height: calc(min(440px, 90vw) * 1.382); }
+    }
+    @media (max-width: 520px) {
+      .lc-tab { padding: 12px 20px; font-size: .88rem; }
+      .lc-arrow { width: 40px; height: 40px; font-size: 1rem; }
+      .lcz-inner { margin: 0; border-radius: 0; }
+    }
 
-    /* ─── CTA BANNER ──────────────────────────────────── */
-    .cta-banner {
-      background: linear-gradient(135deg, #0f1c3f 0%, #1e3a8a 50%, #0f1c3f 100%);
-      padding: 96px 24px;
-      text-align: center;
-      position: relative; overflow: hidden;
-    }
-    .cta-banner::before {
-      content:'';
-      position: absolute; inset: 0;
-      background: radial-gradient(ellipse 70% 60% at 50% 50%, rgba(79,110,247,.3) 0%, transparent 70%);
-    }
-    .cta-inner { position: relative; z-index: 1; }
-    .cta-banner h2 {
-      font-size: clamp(2rem, 3.5vw, 3rem);
-      font-weight: 900; color: var(--white);
-      letter-spacing: -.03em; margin-bottom: 18px;
-    }
-    .cta-banner h2 .grad {
-      background: linear-gradient(90deg, #818cf8, var(--cyan));
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-    }
-    .cta-banner p {
-      font-size: 1.1rem; color: rgba(255,255,255,.7);
-      max-width: 500px; margin: 0 auto 42px;
-      line-height: 1.7;
-    }
-    .cta-trust {
-      margin-top: 32px;
-      font-size: .82rem; color: rgba(255,255,255,.4);
-      display: flex; align-items: center; justify-content: center;
-      gap: 20px; flex-wrap: wrap;
-    }
-    .cta-trust-item { display: flex; align-items: center; gap: 6px; }
-
-    /* ─── FOOTER ──────────────────────────────────────── */
-    footer {
-      background: #060e26;
-      padding: 52px 24px 32px;
-      color: rgba(255,255,255,.35);
-      border-top: 1px solid rgba(255,255,255,.06);
-    }
-    .footer-inner {
-      max-width: 1160px; margin: 0 auto;
-      display: flex; flex-wrap: wrap; gap: 24px;
-      justify-content: space-between; align-items: center;
-    }
-    .footer-logo {
-      font-size: 1.25rem; font-weight: 900;
-      color: var(--white); text-decoration: none;
-      display: flex; align-items: center; gap: 8px;
-    }
-    .footer-logo span { color: var(--indigo3); }
-    .footer-links {
-      display: flex; gap: 24px; flex-wrap: wrap;
-      list-style: none;
-    }
-    .footer-links a {
-      color: rgba(255,255,255,.4);
-      text-decoration: none; font-size: .85rem;
-      transition: color .2s;
-    }
-    .footer-links a:hover { color: var(--white); }
-    .footer-copy { font-size: .78rem; margin-top: 32px; text-align: center; color: rgba(255,255,255,.2); }
-
-    /* ─── RESPONSIVE ──────────────────────────────────── */
-    @media (max-width: 860px) {
-      .hero-inner { grid-template-columns: 1fr; padding: 80px 0 90px; gap: 48px; }
-      .hero-left { max-width: 100%; }
-      .hero-right { display: none; }
-      .metric-item { padding: 8px 20px; }
-    }
     @media (max-width: 680px) {
       .nav-links { display: none; }
       .hero { padding: 0 20px; }
@@ -1166,346 +806,58 @@
 </div>
 
 <!-- ════════════════ TEMPLATES ════════════════ -->
-<div class="templates-section" id="templates">
-  <div class="templates-inner">
-    <div class="templates-header reveal">
-      <div class="section-label">Templates</div>
-      <h2 class="section-title">13 professionally designed templates</h2>
-      <p class="section-sub">Every template is ATS-optimized and tailored by career niche. Pick the one that fits your industry  -  or let TailorCV recommend the best match for your profile.</p>
+<div class="lc-section" id="templates">
+  <div class="lc-inner">
+    <div class="lc-pill">🎨 Resume &amp; Cover Letter Templates</div>
+    <div class="lc-tabs" id="lcTabs">
+      <button class="lc-tab active" onclick="lcSetTab('resume',this)">Resumes</button>
+      <button class="lc-tab" onclick="lcSetTab('cl',this)">Cover Letters</button>
+      <div class="lc-tab-underline" id="lcTabLine"></div>
     </div>
-
-    <div class="tmpl-gallery stagger reveal">
-
-      <!-- Classic -->
-      <div class="tmpl-card featured tt-classic">
-        <div class="tmpl-thumb">
-          <div class="tmpl-doc">
-            <div class="doc-band top"></div>
-            <div style="height:6px"></div>
-            <div class="doc-line h m"></div>
-            <div style="height:2px"></div>
-            <div class="doc-line s"></div>
-            <div class="doc-spacer"></div>
-            <div class="doc-line h s"></div>
-            <div class="doc-line f"></div>
-            <div class="doc-line m"></div>
-            <div class="doc-line f light"></div>
-            <div class="doc-line m light"></div>
-            <div class="doc-spacer"></div>
-            <div class="doc-line h s"></div>
-            <div class="doc-line f"></div>
-            <div class="doc-line m"></div>
-          </div>
-        </div>
-        <div class="tmpl-footer">
-          <span class="tmpl-name">Classic</span>
-          <span class="tmpl-badge top">Top Pick</span>
-        </div>
+    <div class="lc-stage">
+      <button class="lc-arrow" onclick="lcPrev()" aria-label="Previous">&#8592;</button>
+      <div class="lc-cards" id="lcCards">
+        <div class="lc-slot lc-slot-side" id="lcSlotL"></div>
+        <div class="lc-slot lc-slot-center" id="lcSlotC" onclick="lcOpenZoom()"></div>
+        <div class="lc-slot lc-slot-side" id="lcSlotR"></div>
       </div>
-
-      <!-- Tech -->
-      <div class="tmpl-card tt-tech">
-        <div class="tmpl-thumb">
-          <div class="tmpl-doc">
-            <div class="doc-band top"></div>
-            <div style="height:5px"></div>
-            <div class="doc-line h m"></div>
-            <div style="height:2px"></div>
-            <div class="doc-line s"></div>
-            <div class="doc-spacer"></div>
-            <div class="doc-line h s"></div>
-            <div class="doc-line f"></div>
-            <div class="doc-line m"></div>
-            <div class="doc-line f light"></div>
-            <div class="doc-spacer"></div>
-            <div class="doc-line h s"></div>
-            <div class="doc-line f"></div>
-            <div class="doc-line m light"></div>
-          </div>
-        </div>
-        <div class="tmpl-footer">
-          <span class="tmpl-name">Tech</span>
-          <span class="tmpl-badge hot">Popular</span>
-        </div>
-      </div>
-
-      <!-- Modern -->
-      <div class="tmpl-card tt-modern">
-        <div class="tmpl-thumb" style="position:relative;">
-          <div class="doc-band side"></div>
-          <div class="tmpl-doc" style="padding-left:38px;">
-            <div class="doc-band top"></div>
-            <div style="height:5px"></div>
-            <div class="doc-line h m"></div>
-            <div style="height:2px"></div>
-            <div class="doc-line s"></div>
-            <div class="doc-spacer"></div>
-            <div class="doc-line h s"></div>
-            <div class="doc-line f"></div>
-            <div class="doc-line m"></div>
-            <div class="doc-spacer"></div>
-            <div class="doc-line h s"></div>
-            <div class="doc-line f"></div>
-          </div>
-        </div>
-        <div class="tmpl-footer">
-          <span class="tmpl-name">Modern</span>
-          <span class="tmpl-badge new">New</span>
-        </div>
-      </div>
-
-      <!-- Healthcare -->
-      <div class="tmpl-card tt-health">
-        <div class="tmpl-thumb">
-          <div class="tmpl-doc">
-            <div class="doc-band top"></div>
-            <div style="height:6px"></div>
-            <div class="doc-line h m"></div>
-            <div style="height:2px"></div>
-            <div class="doc-line s"></div>
-            <div class="doc-spacer"></div>
-            <div class="doc-line h s"></div>
-            <div class="doc-line f"></div>
-            <div class="doc-line m"></div>
-            <div class="doc-line f light"></div>
-            <div class="doc-spacer"></div>
-            <div class="doc-line h s"></div>
-            <div class="doc-line f"></div>
-          </div>
-        </div>
-        <div class="tmpl-footer">
-          <span class="tmpl-name">Healthcare</span>
-        </div>
-      </div>
-
-      <!-- Consulting -->
-      <div class="tmpl-card tt-consult">
-        <div class="tmpl-thumb">
-          <div class="tmpl-doc">
-            <div class="doc-band top"></div>
-            <div class="doc-band accent"></div>
-            <div style="height:5px"></div>
-            <div class="doc-line h m"></div>
-            <div style="height:2px"></div>
-            <div class="doc-line s"></div>
-            <div class="doc-spacer"></div>
-            <div class="doc-line h s"></div>
-            <div class="doc-line f"></div>
-            <div class="doc-line m"></div>
-            <div class="doc-line f light"></div>
-            <div class="doc-spacer"></div>
-            <div class="doc-line h s"></div>
-            <div class="doc-line f"></div>
-          </div>
-        </div>
-        <div class="tmpl-footer">
-          <span class="tmpl-name">Consulting</span>
-        </div>
-      </div>
-
-      <!-- Legal -->
-      <div class="tmpl-card featured tt-legal">
-        <div class="tmpl-thumb">
-          <div class="tmpl-doc">
-            <div class="doc-band top"></div>
-            <div style="height:8px"></div>
-            <div class="doc-line h m"></div>
-            <div style="height:2px"></div>
-            <div class="doc-line s"></div>
-            <div class="doc-spacer"></div>
-            <div class="doc-line h s"></div>
-            <div class="doc-line f"></div>
-            <div class="doc-line m"></div>
-            <div class="doc-line f light"></div>
-            <div class="doc-spacer"></div>
-            <div class="doc-line h s"></div>
-            <div class="doc-line f"></div>
-          </div>
-        </div>
-        <div class="tmpl-footer">
-          <span class="tmpl-name">Legal</span>
-          <span class="tmpl-badge top">Top Pick</span>
-        </div>
-      </div>
-
-      <!-- Academic -->
-      <div class="tmpl-card tt-academic">
-        <div class="tmpl-thumb">
-          <div class="tmpl-doc">
-            <div class="doc-band top"></div>
-            <div style="height:6px"></div>
-            <div class="doc-line h m"></div>
-            <div style="height:2px"></div>
-            <div class="doc-line s"></div>
-            <div class="doc-spacer"></div>
-            <div class="doc-line h s"></div>
-            <div class="doc-line f"></div>
-            <div class="doc-line m"></div>
-            <div class="doc-line f light"></div>
-            <div class="doc-spacer"></div>
-            <div class="doc-line h s"></div>
-            <div class="doc-line f"></div>
-          </div>
-        </div>
-        <div class="tmpl-footer">
-          <span class="tmpl-name">Academic</span>
-        </div>
-      </div>
-
-      <!-- Minimal -->
-      <div class="tmpl-card tt-minimal">
-        <div class="tmpl-thumb" style="position:relative;">
-          <div class="doc-band accent-left"></div>
-          <div class="tmpl-doc" style="padding-left:22px;">
-            <div style="height:6px"></div>
-            <div class="doc-line h m"></div>
-            <div style="height:2px"></div>
-            <div class="doc-line s"></div>
-            <div class="doc-spacer"></div>
-            <div class="doc-line h s"></div>
-            <div class="doc-line f"></div>
-            <div class="doc-line m"></div>
-            <div class="doc-line f light"></div>
-            <div class="doc-spacer"></div>
-            <div class="doc-line h s"></div>
-            <div class="doc-line f"></div>
-            <div class="doc-line m light"></div>
-          </div>
-        </div>
-        <div class="tmpl-footer">
-          <span class="tmpl-name">Minimal</span>
-          <span class="tmpl-badge new">Clean</span>
-        </div>
-      </div>
-
-      <!-- Government -->
-      <div class="tmpl-card tt-gov">
-        <div class="tmpl-thumb">
-          <div class="tmpl-doc">
-            <div class="doc-band top"></div>
-            <div class="doc-band stripe"></div>
-            <div style="height:5px"></div>
-            <div class="doc-line h m"></div>
-            <div style="height:2px"></div>
-            <div class="doc-line s"></div>
-            <div class="doc-spacer"></div>
-            <div class="doc-line h s"></div>
-            <div class="doc-line f"></div>
-            <div class="doc-line m"></div>
-            <div class="doc-line f light"></div>
-            <div class="doc-spacer"></div>
-            <div class="doc-line h s"></div>
-            <div class="doc-line f"></div>
-          </div>
-        </div>
-        <div class="tmpl-footer">
-          <span class="tmpl-name">Government</span>
-        </div>
-      </div>
-
-      <!-- Creative -->
-      <div class="tmpl-card tt-creative">
-        <div class="tmpl-thumb" style="position:relative;">
-          <div class="doc-band side"></div>
-          <div class="tmpl-doc" style="padding-left:32px;">
-            <div style="height:6px"></div>
-            <div class="doc-line h m"></div>
-            <div style="height:2px"></div>
-            <div class="doc-line s"></div>
-            <div class="doc-spacer"></div>
-            <div class="doc-line h s"></div>
-            <div class="doc-line f"></div>
-            <div class="doc-line m"></div>
-            <div class="doc-spacer"></div>
-            <div class="doc-line h s"></div>
-            <div class="doc-line f"></div>
-            <div class="doc-line m light"></div>
-          </div>
-        </div>
-        <div class="tmpl-footer">
-          <span class="tmpl-name">Creative</span>
-          <span class="tmpl-badge hot">Vivid</span>
-        </div>
-      </div>
-
-      <!-- Compact -->
-      <div class="tmpl-card tt-compact">
-        <div class="tmpl-thumb">
-          <div class="tmpl-doc">
-            <div class="doc-band top"></div>
-            <div style="height:5px"></div>
-            <div class="doc-line h m"></div>
-            <div style="height:2px"></div>
-            <div class="doc-line s"></div>
-            <div class="doc-spacer"></div>
-            <div class="doc-line h s"></div>
-            <div class="doc-line f"></div>
-            <div class="doc-line m"></div>
-            <div class="doc-line f light"></div>
-            <div class="doc-line m light"></div>
-            <div class="doc-spacer"></div>
-            <div class="doc-line h s"></div>
-            <div class="doc-line f"></div>
-          </div>
-        </div>
-        <div class="tmpl-footer">
-          <span class="tmpl-name">Compact</span>
-        </div>
-      </div>
-
-      <!-- Professional -->
-      <div class="tmpl-card tt-pro">
-        <div class="tmpl-thumb">
-          <div class="tmpl-doc">
-            <div class="doc-band top"></div>
-            <div style="height:6px"></div>
-            <div class="doc-line h m"></div>
-            <div style="height:2px"></div>
-            <div class="doc-line s"></div>
-            <div class="doc-spacer"></div>
-            <div class="doc-line h s"></div>
-            <div class="doc-line f"></div>
-            <div class="doc-line m"></div>
-            <div class="doc-line f light"></div>
-            <div class="doc-spacer"></div>
-            <div class="doc-line h s"></div>
-            <div class="doc-line f"></div>
-          </div>
-        </div>
-        <div class="tmpl-footer">
-          <span class="tmpl-name">Professional</span>
-        </div>
-      </div>
-
-      <!-- Executive -->
-      <div class="tmpl-card featured tt-exec">
-        <div class="tmpl-thumb">
-          <div class="tmpl-doc">
-            <div class="doc-band top"></div>
-            <div class="doc-band gold-line"></div>
-            <div style="height:6px"></div>
-            <div class="doc-line h m"></div>
-            <div style="height:2px"></div>
-            <div class="doc-line s"></div>
-            <div class="doc-spacer"></div>
-            <div class="doc-line h s"></div>
-            <div class="doc-line f"></div>
-            <div class="doc-line m"></div>
-            <div class="doc-line f light"></div>
-            <div class="doc-spacer"></div>
-            <div class="doc-line h s"></div>
-            <div class="doc-line f"></div>
-          </div>
-        </div>
-        <div class="tmpl-footer">
-          <span class="tmpl-name">Executive</span>
-          <span class="tmpl-badge top">Premium</span>
-        </div>
-      </div>
-
+      <button class="lc-arrow" onclick="lcNext()" aria-label="Next">&#8594;</button>
     </div>
-    <!-- end gallery -->
+    <div class="lc-info">
+      <span class="lc-tmpl-name" id="lcName">CLASSIC</span>
+      <button class="lc-zoom-btn" onclick="lcOpenZoom()">🔍 View Full Size</button>
+    </div>
+    <div class="lc-dots" id="lcDots"></div>
+    <a href="/app.html" class="lc-use-btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+      Use This Template
+    </a>
+  </div>
+</div>
 
+<!-- Zoom modal -->
+<div class="lcz-modal" id="lczModal" onclick="lcCloseZoom()">
+  <div class="lcz-inner" onclick="event.stopPropagation()">
+    <div class="lcz-bar">
+      <div class="lcz-bar-left">
+        <span class="lcz-title" id="lczTitle">Classic</span>
+        <span class="lcz-subtitle" id="lczSubtitle">Resume template</span>
+      </div>
+      <div class="lcz-controls">
+        <button class="lcz-zbtn" onclick="lcSetZoom(75)">75%</button>
+        <button class="lcz-zbtn active" onclick="lcSetZoom(100)">100%</button>
+        <button class="lcz-zbtn" onclick="lcSetZoom(125)">125%</button>
+        <button class="lcz-close" onclick="lcCloseZoom()">&#x2715;</button>
+      </div>
+    </div>
+    <div class="lcz-body">
+      <div class="lcz-page" id="lczPage"></div>
+    </div>
+    <div class="lcz-nav">
+      <button class="lcz-nav-btn" onclick="lcPrev();lcRefreshZoom()">&#8592; Previous</button>
+      <span class="lcz-nav-name" id="lczNavName">CLASSIC</span>
+      <button class="lcz-nav-btn" onclick="lcNext();lcRefreshZoom()">Next &#8594;</button>
+    </div>
   </div>
 </div>
 
@@ -1997,6 +1349,273 @@
 
   var atsDemoEl = document.querySelector('.ats-demo-wrap');
   if (atsDemoEl) atsObserver.observe(atsDemoEl);
+
+  /* ════ LANDING CAROUSEL ════ */
+  var LC = {
+    tab: 'resume',
+    idx: 0,
+    zoom: 100,
+    templates: {
+      resume: [
+        {key:'classic',  name:'Classic',     badge:'TOP PICK', badgeC:'#059669'},
+        {key:'tech',     name:'Tech',        badge:'POPULAR',  badgeC:'#ea580c'},
+        {key:'modern',   name:'Modern',      badge:'NEW',      badgeC:'#7c3aed'},
+        {key:'health',   name:'Healthcare',  badge:'',         badgeC:''},
+        {key:'consult',  name:'Consulting',  badge:'',         badgeC:''},
+        {key:'legal',    name:'Legal',       badge:'TOP PICK', badgeC:'#059669'},
+        {key:'academic', name:'Academic',    badge:'',         badgeC:''},
+        {key:'minimal',  name:'Minimal',     badge:'CLEAN',    badgeC:'#7c3aed'},
+        {key:'gov',      name:'Government',  badge:'',         badgeC:''},
+        {key:'creative', name:'Creative',    badge:'VIVID',    badgeC:'#ea580c'},
+        {key:'compact',  name:'Compact',     badge:'',         badgeC:''},
+        {key:'pro',      name:'Professional',badge:'',         badgeC:''},
+        {key:'exec',     name:'Executive',   badge:'PREMIUM',  badgeC:'#059669'}
+      ],
+      cl: [
+        {key:'cl-classic',  name:'Classic',      badge:'', badgeC:''},
+        {key:'cl-modern',   name:'Modern',       badge:'', badgeC:''},
+        {key:'cl-minimal',  name:'Minimal',      badge:'', badgeC:''},
+        {key:'cl-exec',     name:'Executive',    badge:'', badgeC:''},
+        {key:'cl-creative', name:'Creative',     badge:'VIVID', badgeC:'#ea580c'},
+        {key:'cl-pro',      name:'Professional', badge:'', badgeC:''}
+      ]
+    },
+    // Theme: [bg, bandColor, bandH, accentColor, lineColor, boldColor, sidePanelColor, sidePanelW, subBandColor, subBandH, leftBorderColor]
+    themes: {
+      'classic':   ['#f8fafc','#1a2744',45,'#1a2744','rgba(26,39,68,.12)','rgba(26,39,68,.42)','',0,'',0,''],
+      'tech':      ['#0d1117','linear-gradient(90deg,#00d2ff,#0ea5e9)',30,'#38bdf8','rgba(255,255,255,.14)','rgba(56,189,248,.55)','',0,'',0,''],
+      'modern':    ['#fafaff','linear-gradient(90deg,#4f6ef7,#818cf8)',26,'#4f6ef7','rgba(79,110,247,.12)','rgba(79,110,247,.45)','linear-gradient(180deg,#4f6ef7,#818cf8)',36,'',0,''],
+      'health':    ['#f0fdf4','#0d9488',30,'#0d9488','rgba(13,148,136,.13)','rgba(13,148,136,.48)','',0,'',0,''],
+      'consult':   ['#fafaf7','#1c1917',24,'#d97706','rgba(28,25,23,.11)','rgba(28,25,23,.42)','',0,'#d97706',3,''],
+      'legal':     ['#f8f9ff','#1e3a5f',42,'#1e3a5f','rgba(30,58,95,.11)','rgba(30,58,95,.45)','',0,'',0,''],
+      'academic':  ['#fdf8f8','#7c2d12',26,'#7c2d12','rgba(124,45,18,.12)','rgba(124,45,18,.44)','',0,'',0,''],
+      'minimal':   ['#ffffff','',0,'#64748b','rgba(51,65,85,.1)','rgba(51,65,85,.38)','',0,'',0,'#94a3b8'],
+      'gov':       ['#f7f8ff','#1d4ed8',36,'#1d4ed8','rgba(29,78,216,.11)','rgba(29,78,216,.44)','',0,'#dc2626',5,''],
+      'creative':  ['#fdf4ff','',0,'#a855f7','rgba(168,85,247,.12)','rgba(168,85,247,.45)','linear-gradient(180deg,#a855f7,#ec4899)',28,'',0,''],
+      'compact':   ['#fffbf5','#ea580c',22,'#ea580c','rgba(234,88,12,.11)','rgba(234,88,12,.44)','',0,'',0,''],
+      'pro':       ['#f5f7ff','#4338ca',30,'#4338ca','rgba(67,56,202,.12)','rgba(67,56,202,.44)','',0,'',0,''],
+      'exec':      ['#f9f8f6','#0c0c0c',38,'#d97706','rgba(12,12,12,.1)','rgba(12,12,12,.38)','',0,'linear-gradient(90deg,#d97706,#f59e0b)',2.5,''],
+      'cl-classic':['#f8fafc','#1a2744',45,'#1a2744','rgba(26,39,68,.12)','rgba(26,39,68,.42)','',0,'',0,''],
+      'cl-modern': ['#fafaff','linear-gradient(90deg,#4f6ef7,#818cf8)',26,'#4f6ef7','rgba(79,110,247,.12)','rgba(79,110,247,.45)','linear-gradient(180deg,#4f6ef7,#818cf8)',36,'',0,''],
+      'cl-minimal':['#ffffff','',0,'#64748b','rgba(51,65,85,.1)','rgba(51,65,85,.38)','',0,'',0,'#94a3b8'],
+      'cl-exec':   ['#f9f8f6','#0c0c0c',38,'#d97706','rgba(12,12,12,.1)','rgba(12,12,12,.38)','',0,'linear-gradient(90deg,#d97706,#f59e0b)',2.5,''],
+      'cl-creative':['#fdf4ff','',0,'#a855f7','rgba(168,85,247,.12)','rgba(168,85,247,.45)','linear-gradient(180deg,#a855f7,#ec4899)',28,'',0,''],
+      'cl-pro':    ['#f5f7ff','#4338ca',30,'#4338ca','rgba(67,56,202,.12)','rgba(67,56,202,.44)','',0,'',0,'']
+    }
+  };
+
+  function lcTheme(key) {
+    var t = LC.themes[key] || LC.themes['classic'];
+    return { bg:t[0], band:t[1], bandH:t[2], accent:t[3], lc:t[4], bold:t[5], side:t[6], sideW:t[7], sub:t[8], subH:t[9], leftB:t[10] };
+  }
+
+  function lcLine(c, cls) { return '<div class="lcd-line '+cls+'" style="background:'+c+'"></div>'; }
+
+  function lcBuildDoc(key) {
+    var th = lcTheme(key);
+    var isCL = key.indexOf('cl-') === 0;
+    var bodyPad = th.sideW ? 'padding-left:'+(th.sideW+52)+'px' : '';
+    var html = '<div class="lcd" style="background:'+th.bg+'">';
+    // Side panel
+    if(th.side) html += '<div class="lcd-side" style="width:'+th.sideW+'px;background:'+th.side+'"></div>';
+    // Left border (minimal)
+    if(th.leftB) html += '<div class="lcd-side" style="width:3px;background:'+th.leftB+'"></div>';
+    // Header band
+    if(th.band) html += '<div class="lcd-band" style="height:'+th.bandH+'px;background:'+th.band+'"></div>';
+    if(th.sub)  html += '<div class="lcd-band" style="height:'+th.subH+'px;background:'+th.sub+'"></div>';
+    // Body
+    var bpad = th.sideW ? 'padding-left:'+(th.sideW+52)+'px;padding-right:56px;padding-bottom:40px;box-sizing:border-box' : 'padding:0 56px 40px;box-sizing:border-box';
+    html += '<div style="'+bpad+'">';
+    // Name + contact header
+    html += '<div class="lcd-name-line" style="background:'+th.bold+'"></div>';
+    html += '<div class="lcd-role-line" style="background:'+th.accent+'"></div>';
+    html += '<div class="lcd-contact-line" style="background:'+th.lc+'"></div>';
+    html += '<div class="lcd-hr" style="background:'+th.accent+'"></div>';
+    if(isCL) {
+      // Cover letter content
+      html += '<div class="lcd-cl-date" style="background:'+th.lc+'"></div>';
+      html += '<div class="lcd-cl-greeting" style="background:'+th.bold+'"></div>';
+      // Para 1
+      html += '<div class="lcd-cl-para">';
+      for(var w of['f','l','f','m','l','f','s']) html += lcLine(th.lc, w);
+      html += '</div>';
+      // Para 2
+      html += '<div class="lcd-cl-para">';
+      for(var w of['f','f','l','m','f','s']) html += lcLine(th.lc, w);
+      html += '</div>';
+      // Para 3
+      html += '<div class="lcd-cl-para">';
+      for(var w of['f','l','f','m','l']) html += lcLine(th.lc, w);
+      html += '</div>';
+      // Signature
+      html += '<div class="lcd-cl-sign">';
+      html += lcLine(th.lc, 'm');
+      html += lcLine(th.bold, 's bold');
+      html += lcLine(th.lc, 'xs');
+      html += '</div>';
+    } else {
+      // Resume: Summary
+      html += '<div class="lcd-sec">';
+      html += '<div class="lcd-sec-h" style="background:'+th.accent+'"></div>';
+      html += lcLine(th.lc,'f') + lcLine(th.lc,'l') + lcLine(th.lc,'m');
+      html += '</div>';
+      // Experience
+      html += '<div class="lcd-sec">';
+      html += '<div class="lcd-sec-h" style="background:'+th.accent+'"></div>';
+      // Entry 1
+      html += '<div class="lcd-entry">';
+      html += '<div class="lcd-entry-top"><div class="lcd-et-l" style="background:'+th.bold+'"></div><div class="lcd-et-r" style="background:'+th.lc+'"></div></div>';
+      html += '<div class="lcd-et-sub" style="background:'+th.accent+'"></div>';
+      html += '<div class="lcd-bullet">';
+      html += lcLine(th.lc,'l') + lcLine(th.lc,'f') + lcLine(th.lc,'m') + lcLine(th.lc,'l') + lcLine(th.lc,'s');
+      html += '</div></div>';
+      // Entry 2
+      html += '<div class="lcd-entry">';
+      html += '<div class="lcd-entry-top"><div class="lcd-et-l" style="background:'+th.bold+'"></div><div class="lcd-et-r" style="background:'+th.lc+'"></div></div>';
+      html += '<div class="lcd-et-sub" style="background:'+th.accent+'"></div>';
+      html += '<div class="lcd-bullet">';
+      html += lcLine(th.lc,'f') + lcLine(th.lc,'l') + lcLine(th.lc,'m') + lcLine(th.lc,'s');
+      html += '</div></div>';
+      html += '</div>';
+      // Skills (two columns)
+      html += '<div class="lcd-sec">';
+      html += '<div class="lcd-sec-h" style="background:'+th.accent+'"></div>';
+      html += '<div class="lcd-row2"><div>';
+      html += lcLine(th.lc,'m bold') + lcLine(th.lc,'s') + lcLine(th.lc,'l') + lcLine(th.lc,'m');
+      html += '</div><div>';
+      html += lcLine(th.lc,'l bold') + lcLine(th.lc,'m') + lcLine(th.lc,'s') + lcLine(th.lc,'l');
+      html += '</div></div>';
+      html += '</div>';
+      // Education
+      html += '<div class="lcd-sec">';
+      html += '<div class="lcd-sec-h" style="background:'+th.accent+'"></div>';
+      html += '<div class="lcd-et-l" style="background:'+th.bold+';height:9px;border-radius:3px;margin-bottom:7px"></div>';
+      html += lcLine(th.lc,'m') + lcLine(th.lc,'s');
+      html += '</div>';
+    }
+    html += '</div></div>';
+    return html;
+  }
+
+  function lcGetList() { return LC.templates[LC.tab]; }
+
+  function lcIdx(offset) {
+    var list = lcGetList();
+    return (LC.idx + offset + list.length) % list.length;
+  }
+
+  function lcFillSlot(el, idx) {
+    if(!el) return;
+    var list = lcGetList();
+    var t = list[idx];
+    var docHtml = lcBuildDoc(t.key);
+    var w = el.offsetWidth || (el.classList.contains('lc-slot-center') ? 440 : 278);
+    var scale = (w / 860).toFixed(4);
+    var h = el.offsetHeight || (el.classList.contains('lc-slot-center') ? 608 : 384);
+    el.innerHTML = '<div class="lc-doc-wrap" style="transform:scale('+scale+');height:'+Math.round(h/scale)+'px">'+docHtml+'</div>';
+  }
+
+  function lcRender() {
+    var list = lcGetList();
+    var t = list[LC.idx];
+    // Fill slots
+    lcFillSlot(document.getElementById('lcSlotL'), lcIdx(-1));
+    lcFillSlot(document.getElementById('lcSlotC'), LC.idx);
+    lcFillSlot(document.getElementById('lcSlotR'), lcIdx(1));
+    // Name
+    var nameEl = document.getElementById('lcName');
+    if(nameEl) nameEl.textContent = t.name.toUpperCase();
+    // Dots
+    var dotsEl = document.getElementById('lcDots');
+    if(dotsEl) {
+      dotsEl.innerHTML = '';
+      list.forEach(function(_,i){
+        var d = document.createElement('div');
+        d.className = 'lc-dot' + (i===LC.idx ? ' active' : '');
+        d.onclick = function(){ LC.idx=i; lcRender(); };
+        dotsEl.appendChild(d);
+      });
+    }
+  }
+
+  function lcSetTab(tab, btn) {
+    LC.tab = tab; LC.idx = 0;
+    // Update tab active state
+    document.querySelectorAll('.lc-tab').forEach(function(b){ b.classList.remove('active'); });
+    if(btn) btn.classList.add('active');
+    // Move underline
+    if(btn) {
+      var ul = document.getElementById('lcTabLine');
+      if(ul) { ul.style.left = btn.offsetLeft + 'px'; ul.style.width = btn.offsetWidth + 'px'; }
+    }
+    lcRender();
+  }
+
+  function lcNext() { LC.idx = lcIdx(1); lcRender(); }
+  function lcPrev() { LC.idx = lcIdx(-1); lcRender(); }
+
+  // Keyboard & swipe
+  document.addEventListener('keydown', function(e){
+    if(document.getElementById('lczModal').classList.contains('open')) {
+      if(e.key==='Escape') lcCloseZoom();
+      if(e.key==='ArrowLeft') { lcPrev(); lcRefreshZoom(); }
+      if(e.key==='ArrowRight') { lcNext(); lcRefreshZoom(); }
+    }
+  });
+  (function(){
+    var sx=0;
+    var stage = document.querySelector('.lc-stage');
+    if(!stage) return;
+    stage.addEventListener('touchstart',function(e){ sx=e.touches[0].clientX; },{passive:true});
+    stage.addEventListener('touchend',function(e){
+      var dx = e.changedTouches[0].clientX - sx;
+      if(Math.abs(dx)>40){ dx<0 ? lcNext() : lcPrev(); }
+    },{passive:true});
+  })();
+
+  // Zoom
+  var _lczZoom = 100;
+  function lcOpenZoom() {
+    var list = lcGetList();
+    var t = list[LC.idx];
+    var modal = document.getElementById('lczModal');
+    document.getElementById('lczTitle').textContent = t.name;
+    document.getElementById('lczSubtitle').textContent = (LC.tab==='cl'?'Cover letter':'Resume') + ' template';
+    document.getElementById('lczNavName').textContent = t.name.toUpperCase();
+    document.getElementById('lczPage').innerHTML = lcBuildDoc(t.key);
+    lcSetZoom(_lczZoom);
+    modal.classList.add('open');
+    document.body.style.overflow='hidden';
+  }
+  function lcCloseZoom() {
+    document.getElementById('lczModal').classList.remove('open');
+    document.body.style.overflow='';
+  }
+  function lcSetZoom(z) {
+    _lczZoom = z;
+    document.querySelectorAll('.lcz-zbtn').forEach(function(b){
+      b.classList.toggle('active', b.textContent.trim()===z+'%');
+    });
+    var page = document.getElementById('lczPage');
+    if(page) page.style.zoom = (z/100);
+  }
+  function lcRefreshZoom() {
+    var modal = document.getElementById('lczModal');
+    if(modal.classList.contains('open')) lcOpenZoom();
+  }
+
+  // Init carousel
+  (function(){
+    // Position tab underline on first tab
+    var firstTab = document.querySelector('.lc-tab.active');
+    if(firstTab) {
+      var ul = document.getElementById('lcTabLine');
+      if(ul) { ul.style.left = firstTab.offsetLeft+'px'; ul.style.width = firstTab.offsetWidth+'px'; }
+    }
+    lcRender();
+  })();
+  /* ════ END LANDING CAROUSEL ════ */
+
 </script>
 </body>
 </html>

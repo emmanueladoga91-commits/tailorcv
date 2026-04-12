@@ -3,31 +3,37 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TailorCV | AI-Powered Resumes That Get You Hired</title>
-  <meta name="description" content="TailorCV tailors your resume to every job posting using AI. 13 professional templates, 18 career niches, ATS scoring, cover letters and more. Free to start." />
+  <title>TailorCV  -  AI-Powered Resumes That Get You Hired</title>
+  <meta name="description" content="TailorCV tailors your resume to every job posting using AI. 13 professional templates, 18 career niches, ATS scoring, cover letters and more  -  right inside Chrome." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --navy:    #1a2744;
-      --navy2:   #243057;
+      --navy:    #0f1c3f;
+      --navy2:   #1a2f5e;
       --indigo:  #4f6ef7;
       --indigo2: #3a5ce4;
+      --indigo3: #6c87f8;
       --cyan:    #38bdf8;
+      --cyan2:   #0ea5e9;
       --gold:    #f59e0b;
       --green:   #22c55e;
       --rose:    #f43f5e;
       --gray50:  #f8fafc;
       --gray100: #f1f5f9;
       --gray200: #e2e8f0;
+      --gray300: #cbd5e1;
       --gray400: #94a3b8;
       --gray600: #475569;
+      --gray700: #334155;
       --gray800: #1e293b;
       --white:   #ffffff;
       --radius:  14px;
+      --radius-lg: 20px;
       --shadow:  0 4px 24px rgba(79,110,247,.13);
+      --shadow-lg: 0 20px 60px rgba(0,0,0,.18);
     }
 
     html { scroll-behavior: smooth; }
@@ -43,793 +49,940 @@
     /* ─── NAV ─────────────────────────────────────────── */
     nav {
       position: sticky; top: 0; z-index: 100;
-      background: rgba(255,255,255,.92);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--gray200);
+      background: rgba(255,255,255,.88);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(226,232,240,.7);
     }
     .nav-inner {
-      max-width: 1100px; margin: 0 auto;
+      max-width: 1160px; margin: 0 auto;
       display: flex; align-items: center; justify-content: space-between;
-      padding: 16px 24px;
+      padding: 14px 24px;
     }
     .logo {
-      font-size: 1.4rem; font-weight: 900;
+      font-size: 1.35rem; font-weight: 900;
       color: var(--navy);
       text-decoration: none;
       letter-spacing: -.5px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .logo-icon {
+      width: 30px; height: 30px; border-radius: 8px;
+      background: linear-gradient(135deg, var(--indigo), var(--cyan));
+      display: flex; align-items: center; justify-content: center;
+      font-size: .85rem;
     }
     .logo span { color: var(--indigo); }
     .nav-links {
-      display: flex; align-items: center; gap: 32px;
+      display: flex; align-items: center; gap: 28px;
       list-style: none;
     }
     .nav-links a {
       text-decoration: none; color: var(--gray600);
-      font-size: .95rem; font-weight: 500;
+      font-size: .92rem; font-weight: 500;
       transition: color .2s;
     }
     .nav-links a:hover { color: var(--indigo); }
     .nav-cta {
-      background: var(--indigo);
+      background: var(--indigo) !important;
       color: var(--white) !important;
-      padding: 10px 22px;
+      padding: 9px 20px;
       border-radius: 50px;
       font-weight: 700 !important;
+      font-size: .88rem !important;
       transition: background .2s, transform .15s !important;
+      box-shadow: 0 4px 14px rgba(79,110,247,.35);
     }
-    .nav-cta:hover { background: var(--indigo2) !important; transform: translateY(-1px); }
+    .nav-cta:hover { background: var(--indigo2) !important; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(79,110,247,.45) !important; }
 
     /* ─── HERO ────────────────────────────────────────── */
     .hero {
-      background: linear-gradient(135deg, var(--navy) 0%, var(--navy2) 60%, #2d3f7a 100%);
+      background: linear-gradient(140deg, #060e26 0%, #0f1c3f 45%, #172550 100%);
       color: var(--white);
-      padding: 100px 24px 120px;
-      text-align: center;
+      padding: 0 24px;
       position: relative;
       overflow: hidden;
+      min-height: 92vh;
+      display: flex; align-items: center;
     }
+    /* Dot grid pattern */
     .hero::before {
       content:'';
       position: absolute; inset: 0;
-      background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(79,110,247,.35) 0%, transparent 70%);
+      background-image: radial-gradient(rgba(79,110,247,.25) 1.5px, transparent 1.5px);
+      background-size: 32px 32px;
+      opacity: .45;
     }
-    .hero-inner { position: relative; max-width: 860px; margin: 0 auto; }
+    /* Glow blobs */
+    .hero::after {
+      content:'';
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 60% 50% at 20% 50%, rgba(79,110,247,.18) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 40% at 80% 30%, rgba(56,189,248,.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-inner {
+      position: relative; z-index: 2;
+      max-width: 1160px; margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 64px;
+      align-items: center;
+      padding: 100px 0 110px;
+      width: 100%;
+    }
+    .hero-left { max-width: 560px; }
     .hero-badge {
-      display: inline-block;
-      background: rgba(79,110,247,.25);
-      border: 1px solid rgba(79,110,247,.5);
-      color: var(--cyan);
-      font-size: .8rem; font-weight: 700;
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(79,110,247,.18);
+      border: 1px solid rgba(79,110,247,.4);
+      color: #a5b4fc;
+      font-size: .78rem; font-weight: 700;
       letter-spacing: .08em; text-transform: uppercase;
-      padding: 6px 16px; border-radius: 50px;
-      margin-bottom: 28px;
+      padding: 7px 16px; border-radius: 50px;
+      margin-bottom: 32px;
+    }
+    .hero-badge .dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--cyan);
+      box-shadow: 0 0 8px var(--cyan);
+      animation: pulse 2s ease infinite;
+    }
+    @keyframes pulse {
+      0%,100% { opacity: 1; transform: scale(1); }
+      50% { opacity: .6; transform: scale(.85); }
     }
     .hero h1 {
-      font-size: clamp(2.4rem, 5.5vw, 4rem);
+      font-size: clamp(2.6rem, 4.5vw, 3.8rem);
       font-weight: 900;
-      line-height: 1.15;
-      letter-spacing: -.03em;
+      line-height: 1.1;
+      letter-spacing: -.04em;
       margin-bottom: 24px;
     }
-    .hero h1 .highlight {
-      background: linear-gradient(90deg, var(--indigo) 0%, var(--cyan) 100%);
+    .hero h1 .grad {
+      background: linear-gradient(90deg, #818cf8 0%, var(--cyan) 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
     }
     .hero-sub {
-      font-size: 1.2rem; color: rgba(255,255,255,.75);
-      max-width: 620px; margin: 0 auto 44px;
-      line-height: 1.7;
+      font-size: 1.1rem; color: rgba(255,255,255,.65);
+      line-height: 1.75;
+      margin-bottom: 40px;
     }
     .hero-btns {
-      display: flex; align-items: center; justify-content: center;
-      gap: 16px; flex-wrap: wrap;
+      display: flex; align-items: center;
+      gap: 14px; flex-wrap: wrap;
+      margin-bottom: 48px;
     }
     .btn-primary {
-      display: inline-flex; align-items: center; gap: 8px;
+      display: inline-flex; align-items: center; gap: 9px;
       background: var(--indigo);
-      color: var(--white);
-      padding: 16px 32px;
-      border-radius: 50px;
-      font-size: 1.05rem; font-weight: 700;
-      text-decoration: none;
-      box-shadow: 0 8px 32px rgba(79,110,247,.45);
-      transition: transform .2s, box-shadow .2s, background .2s;
-    }
-    .btn-primary:hover { background: var(--indigo2); transform: translateY(-2px); box-shadow: 0 12px 40px rgba(79,110,247,.55); }
-    .btn-secondary {
-      display: inline-flex; align-items: center; gap: 8px;
-      background: rgba(255,255,255,.12);
-      border: 1px solid rgba(255,255,255,.3);
       color: var(--white);
       padding: 15px 30px;
       border-radius: 50px;
-      font-size: 1.05rem; font-weight: 600;
+      font-size: 1rem; font-weight: 700;
+      text-decoration: none;
+      box-shadow: 0 8px 28px rgba(79,110,247,.5);
+      transition: transform .2s, box-shadow .2s, background .2s;
+      white-space: nowrap;
+    }
+    .btn-primary:hover { background: var(--indigo2); transform: translateY(-2px); box-shadow: 0 12px 40px rgba(79,110,247,.6); }
+    .btn-secondary {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.2);
+      color: rgba(255,255,255,.85);
+      padding: 14px 26px;
+      border-radius: 50px;
+      font-size: .95rem; font-weight: 600;
       text-decoration: none;
       backdrop-filter: blur(8px);
       transition: background .2s, transform .2s;
     }
-    .btn-secondary:hover { background: rgba(255,255,255,.22); transform: translateY(-2px); }
-    .hero-trust {
-      margin-top: 56px;
-      display: flex; align-items: center; justify-content: center;
-      gap: 28px; flex-wrap: wrap;
+    .btn-secondary:hover { background: rgba(255,255,255,.16); transform: translateY(-2px); }
+    .hero-social {
+      display: flex; flex-wrap: wrap; gap: 20px; align-items: center;
     }
-    .trust-item {
+    .hero-stat {
       display: flex; align-items: center; gap: 8px;
-      font-size: .88rem; color: rgba(255,255,255,.65);
     }
-    .trust-item .ico { font-size: 1rem; }
+    .hero-stat-num {
+      font-size: 1.35rem; font-weight: 900; color: white;
+      line-height: 1;
+    }
+    .hero-stat-label {
+      font-size: .78rem; color: rgba(255,255,255,.5); line-height: 1.3;
+      max-width: 80px;
+    }
+    .hero-stat-divider {
+      width: 1px; height: 32px;
+      background: rgba(255,255,255,.15);
+    }
 
-    /* ─── MOCKUP STRIP ────────────────────────────────── */
-    .mockup-strip {
-      background: var(--gray50);
-      padding: 80px 24px;
-      text-align: center;
+    /* ─── HERO PRODUCT MOCKUP ─────────────────────────── */
+    .hero-right {
+      position: relative;
     }
-    .mockup-strip h2 {
-      font-size: 1.1rem; font-weight: 700; color: var(--indigo);
-      text-transform: uppercase; letter-spacing: .08em;
-      margin-bottom: 48px;
+    .mockup-frame {
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 20px;
+      backdrop-filter: blur(12px);
+      padding: 16px;
+      box-shadow: 0 40px 100px rgba(0,0,0,.5), 0 0 0 1px rgba(255,255,255,.06) inset;
+      position: relative;
     }
-    .template-mosaic {
-      display: flex; justify-content: center;
-      gap: 16px; flex-wrap: wrap;
-      max-width: 1000px; margin: 0 auto;
+    .mockup-titlebar {
+      display: flex; align-items: center; gap: 8px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      margin-bottom: 14px;
     }
-    .t-card {
-      background: var(--white);
-      border: 1px solid var(--gray200);
+    .mock-dot {
+      width: 11px; height: 11px; border-radius: 50%;
+    }
+    .mock-dot.r { background: #ff5f57; }
+    .mock-dot.y { background: #febc2e; }
+    .mock-dot.g { background: #28c840; }
+    .mock-title {
+      margin-left: 4px; font-size: .75rem; font-weight: 600;
+      color: rgba(255,255,255,.35); letter-spacing: .03em;
+    }
+    .mock-body {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+    }
+    /* Left panel: Job input */
+    .mock-panel {
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 12px;
+      padding: 14px;
+    }
+    .mock-panel-label {
+      font-size: .68rem; font-weight: 700;
+      color: rgba(255,255,255,.35); text-transform: uppercase;
+      letter-spacing: .1em; margin-bottom: 10px;
+    }
+    .mock-job-text {
+      font-size: .65rem; line-height: 1.6;
+      color: rgba(255,255,255,.5);
+    }
+    .mock-job-text .mock-bold {
+      color: rgba(255,255,255,.8); font-weight: 600;
+    }
+    .mock-job-text .mock-highlight {
+      background: rgba(79,110,247,.35);
+      border-radius: 3px;
+      padding: 0 3px;
+      color: #a5b4fc;
+    }
+    /* Right panel: Resume output */
+    .mock-resume {
+      background: white;
       border-radius: 10px;
-      width: 130px; height: 170px;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      gap: 10px;
-      font-size: .78rem; font-weight: 600;
-      color: var(--gray600);
-      box-shadow: 0 2px 12px rgba(0,0,0,.06);
-      transition: transform .2s, box-shadow .2s;
-      cursor: default;
+      padding: 12px 10px;
+      color: #1e293b;
+      font-size: .6rem;
+      line-height: 1.5;
+      position: relative;
     }
-    .t-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(79,110,247,.15); }
-    .t-card .t-ico { font-size: 2rem; }
-    .t-card.featured { border-color: var(--indigo); background: linear-gradient(135deg,#eef2ff,#f0f7ff); }
+    .mock-resume-header {
+      border-bottom: 2px solid #4f6ef7;
+      padding-bottom: 8px; margin-bottom: 8px;
+    }
+    .mock-resume-name { font-size: .78rem; font-weight: 800; color: #0f1c3f; margin-bottom: 2px; }
+    .mock-resume-title { font-size: .62rem; font-weight: 600; color: #4f6ef7; }
+    .mock-resume-contact { font-size: .55rem; color: #64748b; margin-top: 3px; }
+    .mock-section-title { font-size: .6rem; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; color: #0f1c3f; margin: 7px 0 4px; }
+    .mock-line { height: 4px; border-radius: 2px; background: #e2e8f0; margin-bottom: 3px; }
+    .mock-line.dark { background: #cbd5e1; }
+    .mock-line.short { width: 60%; }
+    .mock-line.med { width: 80%; }
+    .mock-line.full { width: 100%; }
+    /* ATS score badge floating */
+    .mock-ats-badge {
+      position: absolute;
+      bottom: -16px; right: -16px;
+      background: linear-gradient(135deg, #0f1c3f, #1e3a8a);
+      border: 1px solid rgba(79,110,247,.4);
+      border-radius: 14px;
+      padding: 12px 16px;
+      display: flex; align-items: center; gap: 12px;
+      box-shadow: 0 12px 36px rgba(0,0,0,.4);
+    }
+    .ats-circle-mini {
+      width: 48px; height: 48px; flex-shrink: 0;
+    }
+    .ats-badge-text { }
+    .ats-badge-pct { font-size: 1.1rem; font-weight: 900; color: white; line-height: 1; }
+    .ats-badge-lbl { font-size: .62rem; color: rgba(255,255,255,.5); }
+    /* Keywords matched floating */
+    .mock-keywords-badge {
+      position: absolute;
+      top: -14px; left: -16px;
+      background: rgba(15,28,63,.95);
+      border: 1px solid rgba(34,197,94,.35);
+      border-radius: 12px;
+      padding: 10px 14px;
+      box-shadow: 0 12px 36px rgba(0,0,0,.4);
+    }
+    .kw-row { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+    .kw-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 6px var(--green); }
+    .kw-dot.miss { background: #94a3b8; box-shadow: none; }
+    .kw-text { font-size: .63rem; color: rgba(255,255,255,.7); font-weight: 500; }
+    .kw-lbl { font-size: .6rem; font-weight: 700; color: rgba(255,255,255,.35); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 6px; }
 
-    /* ─── HOW IT WORKS ────────────────────────────────── */
+    /* ─── METRICS BAR ─────────────────────────────────── */
+    .metrics-bar {
+      background: var(--gray50);
+      border-top: 1px solid var(--gray200);
+      border-bottom: 1px solid var(--gray200);
+      padding: 28px 24px;
+    }
+    .metrics-inner {
+      max-width: 1160px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: center;
+      gap: 0; flex-wrap: wrap;
+    }
+    .metric-item {
+      display: flex; flex-direction: column; align-items: center;
+      padding: 8px 40px;
+      border-right: 1px solid var(--gray200);
+    }
+    .metric-item:last-child { border-right: none; }
+    .metric-num {
+      font-size: 2rem; font-weight: 900; color: var(--navy);
+      line-height: 1; letter-spacing: -.03em;
+      background: linear-gradient(135deg, var(--navy) 0%, var(--indigo) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .metric-label {
+      font-size: .78rem; color: var(--gray400); font-weight: 500;
+      margin-top: 4px; text-align: center;
+    }
+
+    /* ─── SECTION COMMON ──────────────────────────────── */
     .section {
-      max-width: 1100px; margin: 0 auto;
+      max-width: 1160px; margin: 0 auto;
       padding: 96px 24px;
     }
     .section-label {
-      font-size: .8rem; font-weight: 700;
-      color: var(--indigo); text-transform: uppercase; letter-spacing: .1em;
-      margin-bottom: 12px;
-    }
-    .section-title {
-      font-size: clamp(1.9rem, 3.5vw, 2.75rem);
-      font-weight: 900;
-      color: var(--navy);
-      line-height: 1.2;
-      letter-spacing: -.025em;
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: .75rem; font-weight: 700;
+      color: var(--indigo); text-transform: uppercase; letter-spacing: .12em;
       margin-bottom: 16px;
     }
-    .section-sub {
-      font-size: 1.1rem; color: var(--gray600);
-      max-width: 560px;
-      margin-bottom: 64px;
+    .section-label::before {
+      content: '';
+      width: 20px; height: 2px; border-radius: 1px;
+      background: var(--indigo);
     }
+    .section-title {
+      font-size: clamp(2rem, 3.5vw, 2.85rem);
+      font-weight: 900;
+      color: var(--navy);
+      line-height: 1.15;
+      letter-spacing: -.03em;
+      margin-bottom: 18px;
+    }
+    .section-title .grad {
+      background: linear-gradient(90deg, var(--indigo) 0%, var(--cyan2) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .section-sub {
+      font-size: 1.05rem; color: var(--gray600);
+      max-width: 540px; line-height: 1.7;
+      margin-bottom: 60px;
+    }
+
+    /* ─── TEMPLATE GALLERY ────────────────────────────── */
+    .templates-section { background: white; }
+    .templates-inner {
+      max-width: 1160px; margin: 0 auto;
+      padding: 96px 24px;
+    }
+    .templates-header { text-align: center; margin-bottom: 56px; }
+    .templates-header .section-label { justify-content: center; }
+    .templates-header .section-label::before { display: none; }
+    .templates-header .section-sub { margin: 0 auto; text-align: center; }
+
+    .tmpl-gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+      gap: 20px;
+    }
+    /* CSS-rendered document thumbnails */
+    .tmpl-card {
+      border: 1.5px solid var(--gray200);
+      border-radius: 12px;
+      overflow: hidden;
+      cursor: default;
+      transition: transform .22s, box-shadow .22s, border-color .22s;
+      background: white;
+      box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    }
+    .tmpl-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 14px 40px rgba(79,110,247,.18);
+      border-color: var(--indigo);
+    }
+    .tmpl-card.featured {
+      border-color: var(--indigo);
+      box-shadow: 0 4px 20px rgba(79,110,247,.15);
+    }
+    .tmpl-thumb {
+      height: 160px;
+      position: relative;
+      overflow: hidden;
+    }
+    /* Generic doc lines inside thumb */
+    .tmpl-doc {
+      position: absolute; inset: 0;
+      padding: 12px 10px 10px;
+      display: flex; flex-direction: column;
+      gap: 3px;
+      font-size: 0;
+    }
+    .doc-band {
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+    .doc-line {
+      height: 3px; border-radius: 2px;
+      background: rgba(0,0,0,.12);
+      flex-shrink: 0;
+    }
+    .doc-line.h { background: rgba(0,0,0,.22); height: 4px; }
+    .doc-line.s { width: 55%; }
+    .doc-line.m { width: 75%; }
+    .doc-line.f { width: 100%; }
+    .doc-line.light { background: rgba(0,0,0,.07); }
+    .doc-spacer { height: 5px; flex-shrink: 0; }
+
+    /* Per-template color themes */
+    .tt-classic .tmpl-thumb { background: #f8fafc; }
+    .tt-classic .doc-band.top { height: 28px; background: #1a2744; border-radius: 0; }
+    .tt-classic .doc-line.h { background: rgba(26,39,68,.5); }
+    .tt-classic .doc-line { background: rgba(26,39,68,.15); }
+    .tt-classic .doc-line.light { background: rgba(26,39,68,.07); }
+
+    .tt-tech .tmpl-thumb { background: #0d1117; }
+    .tt-tech .doc-band.top { height: 24px; background: linear-gradient(90deg,#00d2ff,#0ea5e9); border-radius: 0; }
+    .tt-tech .doc-line.h { background: rgba(56,189,248,.6); }
+    .tt-tech .doc-line { background: rgba(255,255,255,.18); }
+    .tt-tech .doc-line.light { background: rgba(255,255,255,.08); }
+
+    .tt-modern .tmpl-thumb { background: #fafaff; }
+    .tt-modern .doc-band.top { height: 22px; background: linear-gradient(90deg, #4f6ef7, #818cf8); border-radius: 0; }
+    .tt-modern .doc-line.h { background: rgba(79,110,247,.5); }
+    .tt-modern .doc-line { background: rgba(79,110,247,.15); }
+    .tt-modern .doc-line.light { background: rgba(79,110,247,.07); }
+    .tt-modern .doc-band.side { width: 28px; height: 100%; position: absolute; left: 0; top: 0; background: linear-gradient(180deg, #4f6ef7, #818cf8); }
+
+    .tt-health .tmpl-thumb { background: #f0fdf4; }
+    .tt-health .doc-band.top { height: 24px; background: #0d9488; border-radius: 0; }
+    .tt-health .doc-line.h { background: rgba(13,148,136,.55); }
+    .tt-health .doc-line { background: rgba(13,148,136,.18); }
+    .tt-health .doc-line.light { background: rgba(13,148,136,.08); }
+
+    .tt-consult .tmpl-thumb { background: #fafaf7; }
+    .tt-consult .doc-band.top { height: 20px; background: #1c1917; border-radius: 0; }
+    .tt-consult .doc-band.accent { height: 3px; background: #d97706; border-radius: 0; margin-top: 0; flex-shrink: 0; }
+    .tt-consult .doc-line.h { background: rgba(28,25,23,.5); }
+    .tt-consult .doc-line { background: rgba(28,25,23,.14); }
+    .tt-consult .doc-line.light { background: rgba(28,25,23,.06); }
+
+    .tt-legal .tmpl-thumb { background: #f8f9ff; }
+    .tt-legal .doc-band.top { height: 32px; background: #1e3a5f; border-radius: 0; }
+    .tt-legal .doc-line.h { background: rgba(30,58,95,.5); }
+    .tt-legal .doc-line { background: rgba(30,58,95,.15); }
+    .tt-legal .doc-line.light { background: rgba(30,58,95,.07); }
+
+    .tt-academic .tmpl-thumb { background: #fdf8f8; }
+    .tt-academic .doc-band.top { height: 20px; background: #7c2d12; border-radius: 0; }
+    .tt-academic .doc-line.h { background: rgba(124,45,18,.5); }
+    .tt-academic .doc-line { background: rgba(124,45,18,.16); }
+    .tt-academic .doc-line.light { background: rgba(124,45,18,.07); }
+
+    .tt-minimal .tmpl-thumb { background: #ffffff; }
+    .tt-minimal .doc-band.top { height: 0; }
+    .tt-minimal .doc-band.accent-left { width: 3px; position: absolute; left: 10px; top: 12px; bottom: 10px; background: #94a3b8; border-radius: 2px; }
+    .tt-minimal .doc-line.h { background: rgba(51,65,85,.45); }
+    .tt-minimal .doc-line { background: rgba(51,65,85,.13); }
+    .tt-minimal .doc-line.light { background: rgba(51,65,85,.06); }
+
+    .tt-gov .tmpl-thumb { background: #f7f8ff; }
+    .tt-gov .doc-band.top { height: 28px; background: #1d4ed8; border-radius: 0; }
+    .tt-gov .doc-band.stripe { height: 4px; background: #dc2626; border-radius: 0; flex-shrink: 0; }
+    .tt-gov .doc-line.h { background: rgba(29,78,216,.5); }
+    .tt-gov .doc-line { background: rgba(29,78,216,.15); }
+    .tt-gov .doc-line.light { background: rgba(29,78,216,.07); }
+
+    .tt-creative .tmpl-thumb { background: linear-gradient(135deg, #fdf4ff 0%, #f0f9ff 100%); }
+    .tt-creative .doc-band.side { width: 22px; height: 100%; position: absolute; left: 0; top: 0; background: linear-gradient(180deg, #a855f7, #ec4899); border-radius: 0; }
+    .tt-creative .doc-line.h { background: rgba(168,85,247,.5); }
+    .tt-creative .doc-line { background: rgba(168,85,247,.18); }
+    .tt-creative .doc-line.light { background: rgba(168,85,247,.08); }
+
+    .tt-compact .tmpl-thumb { background: #fffbf5; }
+    .tt-compact .doc-band.top { height: 18px; background: #ea580c; border-radius: 0; }
+    .tt-compact .doc-line.h { background: rgba(234,88,12,.5); }
+    .tt-compact .doc-line { background: rgba(234,88,12,.15); }
+    .tt-compact .doc-line.light { background: rgba(234,88,12,.07); }
+
+    .tt-pro .tmpl-thumb { background: #f5f7ff; }
+    .tt-pro .doc-band.top { height: 24px; background: #4338ca; border-radius: 0; }
+    .tt-pro .doc-line.h { background: rgba(67,56,202,.5); }
+    .tt-pro .doc-line { background: rgba(67,56,202,.16); }
+    .tt-pro .doc-line.light { background: rgba(67,56,202,.07); }
+
+    .tt-exec .tmpl-thumb { background: #f9f8f6; }
+    .tt-exec .doc-band.top { height: 30px; background: linear-gradient(90deg, #0c0c0c, #1c1c1c); border-radius: 0; }
+    .tt-exec .doc-band.gold-line { height: 2px; background: linear-gradient(90deg, #d97706, #f59e0b); border-radius: 0; flex-shrink: 0; }
+    .tt-exec .doc-line.h { background: rgba(12,12,12,.45); }
+    .tt-exec .doc-line { background: rgba(12,12,12,.13); }
+    .tt-exec .doc-line.light { background: rgba(12,12,12,.06); }
+
+    .tmpl-footer {
+      padding: 10px 12px;
+      border-top: 1px solid var(--gray100);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .tmpl-name { font-size: .78rem; font-weight: 700; color: var(--navy); }
+    .tmpl-badge {
+      font-size: .65rem; font-weight: 700;
+      padding: 2px 8px; border-radius: 50px;
+      text-transform: uppercase; letter-spacing: .05em;
+    }
+    .tmpl-badge.new { background: #ede9fe; color: #7c3aed; }
+    .tmpl-badge.top { background: #ecfdf5; color: #059669; }
+    .tmpl-badge.hot { background: #fff7ed; color: #ea580c; }
+
+    /* ─── HOW IT WORKS ────────────────────────────────── */
     .steps-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-      gap: 28px;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 0;
+      position: relative;
+    }
+    .steps-grid::before {
+      content: '';
+      position: absolute;
+      top: 26px; left: 20px; right: 20px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--indigo), transparent);
+      z-index: 0;
     }
     .step-card {
-      background: var(--gray50);
-      border: 1px solid var(--gray200);
+      background: var(--white);
+      border: 1.5px solid var(--gray200);
       border-radius: var(--radius);
-      padding: 28px 24px;
+      padding: 28px 22px;
       position: relative;
-      transition: border-color .2s, box-shadow .2s;
+      z-index: 1;
+      transition: border-color .22s, box-shadow .22s, transform .22s;
     }
     .step-card:hover {
       border-color: var(--indigo);
-      box-shadow: var(--shadow);
+      box-shadow: 0 8px 30px rgba(79,110,247,.12);
+      transform: translateY(-3px);
     }
+    .steps-grid { gap: 20px; }
+    .steps-grid::before { display: none; }
     .step-num {
-      width: 40px; height: 40px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--indigo), var(--cyan));
+      width: 42px; height: 42px; border-radius: 12px;
+      background: linear-gradient(135deg, var(--indigo), #818cf8);
       color: var(--white);
-      font-weight: 800; font-size: .95rem;
+      font-weight: 800; font-size: .9rem;
       display: flex; align-items: center; justify-content: center;
       margin-bottom: 18px;
+      box-shadow: 0 4px 14px rgba(79,110,247,.35);
     }
     .step-card h3 {
-      font-size: 1rem; font-weight: 700;
+      font-size: .97rem; font-weight: 700;
       color: var(--navy); margin-bottom: 10px;
     }
     .step-card p {
-      font-size: .9rem; color: var(--gray600); line-height: 1.6;
+      font-size: .88rem; color: var(--gray600); line-height: 1.65;
     }
 
-    /* ─── AUTHENTICITY SECTION ────────────────────────── */
-    .authenticity-section {
-      max-width: 1080px; margin: 0 auto; padding: 96px 24px;
-    }
-    .auth-promise {
-      text-align: center; margin-bottom: 64px;
-    }
-    .auth-promise-badge {
-      display: inline-block; background: #f0fdf4; color: #15803d;
-      border: 1px solid #86efac; border-radius: 99px;
-      font-size: .8rem; font-weight: 700; letter-spacing: .06em;
-      text-transform: uppercase; padding: 6px 16px; margin-bottom: 20px;
-    }
-    .auth-promise h2 {
-      font-size: clamp(1.7rem, 3.5vw, 2.6rem);
-      font-weight: 900; color: var(--navy); line-height: 1.2; margin-bottom: 16px;
-    }
-    .auth-promise p {
-      font-size: 1.05rem; color: var(--gray600); max-width: 560px; margin: 0 auto; line-height: 1.7;
-    }
-    .vs-grid {
-      display: grid; grid-template-columns: 1fr auto 1fr; gap: 0; align-items: stretch;
-      border-radius: 16px; overflow: hidden;
-      box-shadow: 0 8px 40px rgba(0,0,0,.1);
-    }
-    .vs-col {
-      padding: 36px 32px;
-    }
-    .vs-col-other {
-      background: #f8fafc;
-      border: 1.5px solid #e2e8f0;
-      border-right: none; border-radius: 16px 0 0 16px;
-    }
-    .vs-col-tc {
-      background: linear-gradient(150deg, #1e3a5f 0%, #2d5a8e 100%);
-      border: 1.5px solid #2d5a8e;
-      border-left: none; border-radius: 0 16px 16px 0;
-    }
-    .vs-divider {
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      background: #fff; border-top: 1.5px solid #e2e8f0; border-bottom: 1.5px solid #e2e8f0;
-      padding: 0 4px; position: relative; z-index: 1;
-    }
-    .vs-divider-badge {
-      background: var(--indigo); color: #fff; border-radius: 99px;
-      font-size: .75rem; font-weight: 800; letter-spacing: .06em;
-      text-transform: uppercase; padding: 8px 14px; white-space: nowrap;
-      box-shadow: 0 4px 14px rgba(91,99,240,.35);
-    }
-    .vs-col-label {
-      font-size: .75rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
-      margin-bottom: 20px; padding-bottom: 14px;
-    }
-    .vs-col-other .vs-col-label { color: var(--gray400); border-bottom: 1.5px solid #e2e8f0; }
-    .vs-col-tc .vs-col-label    { color: rgba(255,255,255,.5); border-bottom: 1.5px solid rgba(255,255,255,.15); }
-    .vs-col-title {
-      font-size: 1.1rem; font-weight: 800; margin-bottom: 24px;
-    }
-    .vs-col-other .vs-col-title { color: var(--gray500); }
-    .vs-col-tc .vs-col-title    { color: #fff; }
-    .vs-item {
-      display: flex; align-items: flex-start; gap: 10px;
-      font-size: .93rem; line-height: 1.55; margin-bottom: 14px;
-    }
-    .vs-item:last-child { margin-bottom: 0; }
-    .vs-item-ico { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
-    .vs-col-other .vs-item { color: var(--gray500); }
-    .vs-col-tc .vs-item    { color: rgba(255,255,255,.9); }
-    .vs-col-tc .vs-item strong { color: #fff; }
-    @media (max-width: 640px) {
-      .vs-grid { grid-template-columns: 1fr; }
-      .vs-col-other { border-right: 1.5px solid #e2e8f0; border-bottom: none; border-radius: 16px 16px 0 0; }
-      .vs-col-tc    { border-left: 1.5px solid #2d5a8e; border-radius: 0 0 16px 16px; }
-      .vs-divider   { flex-direction: row; border-left: 1.5px solid #e2e8f0; border-right: 1.5px solid #e2e8f0; padding: 12px 0; }
-    }
     /* ─── FEATURES ────────────────────────────────────── */
-    .features-bg { background: var(--navy); }
+    .features-bg {
+      background: linear-gradient(160deg, #060e26 0%, #0f1c3f 60%, #0a1530 100%);
+      position: relative; overflow: hidden;
+    }
+    .features-bg::before {
+      content:'';
+      position: absolute; inset: 0;
+      background-image: radial-gradient(rgba(79,110,247,.15) 1px, transparent 1px);
+      background-size: 28px 28px;
+      opacity: .5;
+    }
     .features-section {
-      max-width: 1100px; margin: 0 auto;
+      max-width: 1160px; margin: 0 auto;
       padding: 96px 24px;
       color: var(--white);
+      position: relative; z-index: 1;
     }
-    .features-section .section-label { color: var(--cyan); }
+    .features-section .section-label { color: #a5b4fc; }
+    .features-section .section-label::before { background: #818cf8; }
     .features-section .section-title { color: var(--white); }
-    .features-section .section-sub { color: rgba(255,255,255,.65); }
+    .features-section .section-sub { color: rgba(255,255,255,.55); }
     .features-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 24px;
+      gap: 20px;
     }
     .feat-card {
-      background: rgba(255,255,255,.06);
-      border: 1px solid rgba(255,255,255,.1);
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.08);
       border-radius: var(--radius);
-      padding: 28px 24px;
-      transition: background .2s, border-color .2s;
+      padding: 26px 24px;
+      transition: background .22s, border-color .22s, transform .22s;
     }
     .feat-card:hover {
-      background: rgba(79,110,247,.12);
-      border-color: rgba(79,110,247,.5);
+      background: rgba(79,110,247,.1);
+      border-color: rgba(79,110,247,.45);
+      transform: translateY(-3px);
     }
     .feat-ico {
-      font-size: 2rem; margin-bottom: 16px;
-      display: block;
+      width: 44px; height: 44px; border-radius: 12px;
+      background: rgba(79,110,247,.18);
+      border: 1px solid rgba(79,110,247,.3);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem; margin-bottom: 18px;
     }
     .feat-card h3 {
-      font-size: 1.05rem; font-weight: 700;
+      font-size: 1.02rem; font-weight: 700;
       color: var(--white); margin-bottom: 10px;
     }
     .feat-card p {
-      font-size: .9rem; color: rgba(255,255,255,.6); line-height: 1.65;
+      font-size: .88rem; color: rgba(255,255,255,.55); line-height: 1.7;
     }
     .feat-tag {
       display: inline-block;
       background: rgba(79,110,247,.2);
-      border: 1px solid rgba(79,110,247,.4);
-      color: var(--cyan);
-      font-size: .72rem; font-weight: 700;
-      text-transform: uppercase; letter-spacing: .06em;
+      border: 1px solid rgba(79,110,247,.35);
+      color: #a5b4fc;
+      font-size: .68rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .08em;
       padding: 3px 10px; border-radius: 50px;
       margin-top: 14px;
     }
 
+    /* ATS Demo */
+    .ats-demo-wrap {
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 20px;
+      padding: 36px 40px;
+      display: flex; align-items: center; justify-content: center;
+      gap: 40px; flex-wrap: wrap;
+      margin-bottom: 56px;
+    }
+    .ats-rings { display: flex; gap: 24px; align-items: center; flex-wrap: wrap; }
+    .ats-ring-wrap { text-align: center; }
+    .ats-ring-wrap svg { display: block; margin: 0 auto 8px; }
+    .ats-ring-label { font-size: .75rem; font-weight: 600; color: rgba(255,255,255,.4); }
+    .ring-score { font-size: 1.2rem; font-weight: 900; fill: white; }
+    .ats-desc {
+      color: rgba(255,255,255,.65); max-width: 320px; font-size: .95rem; line-height: 1.75;
+    }
+    .ats-desc strong { color: white; }
+
     /* ─── NICHES ──────────────────────────────────────── */
-    .niches-wrap { background: var(--gray50); padding: 80px 24px; }
-    .niches-inner { max-width: 1100px; margin: 0 auto; }
+    .niches-wrap {
+      background: var(--gray50);
+      border-top: 1px solid var(--gray100);
+      border-bottom: 1px solid var(--gray100);
+      padding: 80px 24px;
+    }
+    .niches-inner { max-width: 1160px; margin: 0 auto; }
     .niches-grid {
       display: flex; flex-wrap: wrap; gap: 10px;
       margin-top: 40px;
     }
     .niche-chip {
       background: var(--white);
-      border: 1px solid var(--gray200);
+      border: 1.5px solid var(--gray200);
       border-radius: 50px;
       padding: 9px 18px;
-      font-size: .88rem; font-weight: 600;
-      color: var(--gray800);
-      transition: border-color .2s, background .2s;
+      font-size: .85rem; font-weight: 600;
+      color: var(--gray700);
+      transition: border-color .2s, background .2s, color .2s, transform .2s;
       cursor: default;
     }
     .niche-chip:hover {
       border-color: var(--indigo);
       background: #eef2ff;
       color: var(--indigo);
+      transform: translateY(-2px);
     }
 
     /* ─── TESTIMONIALS ────────────────────────────────── */
     .testi-section { padding: 96px 24px; }
-    .testi-inner { max-width: 1100px; margin: 0 auto; }
+    .testi-inner { max-width: 1160px; margin: 0 auto; }
     .testi-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
       gap: 24px; margin-top: 56px;
     }
     .testi-card {
-      background: var(--gray50);
-      border: 1px solid var(--gray200);
-      border-radius: var(--radius);
-      padding: 28px;
+      background: var(--white);
+      border: 1.5px solid var(--gray200);
+      border-radius: var(--radius-lg);
+      padding: 30px;
+      position: relative;
+      transition: border-color .22s, box-shadow .22s, transform .22s;
     }
-    .testi-stars { color: var(--gold); font-size: 1rem; margin-bottom: 14px; }
+    .testi-card:hover {
+      border-color: var(--indigo);
+      box-shadow: 0 12px 40px rgba(79,110,247,.12);
+      transform: translateY(-4px);
+    }
+    .testi-card::before {
+      content: '\201C';
+      position: absolute; top: 18px; right: 24px;
+      font-size: 4rem; line-height: 1;
+      color: var(--gray100); font-family: Georgia, serif;
+      pointer-events: none;
+    }
+    .testi-stars { color: var(--gold); font-size: .9rem; margin-bottom: 16px; letter-spacing: 2px; }
     .testi-text {
-      font-size: .95rem; color: var(--gray800);
-      line-height: 1.7; margin-bottom: 20px;
+      font-size: .93rem; color: var(--gray700);
+      line-height: 1.75; margin-bottom: 22px;
+      position: relative; z-index: 1;
     }
-    .testi-author { display: flex; align-items: center; gap: 12px; }
+    .testi-author { display: flex; align-items: center; gap: 14px; }
     .testi-avatar {
-      width: 42px; height: 42px;
+      width: 46px; height: 46px;
       border-radius: 50%;
-      background: linear-gradient(135deg, var(--indigo), var(--cyan));
       display: flex; align-items: center; justify-content: center;
       font-weight: 800; font-size: 1rem; color: var(--white);
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(0,0,0,.15);
     }
+    .av-1 { background: linear-gradient(135deg, #4f46e5, #818cf8); }
+    .av-2 { background: linear-gradient(135deg, #0d9488, #34d399); }
+    .av-3 { background: linear-gradient(135deg, #dc2626, #f87171); }
+    .av-4 { background: linear-gradient(135deg, #d97706, #fbbf24); }
+    .av-5 { background: linear-gradient(135deg, #7c3aed, #c084fc); }
     .testi-name { font-weight: 700; font-size: .9rem; color: var(--navy); }
-    .testi-role { font-size: .8rem; color: var(--gray400); }
+    .testi-role { font-size: .78rem; color: var(--gray400); margin-top: 2px; }
+    .testi-company {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: .72rem; font-weight: 600; color: var(--indigo);
+      background: #eef2ff; padding: 2px 8px; border-radius: 50px;
+      margin-top: 4px;
+    }
 
     /* ─── PRICING ─────────────────────────────────────── */
-    .pricing-bg { background: linear-gradient(135deg, #f0f4ff 0%, #f8fafc 100%); }
-    .pricing-section { max-width: 960px; margin: 0 auto; padding: 96px 24px; text-align: center; }
+    .pricing-bg {
+      background: linear-gradient(160deg, #f0f4ff 0%, var(--gray50) 100%);
+      border-top: 1px solid var(--gray100);
+    }
+    .pricing-section { max-width: 1000px; margin: 0 auto; padding: 96px 24px; text-align: center; }
     .pricing-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
       gap: 24px; margin-top: 56px; text-align: left;
     }
     .price-card {
       background: var(--white);
       border: 2px solid var(--gray200);
-      border-radius: 18px;
-      padding: 36px 32px;
+      border-radius: 20px;
+      padding: 38px 34px;
       position: relative;
-      transition: box-shadow .2s, border-color .2s;
+      transition: box-shadow .22s, border-color .22s, transform .22s;
     }
-    .price-card:hover { box-shadow: 0 8px 40px rgba(79,110,247,.15); }
+    .price-card:hover { box-shadow: 0 12px 48px rgba(79,110,247,.12); transform: translateY(-3px); }
     .price-card.popular {
       border-color: var(--indigo);
-      box-shadow: 0 8px 40px rgba(79,110,247,.2);
+      box-shadow: 0 12px 48px rgba(79,110,247,.18);
     }
     .popular-badge {
       position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
-      background: var(--indigo);
+      background: linear-gradient(90deg, var(--indigo), #818cf8);
       color: var(--white);
-      font-size: .78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em;
-      padding: 5px 18px; border-radius: 50px;
+      font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em;
+      padding: 5px 20px; border-radius: 50px;
       white-space: nowrap;
+      box-shadow: 0 4px 14px rgba(79,110,247,.4);
     }
-    .price-name {
-      font-size: 1.05rem; font-weight: 700; color: var(--gray600);
-      margin-bottom: 8px;
-    }
+    .price-name { font-size: 1rem; font-weight: 700; color: var(--gray600); margin-bottom: 8px; }
     .price-amount {
-      font-size: 3rem; font-weight: 900; color: var(--navy);
+      font-size: 3.2rem; font-weight: 900; color: var(--navy);
       line-height: 1; margin-bottom: 6px;
     }
-    .price-amount sup { font-size: 1.4rem; vertical-align: top; margin-top: 8px; }
-    .price-period {
-      font-size: .88rem; color: var(--gray400); margin-bottom: 28px;
-    }
-    .price-divider { border: none; border-top: 1px solid var(--gray200); margin: 24px 0; }
+    .price-amount sup { font-size: 1.5rem; vertical-align: top; margin-top: 8px; }
+    .price-period { font-size: .85rem; color: var(--gray400); margin-bottom: 28px; }
+    .price-divider { border: none; border-top: 1px solid var(--gray100); margin: 24px 0; }
     .price-features { list-style: none; }
     .price-features li {
       display: flex; align-items: flex-start; gap: 10px;
       font-size: .9rem; color: var(--gray600);
       padding: 7px 0;
     }
-    .price-features li .chk { color: var(--green); font-weight: 700; flex-shrink: 0; }
-    .price-features li .x   { color: var(--gray400); flex-shrink: 0; }
+    .price-features li .chk { color: var(--green); font-weight: 800; flex-shrink: 0; font-size: .95rem; }
+    .price-features li .x   { color: var(--gray300); flex-shrink: 0; }
     .price-btn {
       display: block; text-align: center;
-      margin-top: 32px;
-      padding: 14px;
+      margin-top: 32px; padding: 15px;
       border-radius: 50px;
       font-size: 1rem; font-weight: 700;
       text-decoration: none;
-      transition: transform .15s, box-shadow .15s;
+      transition: transform .15s, box-shadow .15s, background .2s, border-color .2s;
     }
     .price-btn-outline {
       border: 2px solid var(--gray200);
       color: var(--navy);
     }
-    .price-btn-outline:hover { border-color: var(--indigo); color: var(--indigo); }
+    .price-btn-outline:hover { border-color: var(--indigo); color: var(--indigo); background: #eef2ff; }
     .price-btn-filled {
       background: var(--indigo);
       color: var(--white);
       box-shadow: 0 6px 24px rgba(79,110,247,.4);
     }
-    .price-btn-filled:hover { background: var(--indigo2); transform: translateY(-2px); box-shadow: 0 10px 32px rgba(79,110,247,.5); }
-    .price-note {
-      margin-top: 48px;
-      font-size: .88rem; color: var(--gray400);
-    }
+    .price-btn-filled:hover { background: var(--indigo2); transform: translateY(-2px); box-shadow: 0 10px 32px rgba(79,110,247,.55); }
+    .price-note { margin-top: 48px; font-size: .85rem; color: var(--gray400); }
 
     /* ─── FAQ ─────────────────────────────────────────── */
-    .faq-section { max-width: 740px; margin: 0 auto; padding: 96px 24px; }
-    .faq-item {
-      border-bottom: 1px solid var(--gray200);
-    }
+    .faq-wrap { background: white; }
+    .faq-section { max-width: 760px; margin: 0 auto; padding: 96px 24px; }
+    .faq-item { border-bottom: 1px solid var(--gray200); }
     .faq-q {
       width: 100%; background: none; border: none;
       text-align: left; cursor: pointer;
-      font-size: 1rem; font-weight: 700; color: var(--navy);
+      font-size: .97rem; font-weight: 700; color: var(--navy);
       padding: 22px 0;
       display: flex; justify-content: space-between; align-items: center;
-      gap: 12px;
+      gap: 12px; font-family: 'Inter', system-ui, sans-serif;
+      transition: color .2s;
     }
-    .faq-q .arr { color: var(--indigo); font-size: 1.2rem; transition: transform .25s; }
-    .faq-q.open .arr { transform: rotate(180deg); }
+    .faq-q:hover { color: var(--indigo); }
+    .faq-q .arr {
+      color: var(--indigo); font-size: 1.1rem;
+      transition: transform .28s;
+      flex-shrink: 0;
+      width: 26px; height: 26px; border-radius: 50%;
+      background: #eef2ff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .75rem;
+    }
+    .faq-q.open .arr { transform: rotate(180deg); background: var(--indigo); color: white; }
     .faq-a {
-      font-size: .95rem; color: var(--gray600);
-      line-height: 1.75;
+      font-size: .93rem; color: var(--gray600);
+      line-height: 1.78;
       max-height: 0; overflow: hidden;
       transition: max-height .35s ease, padding .35s ease;
       padding: 0;
     }
-    .faq-a.open { max-height: 400px; padding-bottom: 22px; }
+    .faq-a.open { max-height: 400px; padding-bottom: 24px; }
 
     /* ─── CTA BANNER ──────────────────────────────────── */
     .cta-banner {
-      background: linear-gradient(135deg, var(--indigo) 0%, #3a5ce4 100%);
-      padding: 80px 24px;
+      background: linear-gradient(135deg, #0f1c3f 0%, #1e3a8a 50%, #0f1c3f 100%);
+      padding: 96px 24px;
       text-align: center;
+      position: relative; overflow: hidden;
     }
+    .cta-banner::before {
+      content:'';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 70% 60% at 50% 50%, rgba(79,110,247,.3) 0%, transparent 70%);
+    }
+    .cta-inner { position: relative; z-index: 1; }
     .cta-banner h2 {
-      font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+      font-size: clamp(2rem, 3.5vw, 3rem);
       font-weight: 900; color: var(--white);
-      letter-spacing: -.025em; margin-bottom: 16px;
+      letter-spacing: -.03em; margin-bottom: 18px;
+    }
+    .cta-banner h2 .grad {
+      background: linear-gradient(90deg, #818cf8, var(--cyan));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
     }
     .cta-banner p {
-      font-size: 1.1rem; color: rgba(255,255,255,.8);
-      max-width: 500px; margin: 0 auto 40px;
+      font-size: 1.1rem; color: rgba(255,255,255,.7);
+      max-width: 500px; margin: 0 auto 42px;
+      line-height: 1.7;
     }
+    .cta-trust {
+      margin-top: 32px;
+      font-size: .82rem; color: rgba(255,255,255,.4);
+      display: flex; align-items: center; justify-content: center;
+      gap: 20px; flex-wrap: wrap;
+    }
+    .cta-trust-item { display: flex; align-items: center; gap: 6px; }
 
     /* ─── FOOTER ──────────────────────────────────────── */
     footer {
-      background: var(--navy);
-      padding: 48px 24px 32px;
-      color: rgba(255,255,255,.45);
+      background: #060e26;
+      padding: 52px 24px 32px;
+      color: rgba(255,255,255,.35);
+      border-top: 1px solid rgba(255,255,255,.06);
     }
     .footer-inner {
-      max-width: 1100px; margin: 0 auto;
+      max-width: 1160px; margin: 0 auto;
       display: flex; flex-wrap: wrap; gap: 24px;
       justify-content: space-between; align-items: center;
     }
     .footer-logo {
-      font-size: 1.3rem; font-weight: 900;
+      font-size: 1.25rem; font-weight: 900;
       color: var(--white); text-decoration: none;
+      display: flex; align-items: center; gap: 8px;
     }
-    .footer-logo span { color: var(--indigo); }
+    .footer-logo span { color: var(--indigo3); }
     .footer-links {
       display: flex; gap: 24px; flex-wrap: wrap;
       list-style: none;
     }
     .footer-links a {
-      color: rgba(255,255,255,.45);
-      text-decoration: none; font-size: .88rem;
+      color: rgba(255,255,255,.4);
+      text-decoration: none; font-size: .85rem;
       transition: color .2s;
     }
     .footer-links a:hover { color: var(--white); }
-    .footer-copy { font-size: .8rem; margin-top: 28px; text-align: center; }
-
-    /* ─── BEFORE / AFTER ─────────────────────────────── */
-    .ba-wrap {
-      background: var(--white);
-      padding: 96px 24px;
-      border-top: 1px solid var(--gray200);
-    }
-    .ba-inner { max-width: 1100px; margin: 0 auto; }
-    .ba-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 24px;
-      margin-top: 48px;
-    }
-    @media (max-width: 720px) { .ba-grid { grid-template-columns: 1fr; } }
-    .ba-card {
-      border: 1.5px solid var(--gray200);
-      border-radius: 16px;
-      overflow: hidden;
-    }
-    .ba-card-header {
-      padding: 12px 20px;
-      display: flex; align-items: center; gap: 8px;
-      font-weight: 800; font-size: .9rem;
-    }
-    .ba-card-header.before { background: #fee2e2; color: #b91c1c; border-bottom: 1.5px solid #fca5a5; }
-    .ba-card-header.after  { background: #dcfce7; color: #15803d; border-bottom: 1.5px solid #86efac; }
-    .ba-resume {
-      padding: 24px 22px;
-      font-family: 'Georgia', serif;
-      font-size: .8rem;
-      line-height: 1.55;
-      color: #1e293b;
-      background: #fff;
-      min-height: 340px;
-    }
-    .ba-name { font-size: 1.1rem; font-weight: 700; margin-bottom: 2px; }
-    .ba-contact { font-size: .75rem; color: #64748b; margin-bottom: 12px; }
-    .ba-sec {
-      font-size: .72rem; font-weight: 700; text-transform: uppercase;
-      letter-spacing: .06em; color: #1a2744;
-      border-bottom: 1px solid #1a2744; padding-bottom: 2px;
-      margin: 12px 0 6px;
-    }
-    .ba-plain { color: #475569; font-size: .8rem; line-height: 1.55; }
-    .ba-bullet { margin-left: 12px; color: #475569; font-size: .8rem; }
-    .ba-bullet li { margin-bottom: 3px; }
-    .ba-highlight { color: #1a2744; }
-    .ba-tag {
-      display: inline-block; background: #dcfce7; color: #15803d;
-      font-size: .7rem; font-weight: 700; font-family: inherit;
-      padding: 2px 8px; border-radius: 4px; margin-right: 4px; margin-bottom: 3px;
-    }
-    .ba-arrow-col {
-      display: flex; align-items: center; justify-content: center;
-      position: relative;
-    }
-    .ba-arrow {
-      position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
-      background: var(--indigo); color: #fff;
-      width: 48px; height: 48px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.4rem; z-index: 2;
-      box-shadow: 0 4px 16px rgba(79,110,247,.4);
-    }
-    .ba-score-badge {
-      display: inline-flex; align-items: center; gap: 6px;
-      background: #dcfce7; border: 1.5px solid #86efac;
-      color: #15803d; font-size: .82rem; font-weight: 800;
-      padding: 5px 12px; border-radius: 50px;
-      margin-top: 10px;
-    }
-
-    /* ─── FREE SCORE DEMO ────────────────────────────── */
-    .score-demo-wrap {
-      background: linear-gradient(135deg, #f0f4ff 0%, #eef8ff 100%);
-      padding: 88px 24px;
-      border-bottom: 1px solid var(--gray200);
-    }
-    .score-demo-inner {
-      max-width: 900px; margin: 0 auto;
-      text-align: center;
-    }
-    .score-demo-inner .section-label { color: var(--indigo); }
-    .score-demo-card {
-      background: var(--white);
-      border: 1px solid var(--gray200);
-      border-radius: 20px;
-      padding: 40px 36px;
-      box-shadow: 0 8px 40px rgba(79,110,247,.1);
-      margin-top: 40px;
-      text-align: left;
-    }
-    .score-demo-inputs {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 24px;
-      margin-bottom: 24px;
-    }
-    @media (max-width: 640px) {
-      .score-demo-inputs { grid-template-columns: 1fr; }
-    }
-    .sdemo-label {
-      font-size: .8rem; font-weight: 700;
-      color: var(--gray600); text-transform: uppercase; letter-spacing: .06em;
-      margin-bottom: 8px; display: block;
-    }
-    .sdemo-dropzone {
-      border: 2px dashed var(--gray200);
-      border-radius: 12px;
-      padding: 28px 20px;
-      text-align: center;
-      cursor: pointer;
-      transition: border-color .2s, background .2s;
-      background: var(--gray50);
-      position: relative;
-      min-height: 140px;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      gap: 8px;
-    }
-    .sdemo-dropzone:hover, .sdemo-dropzone.drag-over {
-      border-color: var(--indigo);
-      background: #eef2ff;
-    }
-    .sdemo-dropzone input[type=file] {
-      position: absolute; inset: 0;
-      opacity: 0; cursor: pointer;
-      width: 100%; height: 100%;
-    }
-    .sdemo-dropzone .dz-ico { font-size: 2rem; }
-    .sdemo-dropzone .dz-hint {
-      font-size: .88rem; color: var(--gray600); line-height: 1.5;
-    }
-    .sdemo-dropzone .dz-name {
-      font-size: .82rem; font-weight: 600;
-      color: var(--indigo); margin-top: 4px;
-      max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-    }
-    .sdemo-jd {
-      width: 100%; border: 1.5px solid var(--gray200);
-      border-radius: 12px; padding: 14px 16px;
-      font-family: inherit; font-size: .9rem; color: var(--gray800);
-      resize: vertical; min-height: 140px;
-      transition: border-color .2s;
-      outline: none;
-    }
-    .sdemo-jd:focus { border-color: var(--indigo); }
-    .sdemo-btn-row {
-      display: flex; align-items: center; justify-content: center;
-      gap: 12px; flex-wrap: wrap;
-    }
-    .sdemo-btn {
-      display: inline-flex; align-items: center; gap: 8px;
-      background: var(--indigo); color: var(--white);
-      padding: 14px 32px; border-radius: 50px;
-      font-size: 1rem; font-weight: 700;
-      border: none; cursor: pointer;
-      box-shadow: 0 6px 24px rgba(79,110,247,.35);
-      transition: background .2s, transform .15s, box-shadow .15s;
-    }
-    .sdemo-btn:hover:not(:disabled) {
-      background: var(--indigo2); transform: translateY(-2px);
-      box-shadow: 0 10px 32px rgba(79,110,247,.45);
-    }
-    .sdemo-btn:disabled { opacity: .55; cursor: default; transform: none; }
-    .sdemo-note {
-      font-size: .8rem; color: var(--gray400);
-      text-align: center; margin-top: 12px;
-    }
-
-    /* Result panel */
-    .score-result {
-      display: none;
-      margin-top: 32px;
-      padding-top: 32px;
-      border-top: 1px solid var(--gray200);
-      animation: fadeUp .4s ease;
-    }
-    .score-result.on { display: flex; flex-wrap: wrap; gap: 32px; align-items: flex-start; }
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(16px); }
-      to   { opacity: 1; transform: none; }
-    }
-    .sr-ring-col { flex: 0 0 auto; text-align: center; }
-    .sr-ring-col svg { display: block; margin: 0 auto 6px; }
-    .sr-ring-label { font-size: .82rem; font-weight: 700; color: var(--gray600); }
-    .sr-ring-verdict {
-      font-size: .9rem; font-weight: 800;
-      margin-top: 8px; padding: 5px 14px;
-      border-radius: 50px; display: inline-block;
-    }
-    .sr-ring-verdict.good  { background: #dcfce7; color: #16a34a; }
-    .sr-ring-verdict.ok    { background: #fef9c3; color: #a16207; }
-    .sr-ring-verdict.low   { background: #fee2e2; color: #dc2626; }
-    .sr-detail { flex: 1 1 280px; }
-    .sr-summary {
-      font-size: .95rem; color: var(--gray800);
-      line-height: 1.65; margin-bottom: 16px;
-    }
-    .sr-kw-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
-    .sr-kw-group { flex: 1 1 140px; }
-    .sr-kw-title {
-      font-size: .75rem; font-weight: 700;
-      text-transform: uppercase; letter-spacing: .06em;
-      margin-bottom: 6px;
-    }
-    .sr-kw-title.matched { color: var(--green); }
-    .sr-kw-title.missing { color: var(--rose); }
-    .sr-chips { display: flex; flex-wrap: wrap; gap: 5px; }
-    .sr-chip {
-      font-size: .78rem; font-weight: 600;
-      padding: 3px 10px; border-radius: 50px;
-    }
-    .sr-chip.matched { background: #dcfce7; color: #15803d; }
-    .sr-chip.missing { background: #fee2e2; color: #b91c1c; }
-    .sr-cta {
-      margin-top: 20px; padding: 12px 28px;
-      background: var(--indigo); color: white;
-      border-radius: 50px; font-weight: 700; font-size: .95rem;
-      text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
-      transition: background .2s, transform .15s;
-    }
-    .sr-cta:hover { background: var(--indigo2); transform: translateY(-1px); }
-    .sdemo-error {
-      background: #fff1f2; border: 1px solid #fecdd3;
-      border-radius: 10px; padding: 12px 16px;
-      font-size: .88rem; color: #be123c;
-      margin-top: 12px; display: none;
-    }
-    .sdemo-error.on { display: block; }
+    .footer-copy { font-size: .78rem; margin-top: 32px; text-align: center; color: rgba(255,255,255,.2); }
 
     /* ─── RESPONSIVE ──────────────────────────────────── */
+    @media (max-width: 860px) {
+      .hero-inner { grid-template-columns: 1fr; padding: 80px 0 90px; gap: 48px; }
+      .hero-left { max-width: 100%; }
+      .hero-right { display: none; }
+      .metric-item { padding: 8px 20px; }
+    }
     @media (max-width: 680px) {
       .nav-links { display: none; }
-      .hero { padding: 72px 20px 88px; }
-      .hero h1 { font-size: 2.2rem; }
+      .hero { padding: 0 20px; }
+      .hero h1 { font-size: 2.4rem; }
       .hero-btns { flex-direction: column; align-items: stretch; }
       .btn-primary, .btn-secondary { justify-content: center; }
+      .metric-item { padding: 8px 14px; }
+      .metric-num { font-size: 1.5rem; }
+      .tmpl-gallery { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 14px; }
     }
 
-    /* ─── ATS RING DEMO ───────────────────────────────── */
-    .ats-demo {
-      display: flex; align-items: center; justify-content: center; gap: 32px;
-      flex-wrap: wrap; margin-top: 48px;
-    }
-    .ats-ring-wrap {
-      text-align: center;
-    }
-    .ats-ring-wrap svg { display: block; margin: 0 auto 8px; }
-    .ats-ring-label { font-size: .8rem; font-weight: 600; color: rgba(255,255,255,.5); }
-    .ring-score { font-size: 1.1rem; font-weight: 900; fill: white; }
-
-    /* Scroll-reveal fade */
+    /* ─── SCROLL REVEAL ───────────────────────────────── */
     .reveal {
-      opacity: 0; transform: translateY(30px);
-      transition: opacity .6s ease, transform .6s ease;
+      opacity: 0; transform: translateY(28px);
+      transition: opacity .65s ease, transform .65s ease;
     }
     .reveal.visible { opacity: 1; transform: none; }
+    .reveal-left {
+      opacity: 0; transform: translateX(-28px);
+      transition: opacity .65s ease, transform .65s ease;
+    }
+    .reveal-left.visible { opacity: 1; transform: none; }
+    .reveal-right {
+      opacity: 0; transform: translateX(28px);
+      transition: opacity .65s ease, transform .65s ease;
+    }
+    .reveal-right.visible { opacity: 1; transform: none; }
+
+    /* Stagger children */
+    .stagger > * { transition-delay: calc(var(--i, 0) * 80ms); }
   </style>
 </head>
 <body>
@@ -837,15 +990,17 @@
 <!-- ════════════════ NAV ════════════════ -->
 <nav>
   <div class="nav-inner">
-    <a href="#" class="logo">Tailor<span>CV</span></a>
+    <a href="#" class="logo">
+      <div class="logo-icon">✦</div>
+      Tailor<span>CV</span>
+    </a>
     <ul class="nav-links">
-      <li><a href="#try-it">Try it free</a></li>
       <li><a href="#how-it-works">How it works</a></li>
       <li><a href="#features">Features</a></li>
+      <li><a href="#templates">Templates</a></li>
       <li><a href="#pricing">Pricing</a></li>
       <li><a href="#faq">FAQ</a></li>
-      <!-- Auth-aware CTA: swapped by JS below -->
-      <li id="navAuthItem"><a href="/auth.html?tab=register" class="nav-cta" id="navCta">Start Free →</a></li>
+      <li><a href="#install" class="nav-cta">Add to Chrome  -  Free</a></li>
     </ul>
   </div>
 </nav>
@@ -853,139 +1008,520 @@
 <!-- ════════════════ HERO ════════════════ -->
 <section class="hero">
   <div class="hero-inner">
-    <div class="hero-badge">✦ AI-Powered Resume Tailoring · Free to Start</div>
-    <h1>
-      No lies. Just your<br/>
-      <span class="highlight">real experience ·</span><br/>
-      optimized for every job.
-    </h1>
-    <p class="hero-sub">
-      TailorCV uses AI that works only with what you've actually done.
-      No fake skills. No invented experience. Just better positioning · so you walk into every interview confident.
-    </p>
-    <div class="hero-btns">
-      <a href="/auth.html?tab=register" class="btn-primary">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
-        Start Tailoring Free · No Card Needed
-      </a>
-      <a href="#how-it-works" class="btn-secondary">
-        See how it works →
-      </a>
+
+    <!-- Left: Text -->
+    <div class="hero-left">
+      <div class="hero-badge">
+        <span class="dot"></span>
+        AI-Powered Chrome Extension
+      </div>
+      <h1>
+        Your resume,<br/>
+        <span class="grad">tailored to every<br/>job</span> you apply for.
+      </h1>
+      <p class="hero-sub">
+        Paste any job posting, upload your resume  -  TailorCV rewrites it in seconds using AI,
+        scores it against ATS, generates a cover letter, and tracks every application.
+        All inside Chrome. No subscriptions. No fluff.
+      </p>
+      <div class="hero-btns">
+        <a href="#install" class="btn-primary">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="8 12 12 16 16 12"/><line x1="12" y1="8" x2="12" y2="16"/></svg>
+          Add to Chrome  -  It's Free
+        </a>
+        <a href="#how-it-works" class="btn-secondary">
+          See how it works →
+        </a>
+      </div>
+      <div class="hero-social">
+        <div class="hero-stat">
+          <div class="hero-stat-num">5,200+</div>
+          <div class="hero-stat-label">resumes tailored</div>
+        </div>
+        <div class="hero-stat-divider"></div>
+        <div class="hero-stat">
+          <div class="hero-stat-num">13</div>
+          <div class="hero-stat-label">pro templates</div>
+        </div>
+        <div class="hero-stat-divider"></div>
+        <div class="hero-stat">
+          <div class="hero-stat-num">18</div>
+          <div class="hero-stat-label">career niches</div>
+        </div>
+        <div class="hero-stat-divider"></div>
+        <div class="hero-stat">
+          <div class="hero-stat-num">4.9★</div>
+          <div class="hero-stat-label">user rating</div>
+        </div>
+      </div>
     </div>
-    <div class="hero-trust">
-      <div class="trust-item"><span class="ico">✅</span> 100% based on your real resume</div>
-      <div class="trust-item"><span class="ico">🚫</span> No hallucinated skills or roles</div>
-      <div class="trust-item"><span class="ico">🎁</span> 1 free tailoring · no card needed</div>
-      <div class="trust-item"><span class="ico">⚡</span> Results in under 30 seconds</div>
+
+    <!-- Right: Product mockup -->
+    <div class="hero-right">
+      <div class="mockup-frame">
+        <div class="mockup-titlebar">
+          <span class="mock-dot r"></span>
+          <span class="mock-dot y"></span>
+          <span class="mock-dot g"></span>
+          <span class="mock-title">TailorCV  -  Chrome Extension</span>
+        </div>
+        <div class="mock-body">
+          <!-- Job posting panel -->
+          <div class="mock-panel">
+            <div class="mock-panel-label">Job Description</div>
+            <div class="mock-job-text">
+              <span class="mock-bold">Software Engineer  -  Payments</span><br/>
+              <span style="color:rgba(255,255,255,.4);font-size:.6rem;">Stripe · San Francisco · Full-time</span>
+              <br/><br/>
+              We're looking for an <span class="mock-highlight">experienced engineer</span> to join our payments infrastructure team…
+              <br/><br/>
+              <span class="mock-bold" style="font-size:.62rem;">Requirements:</span><br/>
+              · <span class="mock-highlight">5+ yrs Python / Go</span><br/>
+              · Experience with <span class="mock-highlight">distributed systems</span><br/>
+              · Strong background in <span class="mock-highlight">API design</span><br/>
+              · Familiarity with <span class="mock-highlight">fintech compliance</span>
+            </div>
+          </div>
+          <!-- Resume output panel -->
+          <div class="mock-panel" style="padding:0;overflow:hidden;position:relative;">
+            <div class="mock-resume">
+              <div class="mock-resume-header">
+                <div class="mock-resume-name">Alex Johnson</div>
+                <div class="mock-resume-title">Senior Software Engineer · Payments & Infrastructure</div>
+                <div class="mock-resume-contact">alex@example.com · San Francisco · linkedin.com/in/alex</div>
+              </div>
+              <div class="mock-section-title">Experience</div>
+              <div class="mock-line h m"></div>
+              <div class="mock-line f"></div>
+              <div class="mock-line m"></div>
+              <div class="mock-line f"></div>
+              <div class="mock-line s light"></div>
+              <div class="doc-spacer"></div>
+              <div class="mock-line h s"></div>
+              <div class="mock-line f"></div>
+              <div class="mock-line m"></div>
+              <div class="mock-line f light"></div>
+              <div class="doc-spacer"></div>
+              <div class="mock-section-title">Skills</div>
+              <div class="mock-line m"></div>
+              <div class="mock-line s"></div>
+              <div class="doc-spacer"></div>
+              <div class="mock-section-title">Education</div>
+              <div class="mock-line m"></div>
+              <div class="mock-line s light"></div>
+            </div>
+            <!-- ATS badge -->
+            <div class="mock-ats-badge">
+              <svg class="ats-circle-mini" viewBox="0 0 48 48">
+                <circle cx="24" cy="24" r="20" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="5"/>
+                <circle cx="24" cy="24" r="20" fill="none" stroke="#22c55e" stroke-width="5"
+                  stroke-dasharray="125.6" stroke-dashoffset="16" stroke-linecap="round"
+                  transform="rotate(-90 24 24)"/>
+                <text x="24" y="28" text-anchor="middle" fill="white" font-size="11" font-weight="900" font-family="Inter,sans-serif">92%</text>
+              </svg>
+              <div class="ats-badge-text">
+                <div class="ats-badge-pct">ATS Ready</div>
+                <div class="ats-badge-lbl">Keywords matched</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Keywords badge -->
+        <div class="mock-keywords-badge">
+          <div class="kw-lbl">Keyword Match</div>
+          <div class="kw-row"><span class="kw-dot"></span><span class="kw-text">Python · Go</span></div>
+          <div class="kw-row"><span class="kw-dot"></span><span class="kw-text">Distributed systems</span></div>
+          <div class="kw-row"><span class="kw-dot"></span><span class="kw-text">API design</span></div>
+          <div class="kw-row"><span class="kw-dot miss"></span><span class="kw-text" style="color:rgba(255,255,255,.4)">Fintech compliance</span></div>
+        </div>
+      </div>
     </div>
   </div>
 </section>
 
-<!-- ════════════════ FREE SCORE DEMO ════════════════ -->
-<div class="score-demo-wrap" id="try-it">
-  <div class="score-demo-inner reveal">
-    <div class="section-label">Try it free · no account needed</div>
-    <h2 class="section-title" style="color:var(--navy);">See your ATS score<br/>in 15 seconds</h2>
-    <p style="color:var(--gray600);font-size:1rem;max-width:540px;margin:0 auto;">Upload your resume, paste a job description, and get your real match score instantly · free, no sign-up required.</p>
-
-    <div class="score-demo-card">
-      <div class="score-demo-inputs">
-        <!-- Resume upload -->
-        <div>
-          <span class="sdemo-label">📄 Your Resume</span>
-          <div class="sdemo-dropzone" id="sdemoDrop" ondragover="sdemoDrag(event,true)" ondragleave="sdemoDrag(event,false)" ondrop="sdemoDrop(event)">
-            <input type="file" id="sdemoFile" accept=".pdf,.docx" onchange="sdemoFileChosen(this)">
-            <span class="dz-ico">☁️</span>
-            <span class="dz-hint">Drop your .pdf or .docx resume here<br/><span style="color:var(--indigo);font-weight:600;">or click to browse</span></span>
-            <span class="dz-name" id="sdemoDzName" style="display:none;"></span>
-          </div>
-        </div>
-        <!-- JD paste -->
-        <div>
-          <span class="sdemo-label">📋 Job Description</span>
-          <textarea class="sdemo-jd" id="sdemoJd" placeholder="Paste the full job description here · the more detail, the more accurate your score…" oninput="sdemoCheck()"></textarea>
-        </div>
-      </div>
-
-      <div class="sdemo-btn-row">
-        <button class="sdemo-btn" id="sdemoBtn" disabled onclick="sdemoGetScore()">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
-          <span id="sdemoBtnTxt">Get My Free Score</span>
-        </button>
-      </div>
-      <p class="sdemo-note">5 free previews per hour · No account needed · Takes ~10 seconds</p>
-      <div class="sdemo-error" id="sdemoErr"></div>
-
-      <!-- Result panel -->
-      <div class="score-result" id="scoreResult">
-        <div class="sr-ring-col">
-          <svg id="srSvg" width="120" height="120" viewBox="0 0 120 120">
-            <circle cx="60" cy="60" r="50" fill="none" stroke="#e2e8f0" stroke-width="10"/>
-            <circle id="srArc" cx="60" cy="60" r="50" fill="none" stroke="#22c55e" stroke-width="10"
-              stroke-dasharray="314" stroke-dashoffset="314" stroke-linecap="round"
-              transform="rotate(-90 60 60)" style="transition:stroke-dashoffset 1.2s ease,stroke .4s"/>
-            <text id="srPct" x="60" y="65" text-anchor="middle"
-              style="font-family:Inter,sans-serif;font-size:22px;font-weight:900;fill:#1a2744;">—</text>
-          </svg>
-          <div class="sr-ring-label">ATS Match Score</div>
-          <div class="sr-ring-verdict" id="srVerdict" style="display:none;"></div>
-        </div>
-        <div class="sr-detail">
-          <p class="sr-summary" id="srSummary"></p>
-          <div class="sr-kw-row">
-            <div class="sr-kw-group">
-              <div class="sr-kw-title matched">✓ Matched keywords</div>
-              <div class="sr-chips" id="srMatched"></div>
-            </div>
-            <div class="sr-kw-group">
-              <div class="sr-kw-title missing">✗ Missing keywords</div>
-              <div class="sr-chips" id="srMissing"></div>
-            </div>
-          </div>
-          <p id="srVerdict2" style="font-size:.88rem;color:var(--gray600);margin-top:12px;line-height:1.6;"></p>
-          <a href="/auth.html?tab=register" class="sr-cta">
-            🚀 Tailor My Resume · Free
-          </a>
-          <p style="font-size:.78rem;color:var(--gray400);margin-top:8px;">Full tailoring, cover letter &amp; skills gap · free account, no card needed</p>
-        </div>
-      </div>
+<!-- ════════════════ METRICS BAR ════════════════ -->
+<div class="metrics-bar">
+  <div class="metrics-inner">
+    <div class="metric-item">
+      <div class="metric-num">5,200+</div>
+      <div class="metric-label">Resumes tailored</div>
+    </div>
+    <div class="metric-item">
+      <div class="metric-num">13</div>
+      <div class="metric-label">Pro templates</div>
+    </div>
+    <div class="metric-item">
+      <div class="metric-num">18</div>
+      <div class="metric-label">Career niches</div>
+    </div>
+    <div class="metric-item">
+      <div class="metric-num">~30s</div>
+      <div class="metric-label">To tailor & export</div>
+    </div>
+    <div class="metric-item">
+      <div class="metric-num">$0</div>
+      <div class="metric-label">To get started</div>
     </div>
   </div>
 </div>
 
-<!-- ════════════════ TEMPLATE MOSAIC ════════════════ -->
-<div class="mockup-strip">
-  <h2>13 professionally designed templates</h2>
-  <div class="template-mosaic">
-    <div class="t-card featured"><span class="t-ico">💼</span>Classic</div>
-    <div class="t-card"><span class="t-ico">🚀</span>Tech</div>
-    <div class="t-card"><span class="t-ico">✨</span>Modern</div>
-    <div class="t-card"><span class="t-ico">🏥</span>Healthcare</div>
-    <div class="t-card"><span class="t-ico">📊</span>Consulting</div>
-    <div class="t-card featured"><span class="t-ico">⚖️</span>Legal</div>
-    <div class="t-card"><span class="t-ico">🎓</span>Academic</div>
-    <div class="t-card"><span class="t-ico">📐</span>Minimal</div>
-    <div class="t-card"><span class="t-ico">🏛️</span>Government</div>
-    <div class="t-card"><span class="t-ico">🎨</span>Creative</div>
-    <div class="t-card"><span class="t-ico">📦</span>Compact</div>
-    <div class="t-card"><span class="t-ico">🌐</span>Professional</div>
-    <div class="t-card featured"><span class="t-ico">💡</span>Executive</div>
+<!-- ════════════════ TEMPLATES ════════════════ -->
+<div class="templates-section" id="templates">
+  <div class="templates-inner">
+    <div class="templates-header reveal">
+      <div class="section-label">Templates</div>
+      <h2 class="section-title">13 professionally designed templates</h2>
+      <p class="section-sub">Every template is ATS-optimized and tailored by career niche. Pick the one that fits your industry  -  or let TailorCV recommend the best match for your profile.</p>
+    </div>
+
+    <div class="tmpl-gallery stagger reveal">
+
+      <!-- Classic -->
+      <div class="tmpl-card featured tt-classic">
+        <div class="tmpl-thumb">
+          <div class="tmpl-doc">
+            <div class="doc-band top"></div>
+            <div style="height:6px"></div>
+            <div class="doc-line h m"></div>
+            <div style="height:2px"></div>
+            <div class="doc-line s"></div>
+            <div class="doc-spacer"></div>
+            <div class="doc-line h s"></div>
+            <div class="doc-line f"></div>
+            <div class="doc-line m"></div>
+            <div class="doc-line f light"></div>
+            <div class="doc-line m light"></div>
+            <div class="doc-spacer"></div>
+            <div class="doc-line h s"></div>
+            <div class="doc-line f"></div>
+            <div class="doc-line m"></div>
+          </div>
+        </div>
+        <div class="tmpl-footer">
+          <span class="tmpl-name">Classic</span>
+          <span class="tmpl-badge top">Top Pick</span>
+        </div>
+      </div>
+
+      <!-- Tech -->
+      <div class="tmpl-card tt-tech">
+        <div class="tmpl-thumb">
+          <div class="tmpl-doc">
+            <div class="doc-band top"></div>
+            <div style="height:5px"></div>
+            <div class="doc-line h m"></div>
+            <div style="height:2px"></div>
+            <div class="doc-line s"></div>
+            <div class="doc-spacer"></div>
+            <div class="doc-line h s"></div>
+            <div class="doc-line f"></div>
+            <div class="doc-line m"></div>
+            <div class="doc-line f light"></div>
+            <div class="doc-spacer"></div>
+            <div class="doc-line h s"></div>
+            <div class="doc-line f"></div>
+            <div class="doc-line m light"></div>
+          </div>
+        </div>
+        <div class="tmpl-footer">
+          <span class="tmpl-name">Tech</span>
+          <span class="tmpl-badge hot">Popular</span>
+        </div>
+      </div>
+
+      <!-- Modern -->
+      <div class="tmpl-card tt-modern">
+        <div class="tmpl-thumb" style="position:relative;">
+          <div class="doc-band side"></div>
+          <div class="tmpl-doc" style="padding-left:38px;">
+            <div class="doc-band top"></div>
+            <div style="height:5px"></div>
+            <div class="doc-line h m"></div>
+            <div style="height:2px"></div>
+            <div class="doc-line s"></div>
+            <div class="doc-spacer"></div>
+            <div class="doc-line h s"></div>
+            <div class="doc-line f"></div>
+            <div class="doc-line m"></div>
+            <div class="doc-spacer"></div>
+            <div class="doc-line h s"></div>
+            <div class="doc-line f"></div>
+          </div>
+        </div>
+        <div class="tmpl-footer">
+          <span class="tmpl-name">Modern</span>
+          <span class="tmpl-badge new">New</span>
+        </div>
+      </div>
+
+      <!-- Healthcare -->
+      <div class="tmpl-card tt-health">
+        <div class="tmpl-thumb">
+          <div class="tmpl-doc">
+            <div class="doc-band top"></div>
+            <div style="height:6px"></div>
+            <div class="doc-line h m"></div>
+            <div style="height:2px"></div>
+            <div class="doc-line s"></div>
+            <div class="doc-spacer"></div>
+            <div class="doc-line h s"></div>
+            <div class="doc-line f"></div>
+            <div class="doc-line m"></div>
+            <div class="doc-line f light"></div>
+            <div class="doc-spacer"></div>
+            <div class="doc-line h s"></div>
+            <div class="doc-line f"></div>
+          </div>
+        </div>
+        <div class="tmpl-footer">
+          <span class="tmpl-name">Healthcare</span>
+        </div>
+      </div>
+
+      <!-- Consulting -->
+      <div class="tmpl-card tt-consult">
+        <div class="tmpl-thumb">
+          <div class="tmpl-doc">
+            <div class="doc-band top"></div>
+            <div class="doc-band accent"></div>
+            <div style="height:5px"></div>
+            <div class="doc-line h m"></div>
+            <div style="height:2px"></div>
+            <div class="doc-line s"></div>
+            <div class="doc-spacer"></div>
+            <div class="doc-line h s"></div>
+            <div class="doc-line f"></div>
+            <div class="doc-line m"></div>
+            <div class="doc-line f light"></div>
+            <div class="doc-spacer"></div>
+            <div class="doc-line h s"></div>
+            <div class="doc-line f"></div>
+          </div>
+        </div>
+        <div class="tmpl-footer">
+          <span class="tmpl-name">Consulting</span>
+        </div>
+      </div>
+
+      <!-- Legal -->
+      <div class="tmpl-card featured tt-legal">
+        <div class="tmpl-thumb">
+          <div class="tmpl-doc">
+            <div class="doc-band top"></div>
+            <div style="height:8px"></div>
+            <div class="doc-line h m"></div>
+            <div style="height:2px"></div>
+            <div class="doc-line s"></div>
+            <div class="doc-spacer"></div>
+            <div class="doc-line h s"></div>
+            <div class="doc-line f"></div>
+            <div class="doc-line m"></div>
+            <div class="doc-line f light"></div>
+            <div class="doc-spacer"></div>
+            <div class="doc-line h s"></div>
+            <div class="doc-line f"></div>
+          </div>
+        </div>
+        <div class="tmpl-footer">
+          <span class="tmpl-name">Legal</span>
+          <span class="tmpl-badge top">Top Pick</span>
+        </div>
+      </div>
+
+      <!-- Academic -->
+      <div class="tmpl-card tt-academic">
+        <div class="tmpl-thumb">
+          <div class="tmpl-doc">
+            <div class="doc-band top"></div>
+            <div style="height:6px"></div>
+            <div class="doc-line h m"></div>
+            <div style="height:2px"></div>
+            <div class="doc-line s"></div>
+            <div class="doc-spacer"></div>
+            <div class="doc-line h s"></div>
+            <div class="doc-line f"></div>
+            <div class="doc-line m"></div>
+            <div class="doc-line f light"></div>
+            <div class="doc-spacer"></div>
+            <div class="doc-line h s"></div>
+            <div class="doc-line f"></div>
+          </div>
+        </div>
+        <div class="tmpl-footer">
+          <span class="tmpl-name">Academic</span>
+        </div>
+      </div>
+
+      <!-- Minimal -->
+      <div class="tmpl-card tt-minimal">
+        <div class="tmpl-thumb" style="position:relative;">
+          <div class="doc-band accent-left"></div>
+          <div class="tmpl-doc" style="padding-left:22px;">
+            <div style="height:6px"></div>
+            <div class="doc-line h m"></div>
+            <div style="height:2px"></div>
+            <div class="doc-line s"></div>
+            <div class="doc-spacer"></div>
+            <div class="doc-line h s"></div>
+            <div class="doc-line f"></div>
+            <div class="doc-line m"></div>
+            <div class="doc-line f light"></div>
+            <div class="doc-spacer"></div>
+            <div class="doc-line h s"></div>
+            <div class="doc-line f"></div>
+            <div class="doc-line m light"></div>
+          </div>
+        </div>
+        <div class="tmpl-footer">
+          <span class="tmpl-name">Minimal</span>
+          <span class="tmpl-badge new">Clean</span>
+        </div>
+      </div>
+
+      <!-- Government -->
+      <div class="tmpl-card tt-gov">
+        <div class="tmpl-thumb">
+          <div class="tmpl-doc">
+            <div class="doc-band top"></div>
+            <div class="doc-band stripe"></div>
+            <div style="height:5px"></div>
+            <div class="doc-line h m"></div>
+            <div style="height:2px"></div>
+            <div class="doc-line s"></div>
+            <div class="doc-spacer"></div>
+            <div class="doc-line h s"></div>
+            <div class="doc-line f"></div>
+            <div class="doc-line m"></div>
+            <div class="doc-line f light"></div>
+            <div class="doc-spacer"></div>
+            <div class="doc-line h s"></div>
+            <div class="doc-line f"></div>
+          </div>
+        </div>
+        <div class="tmpl-footer">
+          <span class="tmpl-name">Government</span>
+        </div>
+      </div>
+
+      <!-- Creative -->
+      <div class="tmpl-card tt-creative">
+        <div class="tmpl-thumb" style="position:relative;">
+          <div class="doc-band side"></div>
+          <div class="tmpl-doc" style="padding-left:32px;">
+            <div style="height:6px"></div>
+            <div class="doc-line h m"></div>
+            <div style="height:2px"></div>
+            <div class="doc-line s"></div>
+            <div class="doc-spacer"></div>
+            <div class="doc-line h s"></div>
+            <div class="doc-line f"></div>
+            <div class="doc-line m"></div>
+            <div class="doc-spacer"></div>
+            <div class="doc-line h s"></div>
+            <div class="doc-line f"></div>
+            <div class="doc-line m light"></div>
+          </div>
+        </div>
+        <div class="tmpl-footer">
+          <span class="tmpl-name">Creative</span>
+          <span class="tmpl-badge hot">Vivid</span>
+        </div>
+      </div>
+
+      <!-- Compact -->
+      <div class="tmpl-card tt-compact">
+        <div class="tmpl-thumb">
+          <div class="tmpl-doc">
+            <div class="doc-band top"></div>
+            <div style="height:5px"></div>
+            <div class="doc-line h m"></div>
+            <div style="height:2px"></div>
+            <div class="doc-line s"></div>
+            <div class="doc-spacer"></div>
+            <div class="doc-line h s"></div>
+            <div class="doc-line f"></div>
+            <div class="doc-line m"></div>
+            <div class="doc-line f light"></div>
+            <div class="doc-line m light"></div>
+            <div class="doc-spacer"></div>
+            <div class="doc-line h s"></div>
+            <div class="doc-line f"></div>
+          </div>
+        </div>
+        <div class="tmpl-footer">
+          <span class="tmpl-name">Compact</span>
+        </div>
+      </div>
+
+      <!-- Professional -->
+      <div class="tmpl-card tt-pro">
+        <div class="tmpl-thumb">
+          <div class="tmpl-doc">
+            <div class="doc-band top"></div>
+            <div style="height:6px"></div>
+            <div class="doc-line h m"></div>
+            <div style="height:2px"></div>
+            <div class="doc-line s"></div>
+            <div class="doc-spacer"></div>
+            <div class="doc-line h s"></div>
+            <div class="doc-line f"></div>
+            <div class="doc-line m"></div>
+            <div class="doc-line f light"></div>
+            <div class="doc-spacer"></div>
+            <div class="doc-line h s"></div>
+            <div class="doc-line f"></div>
+          </div>
+        </div>
+        <div class="tmpl-footer">
+          <span class="tmpl-name">Professional</span>
+        </div>
+      </div>
+
+      <!-- Executive -->
+      <div class="tmpl-card featured tt-exec">
+        <div class="tmpl-thumb">
+          <div class="tmpl-doc">
+            <div class="doc-band top"></div>
+            <div class="doc-band gold-line"></div>
+            <div style="height:6px"></div>
+            <div class="doc-line h m"></div>
+            <div style="height:2px"></div>
+            <div class="doc-line s"></div>
+            <div class="doc-spacer"></div>
+            <div class="doc-line h s"></div>
+            <div class="doc-line f"></div>
+            <div class="doc-line m"></div>
+            <div class="doc-line f light"></div>
+            <div class="doc-spacer"></div>
+            <div class="doc-line h s"></div>
+            <div class="doc-line f"></div>
+          </div>
+        </div>
+        <div class="tmpl-footer">
+          <span class="tmpl-name">Executive</span>
+          <span class="tmpl-badge top">Premium</span>
+        </div>
+      </div>
+
+    </div>
+    <!-- end gallery -->
+
   </div>
 </div>
 
 <!-- ════════════════ HOW IT WORKS ════════════════ -->
-<section id="how-it-works">
+<section id="how-it-works" style="background:var(--gray50);border-top:1px solid var(--gray100);">
   <div class="section">
     <div class="reveal">
       <div class="section-label">How it works</div>
-      <h2 class="section-title">From job posting to perfect resume<br/>in five simple steps</h2>
-      <p class="section-sub">No lengthy sign-up. No confusing dashboards. Just sign in and go · works in any browser.</p>
+      <h2 class="section-title">From job posting to perfect resume<br/>in <span class="grad">five simple steps</span></h2>
+      <p class="section-sub">No lengthy sign-up. No confusing dashboards. Just open the extension and go.</p>
     </div>
-    <div class="steps-grid reveal">
+    <div class="steps-grid stagger reveal">
       <div class="step-card">
         <div class="step-num">1</div>
         <h3>Pick your career profile</h3>
-        <p>Choose from 18 professional niches · from Software Engineer to Nurse Manager to Marketing Director. TailorCV adapts its AI for your field.</p>
+        <p>Choose from 18 professional niches  -  from Software Engineer to Nurse Manager to Marketing Director. TailorCV adapts its AI for your field.</p>
       </div>
       <div class="step-card">
         <div class="step-num">2</div>
@@ -1000,154 +1536,14 @@
       <div class="step-card">
         <div class="step-num">4</div>
         <h3>Choose your template</h3>
-        <p>Pick from 13 templates · TailorCV even recommends the top 3 best-fit templates for your specific career profile.</p>
+        <p>Pick from 13 templates  -  TailorCV even recommends the top 3 best-fit templates for your specific career profile.</p>
       </div>
       <div class="step-card">
         <div class="step-num">5</div>
         <h3>Download & apply</h3>
-        <p>Export your polished .docx resume, ATS score report, cover letter, and skills gap analysis · then hit that Apply button.</p>
+        <p>Export your polished .docx resume, ATS score report, cover letter, and skills gap analysis  -  then hit that Apply button.</p>
       </div>
     </div>
-  </div>
-</section>
-
-<!-- ════════════════ BEFORE / AFTER ════════════════ -->
-<div class="ba-wrap">
-  <div class="ba-inner reveal">
-    <div class="section-label">See the difference</div>
-    <h2 class="section-title">From generic to interview-ready<br/>in 30 seconds</h2>
-    <p class="section-sub">Same person. Same experience. One resume gets ignored · the other gets interviews.</p>
-
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;flex-wrap:wrap">
-      <span style="background:#e2e8f0;padding:6px 14px;border-radius:50px;font-size:.82rem;font-weight:700;color:#475569">📋 Role: Senior Product Manager</span>
-      <span style="background:#e2e8f0;padding:6px 14px;border-radius:50px;font-size:.82rem;font-weight:700;color:#475569">🏢 Company: Stripe</span>
-    </div>
-
-    <div class="ba-grid">
-
-      <!-- BEFORE -->
-      <div class="ba-card">
-        <div class="ba-card-header before">
-          <span>😞</span> Before · Generic Resume
-          <span style="margin-left:auto;font-size:.75rem;font-weight:600;background:#fca5a5;padding:2px 8px;border-radius:50px">ATS Score: 34%</span>
-        </div>
-        <div class="ba-resume">
-          <div class="ba-name">Alex Johnson</div>
-          <div class="ba-contact">alex@email.com · 416-555-0123 · Toronto, ON</div>
-
-          <div class="ba-sec">Summary</div>
-          <div class="ba-plain">Experienced product manager with strong background in technology. Good at working with teams and delivering projects on time. Looking for a new opportunity to grow my career.</div>
-
-          <div class="ba-sec">Experience</div>
-          <div style="margin-bottom:8px">
-            <div style="display:flex;justify-content:space-between"><strong>Product Manager</strong><span style="color:#94a3b8;font-size:.75rem">2021–Present</span></div>
-            <div style="color:#64748b;font-size:.75rem;margin-bottom:4px">Acme Corp, Toronto</div>
-            <ul class="ba-bullet">
-              <li>Managed product roadmap and worked with engineering team</li>
-              <li>Ran weekly meetings and wrote product specs</li>
-              <li>Helped improve the product based on customer feedback</li>
-              <li>Worked with stakeholders to deliver features</li>
-            </ul>
-          </div>
-
-          <div class="ba-sec">Skills</div>
-          <div class="ba-plain">Product management, Agile, JIRA, communication, leadership, roadmaps, analytics</div>
-        </div>
-      </div>
-
-      <!-- AFTER -->
-      <div class="ba-card">
-        <div class="ba-card-header after">
-          <span>🚀</span> After · TailorCV Output
-          <span style="margin-left:auto;font-size:.75rem;font-weight:600;background:#86efac;padding:2px 8px;border-radius:50px">ATS Score: 89%</span>
-        </div>
-        <div class="ba-resume">
-          <div class="ba-name">Alex Johnson</div>
-          <div class="ba-contact">alex@email.com · 416-555-0123 · Toronto, ON · LinkedIn</div>
-
-          <div class="ba-sec">Professional Summary</div>
-          <div class="ba-plain ba-highlight">Results-driven Senior Product Manager with 4+ years leading B2B SaaS products from 0→1 and at scale. Proven record of shipping payment and API-adjacent features, driving <strong>3.2× revenue growth</strong> through data-informed roadmaps, and aligning cross-functional teams of 12+ engineers. Deep familiarity with Stripe's ecosystem and the developer experience challenges that define best-in-class fintech products.</div>
-
-          <div class="ba-sec">Experience</div>
-          <div style="margin-bottom:8px">
-            <div style="display:flex;justify-content:space-between"><strong>Senior Product Manager · Payments Platform</strong><span style="color:#94a3b8;font-size:.75rem">2021–Present</span></div>
-            <div style="color:#64748b;font-size:.75rem;margin-bottom:4px">Acme Corp, Toronto</div>
-            <ul class="ba-bullet">
-              <li>Owned end-to-end roadmap for a <strong>$12M ARR</strong> checkout platform serving 2,400+ merchant APIs, reducing failed payment rate by <strong>38%</strong> through ML-powered retry logic</li>
-              <li>Led a 9-person cross-functional squad (eng, design, data) through 4 quarterly planning cycles using OKR framework · shipped 11 of 12 committed features on time</li>
-              <li>Synthesised 200+ merchant interviews into a developer-experience audit that directly influenced 3 pricing model changes, increasing ARPU by <strong>22%</strong></li>
-            </ul>
-          </div>
-
-          <div class="ba-sec">Core Competencies</div>
-          <div>
-            <span class="ba-tag">API Product Strategy</span>
-            <span class="ba-tag">Payments &amp; Fintech</span>
-            <span class="ba-tag">Developer Experience</span>
-            <span class="ba-tag">0→1 Product Builds</span>
-            <span class="ba-tag">OKR / Roadmapping</span>
-            <span class="ba-tag">SQL · Mixpanel</span>
-          </div>
-          <div class="ba-score-badge" style="display:inline-flex">
-            <span>✅</span> 14 of 16 JD keywords matched
-          </div>
-        </div>
-      </div>
-
-    </div>
-
-    <div style="text-align:center;margin-top:40px">
-      <a href="/auth.html?tab=register" class="btn-primary" style="display:inline-flex;font-size:1rem;padding:16px 36px">
-        Transform My Resume · Free
-      </a>
-      <p style="margin-top:14px;font-size:.85rem;color:var(--gray400)">No credit card · Free account · Results in under 30 seconds</p>
-    </div>
-  </div>
-</div>
-
-<!-- ════════════════ AUTHENTICITY / VS ════════════════ -->
-<section style="background:#fff;">
-  <div class="authenticity-section">
-
-    <!-- Promise statement -->
-    <div class="auth-promise reveal">
-      <div class="auth-promise-badge">Our core promise</div>
-      <h2>We don't create experience.<br/>We reveal your best experience.</h2>
-      <p>Most AI resume tools pad your resume with invented metrics, skills you don't have, and roles that will fall apart in an interview. TailorCV works differently · every word in your output came from you first.</p>
-    </div>
-
-    <!-- VS comparison grid -->
-    <div class="vs-grid reveal">
-
-      <!-- Left: other tools -->
-      <div class="vs-col vs-col-other">
-        <div class="vs-col-label">Most AI resume tools</div>
-        <div class="vs-col-title">Generate resumes</div>
-        <div class="vs-item"><span class="vs-item-ico">❌</span><span>Add fake metrics you never achieved</span></div>
-        <div class="vs-item"><span class="vs-item-ico">❌</span><span>Invent job responsibilities you never did</span></div>
-        <div class="vs-item"><span class="vs-item-ico">❌</span><span>Insert skills you don't actually have</span></div>
-        <div class="vs-item"><span class="vs-item-ico">❌</span><span>Create content that collapses under interview questioning</span></div>
-        <div class="vs-item"><span class="vs-item-ico">❌</span><span>Risk your reputation if a recruiter digs deeper</span></div>
-      </div>
-
-      <!-- Centre divider -->
-      <div class="vs-divider">
-        <div class="vs-divider-badge">VS</div>
-      </div>
-
-      <!-- Right: TailorCV -->
-      <div class="vs-col vs-col-tc">
-        <div class="vs-col-label">TailorCV</div>
-        <div class="vs-col-title">Transforms yours</div>
-        <div class="vs-item"><span class="vs-item-ico">✅</span><span><strong>Rewrites only what already exists</strong> in your resume</span></div>
-        <div class="vs-item"><span class="vs-item-ico">✅</span><span><strong>Repositions real experience</strong> to match the job's language</span></div>
-        <div class="vs-item"><span class="vs-item-ico">✅</span><span><strong>Surfaces skills you forgot to highlight</strong> · never invents them</span></div>
-        <div class="vs-item"><span class="vs-item-ico">✅</span><span><strong>Keeps you truthful and confident</strong> walking into every interview</span></div>
-        <div class="vs-item"><span class="vs-item-ico">✅</span><span><strong>Protects your reputation</strong> · because the resume is genuinely yours</span></div>
-      </div>
-
-    </div><!-- /vs-grid -->
-
   </div>
 </section>
 
@@ -1156,76 +1552,91 @@
   <div class="features-section">
     <div class="reveal">
       <div class="section-label">Features</div>
-      <h2 class="section-title">Everything you need to land<br/>your next role</h2>
-      <p class="section-sub">TailorCV isn't just a resume builder · it's your complete job application assistant.</p>
+      <h2 class="section-title">Everything you need to land<br/><span class="grad">your next role</span></h2>
+      <p class="section-sub">TailorCV isn't just a resume builder  -  it's your complete job application assistant.</p>
     </div>
 
-    <!-- ATS Ring Demo -->
-    <div class="ats-demo reveal" style="margin-bottom:64px;">
-      <div class="ats-ring-wrap">
-        <svg width="90" height="90" viewBox="0 0 90 90">
-          <circle cx="45" cy="45" r="38" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="8"/>
-          <circle cx="45" cy="45" r="38" fill="none" stroke="#22c55e" stroke-width="8"
-            stroke-dasharray="239" stroke-dashoffset="33" stroke-linecap="round"
-            transform="rotate(-90 45 45)"/>
-          <text x="45" y="50" text-anchor="middle" class="ring-score">87%</text>
+    <!-- ATS Demo -->
+    <div class="ats-demo-wrap reveal">
+      <div class="ats-rings">
+        <div class="ats-ring-wrap">
+          <svg width="96" height="96" viewBox="0 0 96 96">
+            <circle cx="48" cy="48" r="40" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="9"/>
+            <circle cx="48" cy="48" r="40" fill="none" stroke="#22c55e" stroke-width="9"
+              stroke-dasharray="251" stroke-dashoffset="35" stroke-linecap="round"
+              transform="rotate(-90 48 48)"/>
+            <text x="48" y="53" text-anchor="middle" class="ring-score" font-family="Inter,sans-serif">87%</text>
+          </svg>
+          <div class="ats-ring-label">Before tailoring</div>
+        </div>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.3)" stroke-width="2">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
         </svg>
-        <div class="ats-ring-label">ATS Score</div>
+        <div class="ats-ring-wrap">
+          <svg width="96" height="96" viewBox="0 0 96 96">
+            <circle cx="48" cy="48" r="40" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="9"/>
+            <circle cx="48" cy="48" r="40" fill="none" stroke="#38bdf8" stroke-width="9"
+              stroke-dasharray="251" stroke-dashoffset="8" stroke-linecap="round"
+              transform="rotate(-90 48 48)"/>
+            <text x="48" y="53" text-anchor="middle" class="ring-score" font-family="Inter,sans-serif">97%</text>
+          </svg>
+          <div class="ats-ring-label">After tailoring</div>
+        </div>
       </div>
-      <div style="color:rgba(255,255,255,.7);max-width:340px;font-size:.95rem;line-height:1.75;">
-        <strong style="color:white;">Know before you apply.</strong> Every tailored resume gets an ATS compatibility score so you know exactly how likely your application is to pass automated screening filters.
+      <div class="ats-desc">
+        <strong>Know before you apply.</strong> Every tailored resume gets an ATS compatibility score so you know exactly how likely your application is to pass automated screening filters  -  then we show you how to push it even higher.
       </div>
     </div>
 
-    <div class="features-grid reveal">
+    <div class="features-grid stagger reveal">
       <div class="feat-card">
-        <span class="feat-ico">🎯</span>
+        <div class="feat-ico">🎯</div>
         <h3>AI Resume Tailoring</h3>
-        <p>Claude AI rewrites your resume to match the exact language, keywords, and priorities of each job posting · without making things up.</p>
+        <p>Claude AI rewrites your resume to match the exact language, keywords, and priorities of each job posting  -  without making things up.</p>
         <span class="feat-tag">Core Feature</span>
       </div>
       <div class="feat-card">
-        <span class="feat-ico">📊</span>
+        <div class="feat-ico">📊</div>
         <h3>ATS Score + Analysis</h3>
         <p>Get a compatibility percentage, a breakdown of matched and missing keywords, and actionable tips to improve your score before applying.</p>
         <span class="feat-tag">Core Feature</span>
       </div>
       <div class="feat-card">
-        <span class="feat-ico">✉️</span>
+        <div class="feat-ico">✉️</div>
         <h3>Cover Letter Generator</h3>
         <p>Auto-generated, role-specific cover letters that match the tone of the job posting and highlight your most relevant experience.</p>
         <span class="feat-tag">Core Feature</span>
       </div>
       <div class="feat-card">
-        <span class="feat-ico">🔍</span>
+        <div class="feat-ico">🔍</div>
         <h3>Skills Gap Analysis</h3>
-        <p>See exactly which skills the employer wants that you haven't yet highlighted · with suggestions for how to bridge the gap.</p>
+        <p>See exactly which skills the employer wants that you haven't yet highlighted  -  with suggestions for how to bridge the gap.</p>
       </div>
       <div class="feat-card">
-        <span class="feat-ico">🎤</span>
+        <div class="feat-ico">🎤</div>
         <h3>Interview Prep Questions</h3>
         <p>Get 10 tailored behavioural and technical interview questions based on the specific job description you applied for.</p>
       </div>
       <div class="feat-card">
-        <span class="feat-ico">📋</span>
+        <div class="feat-ico">📋</div>
         <h3>Job Application Tracker</h3>
-        <p>Track every application in a sidebar · company, role, template used, ATS score, and current status. Never lose track of where you applied.</p>
+        <p>Track every application in a sidebar  -  company, role, template used, ATS score, and current status. Never lose track of where you applied.</p>
       </div>
       <div class="feat-card">
-        <span class="feat-ico">👁️</span>
+        <div class="feat-ico">👁️</div>
         <h3>Live Template Previews</h3>
-        <p>Preview all 13 templates with real resume content · formatted for your specific career profile · before committing to one.</p>
+        <p>Preview all 13 templates with real resume content  -  formatted for your specific career profile  -  before committing to one.</p>
       </div>
       <div class="feat-card">
-        <span class="feat-ico">💾</span>
-        <h3>Save & Continue Later</h3>
-        <p>Your progress is automatically saved so you can close the app, come back later, and pick up right where you left off.</p>
+        <div class="feat-ico">💾</div>
+        <h3>Save &amp; Continue Later</h3>
+        <p>Your progress is automatically saved so you can close the extension, come back later, and pick up right where you left off.</p>
       </div>
       <div class="feat-card">
-        <span class="feat-ico">🌐</span>
-        <h3>Works on Any Device</h3>
-        <p>TailorCV is a full web app · no extension to install. Access it from any browser, any computer, at any time.</p>
-        <span class="feat-tag">Always Available</span>
+        <div class="feat-ico">🔑</div>
+        <h3>Bring Your Own API Key</h3>
+        <p>Use your own Claude API key for free unlimited use. Your key, your data, your control  -  nothing stored on our servers.</p>
+        <span class="feat-tag">Privacy First</span>
       </div>
     </div>
   </div>
@@ -1235,27 +1646,27 @@
 <div class="niches-wrap">
   <div class="niches-inner reveal">
     <div class="section-label">Career niches</div>
-    <h2 class="section-title" style="margin-bottom:8px;">Built for your industry,<br/>not just any industry</h2>
-    <p style="color:var(--gray600);font-size:1rem;">TailorCV has dedicated AI prompts, template recommendations, and formatting rules for every major profession.</p>
-    <div class="niches-grid">
+    <h2 class="section-title" style="margin-bottom:10px;">Built for your industry,<br/>not just any industry</h2>
+    <p style="color:var(--gray600);font-size:1rem;max-width:540px;line-height:1.7;">TailorCV has dedicated AI prompts, template recommendations, and formatting rules for every major profession.</p>
+    <div class="niches-grid stagger">
       <span class="niche-chip">💻 Software Engineering</span>
-      <span class="niche-chip">📊 Data Science & AI</span>
-      <span class="niche-chip">🏥 Nursing & Healthcare</span>
-      <span class="niche-chip">⚖️ Legal & Compliance</span>
-      <span class="niche-chip">📈 Marketing & Growth</span>
+      <span class="niche-chip">📊 Data Science &amp; AI</span>
+      <span class="niche-chip">🏥 Nursing &amp; Healthcare</span>
+      <span class="niche-chip">⚖️ Legal &amp; Compliance</span>
+      <span class="niche-chip">📈 Marketing &amp; Growth</span>
       <span class="niche-chip">💼 Business Management</span>
-      <span class="niche-chip">🎓 Education & Academia</span>
-      <span class="niche-chip">🏛️ Government & Civil Service</span>
+      <span class="niche-chip">🎓 Education &amp; Academia</span>
+      <span class="niche-chip">🏛️ Government &amp; Civil Service</span>
       <span class="niche-chip">🔧 Engineering</span>
-      <span class="niche-chip">🎨 Creative & Design</span>
-      <span class="niche-chip">💰 Finance & Accounting</span>
+      <span class="niche-chip">🎨 Creative &amp; Design</span>
+      <span class="niche-chip">💰 Finance &amp; Accounting</span>
       <span class="niche-chip">🧠 Product Management</span>
       <span class="niche-chip">🤝 Human Resources</span>
-      <span class="niche-chip">🚀 Startups & Founders</span>
-      <span class="niche-chip">🌐 Sales & Business Dev</span>
-      <span class="niche-chip">🔬 Research & Science</span>
-      <span class="niche-chip">🏗️ Construction & Trades</span>
-      <span class="niche-chip">✈️ Operations & Logistics</span>
+      <span class="niche-chip">🚀 Startups &amp; Founders</span>
+      <span class="niche-chip">🌐 Sales &amp; Business Dev</span>
+      <span class="niche-chip">🔬 Research &amp; Science</span>
+      <span class="niche-chip">🏗️ Construction &amp; Trades</span>
+      <span class="niche-chip">✈️ Operations &amp; Logistics</span>
     </div>
   </div>
 </div>
@@ -1265,17 +1676,19 @@
   <div class="testi-inner">
     <div class="reveal">
       <div class="section-label">Early users</div>
-      <h2 class="section-title">Resumes that actually get responses</h2>
+      <h2 class="section-title">Resumes that actually <span class="grad">get responses</span></h2>
+      <p class="section-sub" style="margin-bottom:0;">Real results from real job seekers who used TailorCV to land interviews faster.</p>
     </div>
-    <div class="testi-grid reveal">
+    <div class="testi-grid stagger reveal">
       <div class="testi-card">
         <div class="testi-stars">★★★★★</div>
         <p class="testi-text">"I applied to 40 jobs with my generic resume and heard nothing. With TailorCV I applied to 8 and got 3 interviews in the first week. The ATS scoring alone is worth it."</p>
         <div class="testi-author">
-          <div class="testi-avatar">JK</div>
+          <div class="testi-avatar av-1">JK</div>
           <div>
             <div class="testi-name">Jordan K.</div>
-            <div class="testi-role">Software Engineer, Chicago</div>
+            <div class="testi-role">Software Engineer</div>
+            <div class="testi-company">📍 Chicago, IL</div>
           </div>
         </div>
       </div>
@@ -1283,10 +1696,11 @@
         <div class="testi-stars">★★★★★</div>
         <p class="testi-text">"As a nurse switching to a management role, I had no idea how to reframe my experience. TailorCV adapted my resume perfectly and even generated interview questions specific to the role."</p>
         <div class="testi-author">
-          <div class="testi-avatar">AM</div>
+          <div class="testi-avatar av-2">AM</div>
           <div>
             <div class="testi-name">Angela M.</div>
-            <div class="testi-role">Nurse Manager, Houston</div>
+            <div class="testi-role">Nurse Manager</div>
+            <div class="testi-company">📍 Houston, TX</div>
           </div>
         </div>
       </div>
@@ -1294,10 +1708,47 @@
         <div class="testi-stars">★★★★★</div>
         <p class="testi-text">"The cover letter generator is frighteningly good. It reads the job posting and writes something that sounds like I spent an hour on it. Hired after two weeks of using this."</p>
         <div class="testi-author">
-          <div class="testi-avatar">RP</div>
+          <div class="testi-avatar av-3">RP</div>
           <div>
             <div class="testi-name">Rohan P.</div>
-            <div class="testi-role">Product Manager, London</div>
+            <div class="testi-role">Product Manager</div>
+            <div class="testi-company">📍 London, UK</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card">
+        <div class="testi-stars">★★★★★</div>
+        <p class="testi-text">"I was skeptical but the difference between my generic resume and the tailored version was night and day. The keywords matched exactly what the job posting was asking for."</p>
+        <div class="testi-author">
+          <div class="testi-avatar av-4">SK</div>
+          <div>
+            <div class="testi-name">Sarah K.</div>
+            <div class="testi-role">Marketing Director</div>
+            <div class="testi-company">📍 Toronto, CA</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card">
+        <div class="testi-stars">★★★★★</div>
+        <p class="testi-text">"The skills gap analysis is underrated. It told me exactly what I was missing from my resume that the employer wanted  -  I added it and went from 0 callbacks to 4 in a week."</p>
+        <div class="testi-author">
+          <div class="testi-avatar av-5">DM</div>
+          <div>
+            <div class="testi-name">David M.</div>
+            <div class="testi-role">Data Scientist</div>
+            <div class="testi-company">📍 Austin, TX</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card">
+        <div class="testi-stars">★★★★★</div>
+        <p class="testi-text">"As a recent grad competing against experienced candidates, TailorCV helped me punch way above my weight. The niche-specific formatting for finance roles was exactly right."</p>
+        <div class="testi-author">
+          <div class="testi-avatar av-1">LW</div>
+          <div>
+            <div class="testi-name">Lily W.</div>
+            <div class="testi-role">Financial Analyst</div>
+            <div class="testi-company">📍 New York, NY</div>
           </div>
         </div>
       </div>
@@ -1309,78 +1760,68 @@
 <div class="pricing-bg" id="pricing">
   <div class="pricing-section">
     <div class="reveal">
-      <div class="section-label">Pricing</div>
-      <h2 class="section-title">Simple, honest pricing</h2>
-      <p style="color:var(--gray600);font-size:1.1rem;max-width:480px;margin:0 auto 16px;">Try TailorCV free · no credit card needed. Upgrade to Pro for unlimited builds and all premium features.</p>
+      <div class="section-label" style="justify-content:center;">Pricing</div>
+      <h2 class="section-title">Simple, <span class="grad">honest pricing</span></h2>
+      <p style="color:var(--gray600);font-size:1.05rem;max-width:480px;margin:0 auto 16px;line-height:1.7;">Start free with your own API key. Upgrade once for Pro features  -  no monthly fees, ever.</p>
     </div>
     <div class="pricing-grid reveal">
       <!-- Free -->
       <div class="price-card">
         <div class="price-name">Free</div>
         <div class="price-amount"><sup>$</sup>0</div>
-        <div class="price-period">1 free resume to try it out</div>
+        <div class="price-period">forever, with your own API key</div>
         <hr class="price-divider" />
         <ul class="price-features">
-          <li><span class="chk">✓</span> 1 AI resume tailoring</li>
-          <li><span class="chk">✓</span> 1 .docx download</li>
-          <li><span class="chk">✓</span> All 13 professional templates</li>
-          <li><span class="chk">✓</span> All 18 career niches</li>
-          <li><span class="x">—</span> <span style="color:var(--gray400)">ATS score &amp; analysis</span></li>
-          <li><span class="x">—</span> <span style="color:var(--gray400)">Cover letter generator</span></li>
-          <li><span class="x">—</span> <span style="color:var(--gray400)">Skills gap analysis</span></li>
-          <li><span class="x">—</span> <span style="color:var(--gray400)">Interview prep questions</span></li>
-          <li><span class="x">—</span> <span style="color:var(--gray400)">Unlimited tailoring</span></li>
-        </ul>
-        <a href="/auth.html?tab=register" class="price-btn price-btn-outline">Start for Free →</a>
-      </div>
-      <!-- Pro Monthly -->
-      <div class="price-card popular">
-        <div class="popular-badge">⭐ Most Popular</div>
-        <div class="price-name">Pro</div>
-        <div class="price-amount"><sup>$</sup>9</div>
-        <div class="price-period">per month &nbsp;·&nbsp; or <strong>$79/year</strong> (save 27%)</div>
-        <hr class="price-divider" />
-        <ul class="price-features">
-          <li><span class="chk">✓</span> <strong>Unlimited</strong> resume tailoring</li>
-          <li><span class="chk">✓</span> Unlimited .docx downloads</li>
-          <li><span class="chk">✓</span> All 13 professional templates</li>
-          <li><span class="chk">✓</span> ATS score &amp; keyword analysis</li>
+          <li><span class="chk">✓</span> AI resume tailoring (unlimited)</li>
+          <li><span class="chk">✓</span> 13 professional templates</li>
+          <li><span class="chk">✓</span> ATS score &amp; analysis</li>
           <li><span class="chk">✓</span> Cover letter generator</li>
           <li><span class="chk">✓</span> Skills gap analysis</li>
           <li><span class="chk">✓</span> Interview prep questions</li>
           <li><span class="chk">✓</span> Job application tracker</li>
-          <li><span class="chk">✓</span> Priority AI processing</li>
+          <li><span class="chk">✓</span> Save &amp; continue later</li>
+          <li><span class="x"> - </span> <span style="color:var(--gray400)">Requires your Claude API key</span></li>
         </ul>
-        <a href="/auth.html?tab=register" class="price-btn price-btn-filled">Start Free, then Upgrade →</a>
+        <a href="#install" class="price-btn price-btn-outline">Install Free →</a>
+      </div>
+      <!-- Pro -->
+      <div class="price-card popular">
+        <div class="popular-badge">⭐ Most Popular</div>
+        <div class="price-name">Pro</div>
+        <div class="price-amount"><sup>$</sup>19</div>
+        <div class="price-period">one-time payment, no subscription</div>
+        <hr class="price-divider" />
+        <ul class="price-features">
+          <li><span class="chk">✓</span> Everything in Free</li>
+          <li><span class="chk">✓</span> <strong>No API key needed</strong>  -  we handle it</li>
+          <li><span class="chk">✓</span> Priority AI processing</li>
+          <li><span class="chk">✓</span> Early access to new features</li>
+          <li><span class="chk">✓</span> Premium template designs</li>
+          <li><span class="chk">✓</span> Export as PDF (coming soon)</li>
+          <li><span class="chk">✓</span> Lifetime updates</li>
+          <li><span class="chk">✓</span> Email support</li>
+        </ul>
+        <a href="#install" class="price-btn price-btn-filled">Get Pro  -  $19 Once</a>
       </div>
     </div>
-    <p class="price-note reveal">💳 Secure payment via Stripe &nbsp;·&nbsp; Cancel anytime &nbsp;·&nbsp; 30-day money-back guarantee</p>
+    <p class="price-note reveal">💳 Secure payment via Gumroad &nbsp;·&nbsp; 30-day money-back guarantee &nbsp;·&nbsp; No subscription, ever</p>
   </div>
 </div>
 
 <!-- ════════════════ FAQ ════════════════ -->
-<section id="faq">
+<div class="faq-wrap" id="faq">
   <div class="faq-section">
     <div class="reveal">
       <div class="section-label">FAQ</div>
-      <h2 class="section-title" style="margin-bottom:40px;">Common questions</h2>
+      <h2 class="section-title" style="margin-bottom:48px;">Common questions</h2>
     </div>
     <div class="faq-item reveal">
       <button class="faq-q" onclick="toggleFaq(this)">
-        Does TailorCV make things up or hallucinate?
+        What is an API key and do I really need one for the free plan?
         <span class="arr">▾</span>
       </button>
       <div class="faq-a">
-        No · and this is our core promise. TailorCV only uses information from your existing resume. It reformats, reorders, and re-phrases your real experience to match the job description. It will never invent qualifications, companies, metrics, or roles. The AI is given strict instructions to work only with what you actually provide. Everything in your output is something you can confidently defend in an interview.
-      </div>
-    </div>
-    <div class="faq-item reveal">
-      <button class="faq-q" onclick="toggleFaq(this)">
-        How does the free plan work?
-        <span class="arr">▾</span>
-      </button>
-      <div class="faq-a">
-        Sign up for free with just your email · no credit card required. You get one complete resume tailoring and download to experience the full power of TailorCV. After that, upgrade to Pro for $9/month (or $79/year) for unlimited builds and all premium features.
+        An API key is your personal access token to Claude AI (by Anthropic). You can get one free at console.anthropic.com  -  Anthropic gives new accounts free credits to get started. With Pro, you skip this step entirely: we handle the AI calls on your behalf.
       </div>
     </div>
     <div class="faq-item reveal">
@@ -1389,7 +1830,16 @@
         <span class="arr">▾</span>
       </button>
       <div class="faq-a">
-        Your resume and job descriptions are processed securely via our backend and are not stored permanently. We use your data only to generate your tailored resume in the moment · nothing is sold or shared with third parties. Your account is protected with encrypted passwords and secure JWT authentication.
+        No. Everything runs locally in your browser. Your resume, job descriptions, and API key are stored only in your Chrome browser's local storage. We do not collect, store, or transmit your personal data to our servers.
+      </div>
+    </div>
+    <div class="faq-item reveal">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        Does TailorCV make things up or hallucinate?
+        <span class="arr">▾</span>
+      </button>
+      <div class="faq-a">
+        TailorCV is explicitly instructed to only use information from your existing resume  -  it reformats, reorders, and re-phrases your real experience to match the job description. It will not invent qualifications, companies, or roles. The AI is prompted with strict rules to only work with what you provide.
       </div>
     </div>
     <div class="faq-item reveal">
@@ -1403,11 +1853,11 @@
     </div>
     <div class="faq-item reveal">
       <button class="faq-q" onclick="toggleFaq(this)">
-        What does Pro include and can I cancel?
+        What does the $19 Pro plan include exactly?
         <span class="arr">▾</span>
       </button>
       <div class="faq-a">
-        Pro gives you unlimited resume tailoring, ATS scoring, cover letter generation, skills gap analysis, interview prep questions, and priority AI processing · all at $9/month or $79/year. You can cancel anytime from your account page and you won't be charged again. We also offer a 30-day money-back guarantee.
+        Pro removes the need for your own API key (we cover the AI costs), gives you priority processing, unlocks premium template designs, PDF export (coming soon), and lifetime updates  -  all for a single one-time payment. No monthly fees, ever.
       </div>
     </div>
     <div class="faq-item reveal">
@@ -1416,264 +1866,56 @@
         <span class="arr">▾</span>
       </button>
       <div class="faq-a">
-        Yes. TailorCV supports 18 professional career niches with dedicated AI rules, formatting styles, and template recommendations for each. From software engineers to nurses to lawyers to marketing managers · TailorCV adapts to your field automatically.
+        Yes. TailorCV supports 18 professional career niches with dedicated AI rules, formatting styles, and template recommendations for each. From software engineers to nurses to lawyers to marketing managers  -  TailorCV adapts to your field automatically.
       </div>
     </div>
   </div>
-</section>
+</div>
 
 <!-- ════════════════ CTA BANNER ════════════════ -->
 <section class="cta-banner" id="install">
-  <div class="reveal">
-    <h2>Start tailoring your resume<br/>the right way.</h2>
-    <p>Get more interviews · without faking experience. Free to start, no credit card required.</p>
-    <a href="/auth.html?tab=register" class="btn-primary" style="display:inline-flex;font-size:1.1rem;padding:18px 40px;">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
-      Build My First Tailored Resume →
+  <div class="cta-inner reveal">
+    <h2>Start tailoring your resume today.<br/><span class="grad">It takes 30 seconds.</span></h2>
+    <p>Free to install. No sign-up required. Just open, paste, and download.</p>
+    <a href="#" class="btn-primary" style="display:inline-flex;font-size:1.05rem;padding:17px 38px;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="8 12 12 16 16 12"/><line x1="12" y1="8" x2="12" y2="16"/></svg>
+      Add TailorCV to Chrome  -  Free
     </a>
-    <p style="margin-top:20px;font-size:.85rem;color:rgba(255,255,255,.55);">100% based on your real resume &nbsp;·&nbsp; No hallucinations &nbsp;·&nbsp; Results in 30 seconds</p>
+    <div class="cta-trust">
+      <div class="cta-trust-item">🔒 No sign-up required</div>
+      <div class="cta-trust-item">⚡ Works in 30 seconds</div>
+      <div class="cta-trust-item">🎯 Chrome Web Store</div>
+      <div class="cta-trust-item">💳 $0 to get started</div>
+    </div>
   </div>
 </section>
 
 <!-- ════════════════ FOOTER ════════════════ -->
 <footer>
   <div class="footer-inner">
-    <a href="#" class="footer-logo">Tailor<span>CV</span></a>
+    <a href="#" class="footer-logo">
+      <div class="logo-icon" style="width:26px;height:26px;font-size:.75rem;">✦</div>
+      Tailor<span>CV</span>
+    </a>
     <ul class="footer-links">
       <li><a href="#how-it-works">How it works</a></li>
       <li><a href="#features">Features</a></li>
+      <li><a href="#templates">Templates</a></li>
       <li><a href="#pricing">Pricing</a></li>
       <li><a href="#faq">FAQ</a></li>
       <li><a href="mailto:hello@tailorcv.com">Contact</a></li>
       <li><a href="#">Privacy Policy</a></li>
-    </ul>
-    <ul class="footer-links" style="margin-top:12px; font-size:.78rem; opacity:.7;">
-      <li><a href="/vs-teal.html">TailorCV vs Teal</a></li>
-      <li><a href="/vs-aiapply.html">TailorCV vs AIApply</a></li>
-      <li><a href="/vs-jobscan.html">TailorCV vs Jobscan</a></li>
     </ul>
   </div>
   <p class="footer-copy">© 2026 TailorCV. Made with ❤️ for job seekers everywhere.</p>
 </footer>
 
 <script>
-  /* ─── FREE SCORE DEMO ──────────────────────────────── */
-  var _sdemoText = null;
-
-  function sdemoDrag(e, over) {
-    e.preventDefault();
-    document.getElementById('sdemoDrop').classList.toggle('drag-over', over);
-  }
-
-  function sdemoDrop(e) {
-    e.preventDefault();
-    document.getElementById('sdemoDrop').classList.remove('drag-over');
-    var file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
-    if (file) sdemoProcessFile(file);
-  }
-
-  function sdemoFileChosen(input) {
-    if (input.files && input.files[0]) sdemoProcessFile(input.files[0]);
-  }
-
-  function sdemoProcessFile(file) {
-    var name = file.name || '';
-    var ext  = name.split('.').pop().toLowerCase();
-    if (ext !== 'pdf' && ext !== 'docx') {
-      sdemoShowErr('Please upload a .pdf or .docx file.');
-      return;
-    }
-    var nameEl = document.getElementById('sdemoDzName');
-    var hint   = document.querySelector('#sdemoDrop .dz-hint');
-    nameEl.textContent = name;
-    nameEl.style.display = 'block';
-    if (hint) hint.style.display = 'none';
-    document.getElementById('sdemoDrop').querySelector('.dz-ico').textContent = '✅';
-    _sdemoText = null;
-    sdemoCheck();
-
-    var reader = new FileReader();
-    reader.onload = function(ev) {
-      var buf = ev.target.result;
-      if (ext === 'pdf') {
-        sdemoExtractPdf(buf);
-      } else {
-        sdemoExtractDocx(buf);
-      }
-    };
-    reader.readAsArrayBuffer(file);
-  }
-
-  function sdemoExtractPdf(buf) {
-    if (typeof pdfjsLib === 'undefined') {
-      // Load PDF.js on demand
-      var s = document.createElement('script');
-      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
-      s.onload = function() {
-        pdfjsLib.GlobalWorkerOptions.workerSrc =
-          'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-        _sdemoRunPdf(buf);
-      };
-      document.head.appendChild(s);
-    } else {
-      _sdemoRunPdf(buf);
-    }
-  }
-
-  function _sdemoRunPdf(buf) {
-    pdfjsLib.getDocument({ data: new Uint8Array(buf) }).promise.then(function(doc) {
-      var pages = [];
-      for (var i = 1; i <= doc.numPages; i++) pages.push(i);
-      return Promise.all(pages.map(function(n) {
-        return doc.getPage(n).then(function(p) {
-          return p.getTextContent().then(function(tc) {
-            return tc.items.map(function(it) { return it.str; }).join(' ');
-          });
-        });
-      }));
-    }).then(function(parts) {
-      _sdemoText = parts.join('\n');
-      sdemoCheck();
-    }).catch(function() {
-      sdemoShowErr('Could not read PDF. Try pasting your resume text into the job description box, or upload a .docx.');
-    });
-  }
-
-  function sdemoExtractDocx(buf) {
-    if (typeof mammoth === 'undefined') {
-      var s = document.createElement('script');
-      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js';
-      s.onload = function() { _sdemoRunDocx(buf); };
-      document.head.appendChild(s);
-    } else {
-      _sdemoRunDocx(buf);
-    }
-  }
-
-  function _sdemoRunDocx(buf) {
-    mammoth.extractRawText({ arrayBuffer: buf }).then(function(r) {
-      _sdemoText = r.value || '';
-      sdemoCheck();
-    }).catch(function() {
-      sdemoShowErr('Could not read .docx file. Please try a different file.');
-    });
-  }
-
-  function sdemoCheck() {
-    var jd  = (document.getElementById('sdemoJd').value || '').trim();
-    var btn = document.getElementById('sdemoBtn');
-    btn.disabled = !(_sdemoText && _sdemoText.length > 50 && jd.length > 30);
-  }
-
-  function sdemoShowErr(msg) {
-    var el = document.getElementById('sdemoErr');
-    el.textContent = msg;
-    el.classList.add('on');
-  }
-
-  function sdemoClearErr() {
-    var el = document.getElementById('sdemoErr');
-    el.textContent = '';
-    el.classList.remove('on');
-  }
-
-  async function sdemoGetScore() {
-    var jd  = (document.getElementById('sdemoJd').value || '').trim();
-    if (!_sdemoText || _sdemoText.length < 50) { sdemoShowErr('Resume text not ready yet · please wait a moment.'); return; }
-    if (!jd || jd.length < 30) { sdemoShowErr('Please paste a job description first.'); return; }
-
-    sdemoClearErr();
-    var btn    = document.getElementById('sdemoBtn');
-    var btnTxt = document.getElementById('sdemoBtnTxt');
-    btn.disabled = true;
-    btnTxt.textContent = 'Analysing…';
-
-    try {
-      var r = await fetch('/api/score-preview', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ resumeText: _sdemoText.slice(0, 6000), jd: jd.slice(0, 4000) })
-      });
-      var data = await r.json();
-      if (!r.ok) {
-        sdemoShowErr(data.error || 'Something went wrong. Please try again.');
-        btn.disabled = false;
-        btnTxt.textContent = 'Get My Free Score';
-        return;
-      }
-      sdemoShowResult(data);
-    } catch (err) {
-      sdemoShowErr('Network error · please check your connection and try again.');
-      btn.disabled = false;
-      btnTxt.textContent = 'Get My Free Score';
-    }
-  }
-
-  function sdemoShowResult(d) {
-    var score   = Math.max(0, Math.min(100, d.score || 0));
-    var arc     = document.getElementById('srArc');
-    var pctEl   = document.getElementById('srPct');
-    var verdict = document.getElementById('srVerdict');
-    var verdict2= document.getElementById('srVerdict2');
-    var sumEl   = document.getElementById('srSummary');
-    var matchEl = document.getElementById('srMatched');
-    var missEl  = document.getElementById('srMissing');
-
-    // Color the arc by score
-    var color = score >= 70 ? '#22c55e' : score >= 45 ? '#f59e0b' : '#f43f5e';
-    var circ  = 2 * Math.PI * 50; // 314.16
-    arc.style.stroke = color;
-    arc.setAttribute('stroke-dashoffset', circ * (1 - score / 100));
-    pctEl.textContent = score + '%';
-
-    // Verdict badge
-    var vClass = score >= 70 ? 'good' : score >= 45 ? 'ok' : 'low';
-    var vText  = d.label || (score >= 70 ? 'Strong Match' : score >= 45 ? 'Partial Match' : 'Needs Work');
-    verdict.textContent  = vText;
-    verdict.className    = 'sr-ring-verdict ' + vClass;
-    verdict.style.display = 'inline-block';
-
-    // Summary
-    sumEl.textContent = d.summary || '';
-
-    // Chips
-    matchEl.innerHTML = '';
-    missEl.innerHTML  = '';
-    (d.matched || []).slice(0, 8).forEach(function(kw) {
-      var c = document.createElement('span');
-      c.className = 'sr-chip matched';
-      c.textContent = kw;
-      matchEl.appendChild(c);
-    });
-    (d.missing || []).slice(0, 8).forEach(function(kw) {
-      var c = document.createElement('span');
-      c.className = 'sr-chip missing';
-      c.textContent = kw;
-      missEl.appendChild(c);
-    });
-
-    // Verdict 2
-    verdict2.textContent = d.verdict || '';
-
-    // Show result
-    var resultEl = document.getElementById('scoreResult');
-    resultEl.classList.add('on');
-
-    // Scroll result into view
-    resultEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-
-    // Reset button
-    var btn = document.getElementById('sdemoBtn');
-    document.getElementById('sdemoBtnTxt').textContent = 'Check Again';
-    btn.disabled = false;
-  }
-
   // FAQ accordion
   function toggleFaq(btn) {
     var answer = btn.nextElementSibling;
     var isOpen = btn.classList.contains('open');
-    // close all
-    document.querySelectorAll('.faq-q.open').forEach(function(b){
+    document.querySelectorAll('.faq-q.open').forEach(function(b) {
       b.classList.remove('open');
       b.nextElementSibling.classList.remove('open');
     });
@@ -1684,63 +1926,75 @@
   }
 
   // Scroll reveal
-  var revealEls = document.querySelectorAll('.reveal');
-  var observer = new IntersectionObserver(function(entries){
-    entries.forEach(function(e){
-      if(e.isIntersecting){ e.target.classList.add('visible'); }
+  var revealEls = document.querySelectorAll('.reveal, .reveal-left, .reveal-right');
+
+  function revealAll() {
+    revealEls.forEach(function(el) { el.classList.add('visible'); });
+  }
+
+  if ('IntersectionObserver' in window) {
+    var observer = new IntersectionObserver(function(entries) {
+      entries.forEach(function(e) {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible');
+          observer.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.05, rootMargin: '0px 0px -40px 0px' });
+
+    revealEls.forEach(function(el) { observer.observe(el); });
+
+    // Safety fallback: show everything after 1.5s in case observer doesn't fire
+    setTimeout(revealAll, 1500);
+  } else {
+    // No IntersectionObserver support — show everything immediately
+    revealAll();
+  }
+
+  // Stagger children animation delay
+  document.querySelectorAll('.stagger').forEach(function(container) {
+    Array.from(container.children).forEach(function(child, i) {
+      child.style.setProperty('--i', i);
+      child.style.transitionDelay = (i * 60) + 'ms';
     });
-  }, { threshold: 0.12 });
-  revealEls.forEach(function(el){ observer.observe(el); });
-
-  // ATS ring animation on load
-  window.addEventListener('load', function(){
-    var ring = document.querySelector('.ats-demo circle[stroke="#22c55e"]');
-    if(ring){
-      ring.style.transition = 'stroke-dashoffset 1.2s ease';
-    }
   });
-</script>
 
-<script>
-/* ── Auth-aware navigation ──────────────────────────────────────────────
-   If the user has a valid JWT in localStorage they're already signed in.
-   Swap every "Start Free" CTA to "Open App" and show a signed-in badge.
-──────────────────────────────────────────────────────────────────────── */
-(function(){
-  var tok = localStorage.getItem('tailorcv_token');
-  if(!tok) return; // not signed in · keep default CTAs
-
-  /* Nav bar: replace "Start Free →" with two items: email badge + "Open App" */
-  var navItem = document.getElementById('navAuthItem');
-  if(navItem){
-    navItem.innerHTML =
-      '<span id="navUserBadge" style="' +
-        'display:inline-flex;align-items:center;gap:6px;' +
-        'background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.3);' +
-        'border-radius:99px;padding:5px 12px;font-size:.75rem;font-weight:600;' +
-        'color:#4f46e5;white-space:nowrap;vertical-align:middle' +
-      '">✦ Signed in</span>' +
-      '&nbsp;' +
-      '<a href="/app.html" class="nav-cta" style="background:#4f46e5">Open App →</a>';
+  // ATS ring counter animation
+  function animateRing(svgEl, targetDashOffset, delay) {
+    setTimeout(function() {
+      var circle = svgEl.querySelector('circle[stroke-dasharray]');
+      if (!circle) return;
+      var orig = circle.getAttribute('stroke-dashoffset');
+      circle.style.transition = 'stroke-dashoffset 1.4s cubic-bezier(.4,0,.2,1)';
+      circle.setAttribute('stroke-dashoffset', orig); // force repaint
+      requestAnimationFrame(function() {
+        circle.setAttribute('stroke-dashoffset', targetDashOffset);
+      });
+    }, delay);
   }
 
-  /* Hero primary button */
-  var heroPrimary = document.querySelector('.hero-btns .btn-primary');
-  if(heroPrimary){
-    heroPrimary.href = '/app.html';
-    heroPrimary.innerHTML =
-      '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>' +
-      'Open App · Continue Building';
-  }
+  // Trigger when ATS demo enters viewport
+  var atsObserver = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      if (e.isIntersecting) {
+        var rings = e.target.querySelectorAll('circle[stroke="#22c55e"], circle[stroke="#38bdf8"]');
+        rings.forEach(function(r, i) {
+          var finalOffset = r.getAttribute('stroke-dashoffset');
+          r.setAttribute('stroke-dashoffset', '251');
+          r.style.transition = 'stroke-dashoffset 1.4s cubic-bezier(.4,0,.2,1) ' + (i * 300 + 200) + 'ms';
+          requestAnimationFrame(function() {
+            requestAnimationFrame(function() {
+              r.setAttribute('stroke-dashoffset', finalOffset);
+            });
+          });
+        });
+        atsObserver.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.3 });
 
-  /* All other "Start Free" / "Start for Free" CTAs on the page */
-  document.querySelectorAll('a[href*="auth.html"]').forEach(function(a){
-    a.href = '/app.html';
-    if(a.textContent.trim().match(/start|free/i)){
-      a.textContent = 'Open App →';
-    }
-  });
-})();
+  var atsDemoEl = document.querySelector('.ats-demo-wrap');
+  if (atsDemoEl) atsObserver.observe(atsDemoEl);
 </script>
 </body>
 </html>

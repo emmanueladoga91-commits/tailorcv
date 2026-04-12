@@ -2291,12 +2291,54 @@ function _tmcRender() {
 
 // Keyboard nav for carousel
 document.addEventListener('keydown', function(e) {
+  var zModal = document.getElementById('tmcZoomModal');
+  if(zModal && zModal.classList.contains('on')) {
+    if(e.key === 'Escape') closeTmcZoom();
+    return; // zoom modal takes priority
+  }
   var modal = document.getElementById('tmplCarouselModal');
   if(!modal || !modal.classList.contains('on')) return;
   if(e.key === 'ArrowLeft')  tmcNav(-1);
   if(e.key === 'ArrowRight') tmcNav(1);
   if(e.key === 'Escape')     closeTmplCarousel();
 });
+
+// ── ZOOM MODAL ────────────────────────────────────────────────────────────────
+var _tmcZoomLevel = 100;
+
+function openTmcZoom() {
+  var list  = _tmcTab === 'cl' ? _tmcCLList : _tmcResumeList;
+  var key   = list[_tmcIdx];
+  var label = _tmcTab === 'cl'
+    ? ((CL_TMPL_DEFS[key]||{}).label || key)
+    : (TEMPLATE_LABELS[key]||key).split('\u2014')[0].trim();
+  var subtitle = _tmcTab === 'cl' ? 'Cover letter' : 'Resume';
+  var titleEl = document.getElementById('tmczTitle');
+  if(titleEl) titleEl.innerHTML = es(label) + '<span class="tmcz-subtitle"> \u00b7 ' + subtitle + ' template</span>';
+  var inner = document.getElementById('tmczPageInner');
+  if(inner) inner.innerHTML = _tmcBuildHtml(key);
+  setTmcZoom(_tmcZoomLevel);
+  var zm = document.getElementById('tmcZoomModal');
+  if(zm) zm.classList.add('on');
+}
+
+function closeTmcZoom() {
+  var zm = document.getElementById('tmcZoomModal');
+  if(zm) zm.classList.remove('on');
+}
+
+function setTmcZoom(level) {
+  _tmcZoomLevel = level;
+  document.querySelectorAll('.tmcz-zoom-btn').forEach(function(b) {
+    b.classList.toggle('active', b.textContent.trim() === level + '%');
+  });
+  var wrap = document.getElementById('tmczPageWrap');
+  if(wrap) {
+    wrap.style.transform = 'scale(' + (level / 100) + ')';
+    // Adjust container height so scrollbar reflects actual content size
+    wrap.style.marginBottom = level === 75 ? '-25%' : level === 125 ? '25%' : '0';
+  }
+}
 
 // ══════════════════════════════════════════════════════════════════════════════
 // ── SESSION SAVE / RESTORE ────────────────────────────────────────────────────

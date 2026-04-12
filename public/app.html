@@ -1232,9 +1232,99 @@
     }
     .browse-all-btn:hover { background:rgba(99,102,241,.16); color:#3730a3; border-color:rgba(99,102,241,.5); }
 
+    /* Zoom icon overlay — appears on hover over the center card */
+    .tmc-zoom-trigger {
+      position:absolute; top:10px; right:10px; z-index:4;
+      background:rgba(0,0,0,.55); color:#fff; border:none;
+      border-radius:8px; padding:5px 9px; font-size:13px; cursor:pointer;
+      opacity:0; transition:opacity .18s, background .15s;
+      backdrop-filter:blur(6px); line-height:1; font-family:inherit;
+    }
+    .tmc-slot-center:hover .tmc-zoom-trigger { opacity:1; }
+    .tmc-zoom-trigger:hover { background:rgba(99,102,241,.8); }
+
+    /* ── Zoom modal ── */
+    #tmcZoomModal {
+      display:none; position:fixed; inset:0; z-index:1500;
+      background:rgba(5,10,25,.96); overflow-y:auto;
+      overscroll-behavior:contain;
+    }
+    #tmcZoomModal.on { display:block; }
+
+    /* Sticky top bar in zoom modal */
+    .tmcz-bar {
+      position:sticky; top:0; z-index:10;
+      background:linear-gradient(135deg, rgba(14,22,50,.98) 0%, rgba(20,34,72,.98) 100%);
+      border-bottom:1px solid rgba(255,255,255,.1);
+      backdrop-filter:blur(12px);
+      display:flex; align-items:center; gap:10px;
+      padding:11px 20px; flex-wrap:wrap;
+    }
+    .tmcz-title {
+      flex:1; color:#fff; font-size:14px; font-weight:700;
+      min-width:120px; letter-spacing:.01em;
+    }
+    .tmcz-subtitle {
+      font-size:11px; color:rgba(255,255,255,.45);
+      font-weight:400; margin-left:6px;
+    }
+
+    /* Zoom level buttons */
+    .tmcz-zoom-group { display:flex; gap:4px; }
+    .tmcz-zoom-btn {
+      background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.18);
+      color:rgba(255,255,255,.7); border-radius:6px;
+      padding:5px 11px; font-size:12px; font-weight:700;
+      cursor:pointer; font-family:inherit; transition:all .15s;
+    }
+    .tmcz-zoom-btn:hover { background:rgba(255,255,255,.16); color:#fff; }
+    .tmcz-zoom-btn.active { background:#6366f1; border-color:#6366f1; color:#fff; }
+
+    /* Use button inside zoom modal */
+    .tmcz-use-btn {
+      background:linear-gradient(135deg,#5b63f0,#4f46e5);
+      color:#fff; border:none; border-radius:8px;
+      padding:7px 18px; font-size:12px; font-weight:700;
+      cursor:pointer; font-family:inherit;
+      box-shadow:0 2px 10px rgba(91,99,240,.45); transition:all .15s;
+    }
+    .tmcz-use-btn:hover { filter:brightness(1.1); transform:translateY(-1px); }
+
+    /* Close button inside zoom modal */
+    .tmcz-close {
+      background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.18);
+      color:#fff; border-radius:6px; padding:7px 12px;
+      font-size:16px; cursor:pointer; line-height:1; transition:all .15s;
+    }
+    .tmcz-close:hover { background:rgba(255,255,255,.2); }
+
+    /* Scrollable content area */
+    .tmcz-body {
+      display:flex; justify-content:center;
+      padding:24px 20px 48px;
+    }
+
+    /* The white page wrapper — shrinks/expands with zoom */
+    .tmcz-page-wrap {
+      background:#fff; border-radius:12px;
+      box-shadow:0 20px 70px rgba(0,0,0,.6);
+      overflow:hidden;
+      transform-origin:top center;
+      transition:transform .22s cubic-bezier(.4,0,.2,1), width .22s;
+      /* default 100% — set to 860px natural resume width */
+      width:860px;
+    }
+    .tmcz-page-inner {
+      padding:52px 62px;
+      font-family:Calibri,Georgia,serif;
+      font-size:10pt; line-height:1.45; color:#111;
+    }
+
     @media(max-width:700px) {
       .tmc-slot-side { display:none; }
       .tmc-slot-center { width:290px; height:400px; }
+      .tmcz-bar { gap:6px; }
+      .tmcz-zoom-group { display:none; }
     }
 
     /* ── Cover Letter Settings card ── */
@@ -2422,6 +2512,7 @@
       <!-- Center card (active) -->
       <div class="tmc-slot tmc-slot-center" id="tmcCenter">
         <div id="tmcCenterContent"></div>
+        <button class="tmc-zoom-trigger" onclick="openTmcZoom()" title="View full size">🔍 Zoom</button>
         <div class="tmc-center-foot">
           <div class="tmc-center-name" id="tmcCenterLabel">Classic</div>
           <button class="tmc-use-btn" onclick="tmcUseTemplate()">✓ Use This Template</button>
@@ -2437,6 +2528,25 @@
 
   <!-- Navigation dots -->
   <div class="tmc-dots" id="tmcDots"></div>
+</div>
+
+<!-- Zoom Modal (full-size template viewer) -->
+<div id="tmcZoomModal">
+  <div class="tmcz-bar">
+    <span class="tmcz-title" id="tmczTitle">Classic <span class="tmcz-subtitle">· Resume template</span></span>
+    <div class="tmcz-zoom-group">
+      <button class="tmcz-zoom-btn" onclick="setTmcZoom(75)">75%</button>
+      <button class="tmcz-zoom-btn active" onclick="setTmcZoom(100)">100%</button>
+      <button class="tmcz-zoom-btn" onclick="setTmcZoom(125)">125%</button>
+    </div>
+    <button class="tmcz-use-btn" onclick="tmcUseTemplate();closeTmcZoom()">✓ Use This Template</button>
+    <button class="tmcz-close" onclick="closeTmcZoom()">✕</button>
+  </div>
+  <div class="tmcz-body">
+    <div class="tmcz-page-wrap" id="tmczPageWrap">
+      <div class="tmcz-page-inner" id="tmczPageInner"></div>
+    </div>
+  </div>
 </div>
 
 <!-- Template Preview Modal (Lorem Ipsum) -->

@@ -1149,6 +1149,105 @@ app.post('/api/career', requireAuth, async (req, res) => {
   }
 });
 
+// ── Real Job Listings ───────────────────────────────────────────
+// Fetches real job postings via JSearch (RapidAPI) or Remotive fallback.
+// Pro-gated; requires RAPIDAPI_KEY env var for full results.
+app.post('/api/jobs-search', requireAuth, async (req, res) => {
+  const { query, location, workType } = req.body || {};
+  if (!query) return res.status(400).json({ error: 'query is required' });
+
+  const rapidApiKey = process.env.RAPIDAPI_KEY;
+
+  // ── JSearch (RapidAPI) — returns jobs from LinkedIn, Indeed, Google Jobs, etc.
+  if (rapidApiKey) {
+    try {
+      let searchQ = query.trim();
+      if (workType === 'remote') searchQ += ' remote';
+      else if (location)         searchQ += ' ' + location.trim();
+
+      const params = new URLSearchParams({
+        query:       searchQ,
+        page:        '1',
+        num_pages:   '1',
+        date_posted: 'month',
+      });
+      if (workType === 'remote')  params.set('remote_jobs_only', 'true');
+      if (workType === 'onsite')  params.set('employment_types', 'FULLTIME,PARTTIME,CONTRACTOR');
+
+      const jresp = await fetch(`https://jsearch.p.rapidapi.com/search?${params}`, {
+        headers: {
+          'x-rapidapi-key':  rapidApiKey,
+          'x-rapidapi-host': 'jsearch.p.rapidapi.com',
+        },
+      });
+      if (!jresp.ok) throw new Error(`JSearch HTTP ${jresp.status}`);
+      const jdata = await jresp.json();
+
+      const jobs = (jdata.data || []).slice(0, 10).map(j => ({
+        id:           j.job_id,
+        title:        j.job_title,
+        company:      j.employer_name,
+        companyLogo:  j.employer_logo || null,
+        location:     [j.job_city, j.job_state, j.job_country].filter(Boolean).join(', '),
+        isRemote:     j.job_is_remote,
+        applyUrl:     j.job_apply_link,
+        description:  (j.job_description || '').replace(/\s+/g, ' ').slice(0, 350),
+        salary:       j.job_min_salary
+                        ? `$${Math.round(j.job_min_salary / 1000)}k – $${Math.round(j.job_max_salary / 1000)}k`
+                        : null,
+        employmentType: j.job_employment_type || null,
+        posted:       j.job_posted_at_datetime_utc || null,
+        source:       'JSearch',
+      }));
+
+      return res.json({ jobs, source: 'jsearch' });
+    } catch (err) {
+      console.error('JSearch error:', err.message);
+      // fall through to Remotive
+    }
+  }
+
+  // ── Remotive (free, no-auth fallback) — remote jobs only ──────
+  try {
+    const rurl = `https://remotive.com/api/remote-jobs?search=${encodeURIComponent(query)}&limit=10`;
+    const rresp = await fetch(rurl, { signal: AbortSignal.timeout(8000) });
+    if (!rresp.ok) throw new Error(`Remotive HTTP ${rresp.status}`);
+    const rdata = await rresp.json();
+
+    // Filter by location keyword if provided (Remotive uses free-text location tags)
+    let jobs = rdata.jobs || [];
+    if (location) {
+      const locLc = location.toLowerCase();
+      const filtered = jobs.filter(j =>
+        (j.candidate_required_location || '').toLowerCase().includes(locLc) ||
+        (j.candidate_required_location || '').toLowerCase() === 'worldwide' ||
+        (j.candidate_required_location || '') === ''
+      );
+      if (filtered.length >= 3) jobs = filtered;
+    }
+
+    const mapped = jobs.slice(0, 10).map(j => ({
+      id:          String(j.id),
+      title:       j.title,
+      company:     j.company_name,
+      companyLogo: j.company_logo || null,
+      location:    j.candidate_required_location || 'Remote',
+      isRemote:    true,
+      applyUrl:    j.url,
+      description: (j.description || '').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').slice(0, 350),
+      salary:      j.salary || null,
+      tags:        (j.tags || []).slice(0, 4),
+      posted:      j.publication_date || null,
+      source:      'Remotive',
+    }));
+
+    return res.json({ jobs: mapped, source: 'remotive' });
+  } catch (err) {
+    console.error('Remotive error:', err.message);
+    return res.status(503).json({ error: 'Job search service unavailable. Please try again.' });
+  }
+});
+
 // ── SPA fallback ───────────────────────────────────────────────
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));

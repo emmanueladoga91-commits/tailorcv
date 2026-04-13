@@ -3917,49 +3917,77 @@ async function runJobMatch() {
     }
   }
 
+  // ── Location + work type preferences ─────────────────────
+  var locPref = (document.getElementById('jmLocInput') || {}).value || '';
+  locPref = locPref.trim();
+  var wtLabel = { any: 'any work type', remote: 'Remote only', hybrid: 'Hybrid', onsite: 'On-site only' }[_jmWorkType] || 'any work type';
+
   // ── Show loading ──────────────────────────────────────────
   runBtn.disabled = true;
   runBtn.innerHTML = '<span style="display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:jmSpin .7s linear infinite"></span> Analysing…';
-  body.innerHTML = '<div class="jm-loading"><div class="jm-spinner"></div><span>Claude is analysing your profile and finding the best-fit roles…</span></div>';
+  body.innerHTML = '<div class="jm-loading"><div class="jm-spinner"></div><span>Analysing your profile…</span></div>';
 
-  // ── Location + work type preferences ─────────────────────
-  var locPref  = (document.getElementById('jmLocInput') || {}).value || '';
-  locPref = locPref.trim();
-  var wtLabel  = { any: 'any work type', remote: 'Remote only', hybrid: 'Hybrid', onsite: 'On-site only' }[_jmWorkType] || 'any work type';
-
+  // ── Step 1: Claude extracts best-fit job title keywords ───
   var locInstruction = '';
-  if (locPref) locInstruction += ' The candidate prefers roles in or near: ' + locPref + '.';
-  if (_jmWorkType !== 'any') locInstruction += ' Work arrangement preference: ' + wtLabel + '. Prioritise and clearly note ' + wtLabel.toLowerCase() + ' roles.';
-  if (!locPref && _jmWorkType === 'any') locInstruction = ' Infer the most likely location from the resume and set "inferred_location" accordingly.';
+  if (locPref) locInstruction += ' Location preference: ' + locPref + '.';
+  if (_jmWorkType !== 'any') locInstruction += ' Work type: ' + wtLabel + '.';
 
-  // ── Claude prompt ─────────────────────────────────────────
-  var systemPrompt = 'You are an expert career coach and job market analyst. Analyse the provided resume and return ONLY a valid JSON object — no markdown, no explanation. The JSON must follow this exact structure:\n{\n  "roles": [\n    {\n      "title": "Senior Product Manager",\n      "seniority": "Senior",\n      "industry": "SaaS / Technology",\n      "match_score": 91,\n      "salary_range": "$140k – $175k",\n      "why_match": "One sentence explaining why this role fits the candidate\'s background.",\n      "key_skills": ["Skill1","Skill2","Skill3","Skill4"],\n      "search_query": "Senior Product Manager SaaS",\n      "work_type": "Remote"\n    }\n  ],\n  "top_keywords": ["keyword1","keyword2","keyword3","keyword4","keyword5"],\n  "inferred_location": "New York, NY"\n}\nReturn exactly 10 diverse but highly relevant roles, ranked by match score descending. Match score is 0-100. Be specific and realistic about salary ranges for the candidate\'s level and location.' + locInstruction;
+  var systemPrompt = 'You are a career coach. Analyse the resume and return ONLY a valid JSON object — no markdown, no explanation. Format:\n{\n  "searches": [\n    { "query": "Business Analyst ERP", "title": "Business Analyst", "why": "One sentence why this fits.", "skills": ["Skill1","Skill2","Skill3"] }\n  ],\n  "top_keywords": ["kw1","kw2","kw3","kw4","kw5"]\n}\nReturn 5 diverse, highly relevant search queries ranked by fit. Queries should be concise (2-4 words) for job board searches.' + locInstruction;
 
-  var userMsg = 'Here is the candidate\'s resume:\n\n' + resumeText.slice(0, 4000) + '\n\nAnalyse this profile and return the JSON job match results.'
-    + (locPref ? '\n\nLocation preference: ' + locPref : '')
-    + (_jmWorkType !== 'any' ? '\nWork type preference: ' + wtLabel : '');
+  var userMsg = 'Resume:\n\n' + resumeText.slice(0, 4000)
+    + (locPref ? '\n\nLocation: ' + locPref : '')
+    + (_jmWorkType !== 'any' ? '\nWork type: ' + wtLabel : '');
 
   try {
-    var res = await fetch('/api/claude', {
+    // ── Call Claude for search queries ────────────────────────
+    var claudeRes = await fetch('/api/claude', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + tok },
-      body: JSON.stringify({ type: 'jobs', system: systemPrompt, userMsg: userMsg, maxTokens: 2800 })
+      body: JSON.stringify({ type: 'jobs', system: systemPrompt, userMsg: userMsg, maxTokens: 800 })
     });
 
-    if (res.status === 402) {
+    if (claudeRes.status === 402) {
       body.innerHTML = '<div class="jm-error" style="text-align:center;padding:32px 20px"><div style="font-size:2rem;margin-bottom:12px">🔒</div><div style="font-size:.95rem;font-weight:700;color:#fff;margin-bottom:8px">Pro Feature</div><p style="color:rgba(255,255,255,.5);font-size:.85rem;line-height:1.6">Job Match Engine is available on TailorCV Pro.</p><a href="/app.html#upgrade" style="display:inline-block;margin-top:16px;background:linear-gradient(135deg,#7c3aed,#5b63f0);color:#fff;padding:10px 24px;border-radius:99px;font-weight:700;font-size:.85rem;text-decoration:none">Upgrade to Pro →</a></div>';
       return;
     }
-    if (!res.ok) throw new Error('Server error ' + res.status);
+    if (!claudeRes.ok) throw new Error('Analysis error ' + claudeRes.status);
 
-    var data = await res.json();
-    var raw  = (data.text || '').trim();
-
-    // Strip any markdown code fences if Claude wrapped it
-    raw = raw.replace(/^```json\s*/i,'').replace(/^```\s*/,'').replace(/```\s*$/,'').trim();
-
+    var claudeData = await claudeRes.json();
+    var raw = (claudeData.text || '').trim()
+      .replace(/^```json\s*/i,'').replace(/^```\s*/,'').replace(/```\s*$/,'').trim();
     var parsed = JSON.parse(raw);
-    renderJobMatchResults(parsed);
+    var searches = parsed.searches || [];
+    var topKeywords = parsed.top_keywords || [];
+
+    if (!searches.length) throw new Error('No search queries returned');
+
+    // ── Step 2: Fetch real listings for top 5 search queries ──
+    body.innerHTML = '<div class="jm-loading"><div class="jm-spinner"></div><span>Fetching real job listings…</span></div>';
+
+    var allJobs = [];
+    var seenIds = {};
+
+    await Promise.all(searches.slice(0, 5).map(async function(s) {
+      try {
+        var r = await fetch('/api/jobs-search', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + tok },
+          body: JSON.stringify({ query: s.query, location: locPref, workType: _jmWorkType })
+        });
+        if (!r.ok) return;
+        var d = await r.json();
+        (d.jobs || []).forEach(function(job) {
+          var dedupKey = (job.company + '|' + job.title).toLowerCase();
+          if (!seenIds[dedupKey]) {
+            seenIds[dedupKey] = true;
+            job._searchMeta = s; // attach why/skills from Claude
+            allJobs.push(job);
+          }
+        });
+      } catch(e) { /* skip failed search */ }
+    }));
+
+    renderRealJobs(allJobs, topKeywords, locPref, searches);
 
   } catch (err) {
     console.error('Job match error:', err);
@@ -3970,91 +3998,112 @@ async function runJobMatch() {
   }
 }
 
-function renderJobMatchResults(data) {
-  var body     = document.getElementById('jmBody');
-  var roles    = data.roles || [];
-  var keywords = data.top_keywords || [];
-  // Use user-typed location if available, otherwise fall back to AI-inferred
-  var userLoc  = ((document.getElementById('jmLocInput') || {}).value || '').trim();
-  var location = userLoc || data.inferred_location || '';
+// Helper: encode with + for spaces
+function jmEnc(s) { return encodeURIComponent(String(s || '')).replace(/%20/g, '+'); }
 
-  if (!roles.length) {
-    body.innerHTML = '<div class="jm-empty"><div class="jm-empty-icon">😕</div><p>No roles found. Try adding more detail to your vault or resume.</p></div>';
+function renderRealJobs(jobs, keywords, locPref, searches) {
+  var body = document.getElementById('jmBody');
+
+  if (!jobs.length) {
+    // No real listings — fall back to showing search links for each identified role
+    var fbHtml = '<div style="font-size:.8rem;color:rgba(255,255,255,.4);margin-bottom:16px;text-align:center">No live listings found for your region — search directly on job boards:</div>';
+    fbHtml += '<div class="jm-cards">';
+    (searches || []).forEach(function(s) {
+      var q = jmEnc(s.query);
+      var locStr = locPref || '';
+      var liWt = { remote:'&f_WT=2', hybrid:'&f_WT=3', onsite:'&f_WT=1' }[_jmWorkType] || '';
+      var indLoc = _jmWorkType === 'remote' ? 'remote' : locStr;
+      var liUrl  = 'https://www.linkedin.com/jobs/search/?keywords=' + q + (locStr ? '&location=' + jmEnc(locStr) : '') + liWt;
+      var indUrl = 'https://www.indeed.com/jobs?q=' + q + (indLoc ? '&l=' + jmEnc(indLoc) : '') + (_jmWorkType === 'remote' ? '&remotejob=1' : '');
+      var gdUrl  = 'https://www.glassdoor.com/Job/jobs.htm?sc.keyword=' + jmEnc(locStr ? s.query + ' ' + locStr : s.query);
+      var hcUrl  = 'https://hiring.cafe/?searchState=' + encodeURIComponent(JSON.stringify({ searchQuery: locStr ? s.query + ' ' + locStr : s.query }));
+      fbHtml += '<div class="jm-card">';
+      fbHtml += '<div class="jm-card-title" style="margin-bottom:6px">' + escJm(s.title || s.query) + '</div>';
+      if (s.why) fbHtml += '<div class="jm-why">' + escJm(s.why) + '</div>';
+      if ((s.skills||[]).length) {
+        fbHtml += '<div class="jm-skills">';
+        s.skills.forEach(function(sk){ fbHtml += '<span class="jm-skill-chip">' + escJm(sk) + '</span>'; });
+        fbHtml += '</div>';
+      }
+      fbHtml += '<div class="jm-actions">';
+      fbHtml += '<button class="jm-action-btn primary" onclick="jmUseRole(\'' + escJmAttr(s.title||s.query) + '\',\'' + escJmAttr(s.query) + '\')">🎯 Tailor resume</button>';
+      fbHtml += '<a class="jm-action-btn" href="' + liUrl + '" target="_blank" rel="noopener">🔗 LinkedIn</a>';
+      fbHtml += '<a class="jm-action-btn" href="' + indUrl + '" target="_blank" rel="noopener">🔍 Indeed</a>';
+      fbHtml += '<a class="jm-action-btn" href="' + gdUrl + '" target="_blank" rel="noopener">📊 Glassdoor</a>';
+      fbHtml += '<a class="jm-action-btn" href="' + hcUrl + '" target="_blank" rel="noopener">☕ Hiring.cafe</a>';
+      fbHtml += '</div></div>';
+    });
+    fbHtml += '</div>';
+    body.innerHTML = fbHtml;
     return;
   }
 
-  // Helper: encode a string using + for spaces (application/x-www-form-urlencoded style)
-  function jmEnc(s) { return encodeURIComponent(String(s || '')).replace(/%20/g, '+'); }
-
-  // LinkedIn work-type filter params (f_WT: 2=remote, 3=hybrid, 1=on-site)
-  var liWtParam = { remote: '&f_WT=2', hybrid: '&f_WT=3', onsite: '&f_WT=1' }[_jmWorkType] || '';
-
+  // ── Meta header ──────────────────────────────────────────────
   var wtLabels = { any: '', remote: '🌐 Remote', hybrid: '🏠 Hybrid', onsite: '🏢 On-site' };
-  var metaLine = [location ? '📍 ' + location : '', wtLabels[_jmWorkType] || ''].filter(Boolean).join('  ·  ');
-  var html = metaLine
-    ? '<div style="font-size:.75rem;color:rgba(255,255,255,.35);margin-bottom:14px;font-weight:600">' + escJm(metaLine) + '</div>'
-    : '';
+  var metaLine = [locPref ? '📍 ' + locPref : '', wtLabels[_jmWorkType] || ''].filter(Boolean).join('  ·  ');
+  var html = '';
+  if (metaLine) html += '<div style="font-size:.75rem;color:rgba(255,255,255,.35);margin-bottom:14px;font-weight:600">' + escJm(metaLine) + ' · ' + jobs.length + ' live listings</div>';
+
   html += '<div class="jm-cards">';
-  roles.forEach(function(role) {
-    var query   = role.search_query || role.title;
-    var q       = jmEnc(query);
-    var locStr  = location || '';
+  jobs.forEach(function(job) {
+    var locStr = locPref || '';
+    var q = jmEnc(job.title);
+    var liWt = { remote:'&f_WT=2', hybrid:'&f_WT=3', onsite:'&f_WT=1' }[_jmWorkType] || '';
+    var indLoc = _jmWorkType === 'remote' ? 'remote' : locStr;
+    var liUrl  = 'https://www.linkedin.com/jobs/search/?keywords=' + q + (locStr ? '&location=' + jmEnc(locStr) : '') + liWt;
+    var indUrl = 'https://www.indeed.com/jobs?q=' + q + (indLoc ? '&l=' + jmEnc(indLoc) : '') + (_jmWorkType === 'remote' ? '&remotejob=1' : '');
+    var gdUrl  = 'https://www.glassdoor.com/Job/jobs.htm?sc.keyword=' + jmEnc(locStr ? job.title + ' ' + locStr : job.title);
+    var hcUrl  = 'https://hiring.cafe/?searchState=' + encodeURIComponent(JSON.stringify({ searchQuery: locStr ? job.title + ' ' + locStr : job.title }));
 
-    // ── LinkedIn ──────────────────────────────────────────────────
-    // keywords + location as plain text + work-type filter
-    var liUrl = 'https://www.linkedin.com/jobs/search/?keywords=' + q
-      + (locStr ? '&location=' + jmEnc(locStr) : '')
-      + liWtParam;
-
-    // ── Indeed ────────────────────────────────────────────────────
-    // q = job title, l = location (use "remote" when work type is remote)
-    var indLoc = (_jmWorkType === 'remote') ? 'remote' : locStr;
-    var indUrl = 'https://www.indeed.com/jobs?q=' + q
-      + (indLoc ? '&l=' + jmEnc(indLoc) : '')
-      + (_jmWorkType === 'remote' ? '&remotejob=1' : '');
-
-    // ── Glassdoor ─────────────────────────────────────────────────
-    // Glassdoor needs numeric location IDs for proper filtering,
-    // so we embed location in the keyword string as a reliable fallback.
-    var gdKeyword = locStr ? query + ' ' + locStr : query;
-    var gdUrl = 'https://www.glassdoor.com/Job/jobs.htm?sc.keyword=' + jmEnc(gdKeyword);
-
-    // ── Hiring.cafe ───────────────────────────────────────────────
-    // Uses searchState JSON param; embed location in searchQuery for filtering.
-    var hcQuery = locStr ? query + ' ' + locStr : query;
-    var hcUrl = 'https://hiring.cafe/?searchState=' + encodeURIComponent(JSON.stringify({ searchQuery: hcQuery }));
-
-    var scoreColor = role.match_score >= 85 ? '#86efac' : role.match_score >= 70 ? '#fcd34d' : '#fca5a5';
-    var skills = (role.key_skills || []).slice(0, 5);
+    // Posted date
+    var postedStr = '';
+    if (job.posted) {
+      var daysAgo = Math.round((Date.now() - new Date(job.posted).getTime()) / 86400000);
+      postedStr = daysAgo <= 0 ? 'Today' : daysAgo === 1 ? '1 day ago' : daysAgo + ' days ago';
+    }
 
     html += '<div class="jm-card">';
     html += '<div class="jm-card-top">';
     html += '<div class="jm-card-left">';
-    html += '<div class="jm-card-title">' + escJm(role.title) + '</div>';
-    html += '<div class="jm-card-meta">';
-    if (role.seniority) html += '<span class="jm-tag">' + escJm(role.seniority) + '</span>';
-    if (role.industry)  html += '<span class="jm-tag">' + escJm(role.industry)  + '</span>';
-    if (role.work_type) {
-      var wtIcon = { Remote:'🌐', Hybrid:'🏠', 'On-site':'🏢', Onsite:'🏢' }[role.work_type] || '📍';
-      html += '<span class="jm-tag" style="background:rgba(16,185,129,.12);color:#6ee7b7;border-color:rgba(16,185,129,.3)">' + wtIcon + ' ' + escJm(role.work_type) + '</span>';
-    }
-    if (role.salary_range) html += '<span class="jm-tag salary">💰 ' + escJm(role.salary_range) + '</span>';
-    html += '<span class="jm-tag match">✓ ' + (role.match_score || '–') + '% match</span>';
-    html += '</div></div>';
-    html += '<div class="jm-score" style="background:' + scoreColor + '1a;border:2px solid ' + scoreColor + '55">';
-    html += '<span class="jm-score-num" style="color:' + scoreColor + '">' + (role.match_score || '–') + '</span>';
-    html += '<span style="font-size:.6rem;color:rgba(255,255,255,.35)">match</span>';
-    html += '</div>';
-    html += '</div>';
 
-    if (role.why_match) html += '<div class="jm-why">' + escJm(role.why_match) + '</div>';
-    if (skills.length) {
+    // Company logo
+    if (job.companyLogo) {
+      html += '<img src="' + escJm(job.companyLogo) + '" alt="" style="height:28px;width:auto;max-width:90px;object-fit:contain;border-radius:4px;margin-bottom:6px;filter:brightness(1.1)" onerror="this.style.display=\'none\'">';
+    }
+
+    html += '<div class="jm-card-title">' + escJm(job.title) + '</div>';
+    html += '<div style="font-size:.82rem;color:rgba(255,255,255,.6);font-weight:600;margin-bottom:6px">' + escJm(job.company) + '</div>';
+    html += '<div class="jm-card-meta">';
+    if (job.location) html += '<span class="jm-tag">📍 ' + escJm(job.location) + '</span>';
+    if (job.isRemote) html += '<span class="jm-tag" style="background:rgba(16,185,129,.12);color:#6ee7b7;border-color:rgba(16,185,129,.3)">🌐 Remote</span>';
+    if (job.employmentType) html += '<span class="jm-tag">' + escJm(job.employmentType.replace(/_/g,' ')) + '</span>';
+    if (job.salary) html += '<span class="jm-tag salary">💰 ' + escJm(job.salary) + '</span>';
+    if (postedStr) html += '<span class="jm-tag" style="background:rgba(255,255,255,.05);color:rgba(255,255,255,.35)">🕒 ' + postedStr + '</span>';
+    html += '</div></div>';
+    html += '</div>'; // .jm-card-top
+
+    // Description snippet
+    if (job.description) {
+      html += '<div class="jm-why">' + escJm(job.description.slice(0, 280)) + (job.description.length > 280 ? '…' : '') + '</div>';
+    }
+
+    // Why match (from Claude's search meta)
+    if (job._searchMeta && job._searchMeta.why) {
+      html += '<div style="font-size:.76rem;color:#a5b4fc;margin-bottom:10px;font-style:italic">🤖 ' + escJm(job._searchMeta.why) + '</div>';
+    }
+
+    // Skills from Claude
+    if (job._searchMeta && (job._searchMeta.skills||[]).length) {
       html += '<div class="jm-skills">';
-      skills.forEach(function(s){ html += '<span class="jm-skill-chip">' + escJm(s) + '</span>'; });
+      job._searchMeta.skills.forEach(function(sk){ html += '<span class="jm-skill-chip">' + escJm(sk) + '</span>'; });
       html += '</div>';
     }
+
     html += '<div class="jm-actions">';
-    html += '<button class="jm-action-btn primary" onclick="jmUseRole(\'' + escJmAttr(role.title) + '\',\'' + escJmAttr(role.search_query || role.title) + '\')">🎯 Tailor resume for this role</button>';
+    if (job.applyUrl) {
+      html += '<a class="jm-action-btn primary" href="' + escJm(job.applyUrl) + '" target="_blank" rel="noopener">🚀 Apply Now</a>';
+    }
+    html += '<button class="jm-action-btn" onclick="jmUseRole(\'' + escJmAttr(job.title) + '\',\'' + escJmAttr(job.title) + '\')">🎯 Tailor resume</button>';
     html += '<a class="jm-action-btn" href="' + liUrl + '" target="_blank" rel="noopener">🔗 LinkedIn</a>';
     html += '<a class="jm-action-btn" href="' + indUrl + '" target="_blank" rel="noopener">🔍 Indeed</a>';
     html += '<a class="jm-action-btn" href="' + gdUrl + '" target="_blank" rel="noopener">📊 Glassdoor</a>';
@@ -4064,6 +4113,7 @@ function renderJobMatchResults(data) {
   });
   html += '</div>'; // .jm-cards
 
+  // Top keywords
   if (keywords.length) {
     html += '<div class="jm-kw-section">';
     html += '<div class="jm-kw-title">Top keywords to add to your resume</div>';

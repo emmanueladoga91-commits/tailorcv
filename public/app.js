@@ -3860,8 +3860,9 @@ async function importResumeToVault(file) {
 // ═══════════════════════════════════════════════════════════════
 //  JOB MATCH ENGINE
 // ═══════════════════════════════════════════════════════════════
-var _jmSource   = 'vault'; // 'vault' | 'resume'
-var _jmWorkType = 'any';  // 'any' | 'remote' | 'hybrid' | 'onsite'
+var _jmSource      = 'vault'; // 'vault' | 'resume'
+var _jmWorkType    = 'any';   // 'any' | 'remote' | 'hybrid' | 'onsite'
+var _jmSearchState = null;    // { searches, locPref, workType, page, allJobs, seenIds, hasMore }
 
 function openJobMatch() {
   document.getElementById('jmOverlay').classList.add('on');
@@ -3962,7 +3963,7 @@ async function runJobMatch() {
     if (!searches.length) throw new Error('No search queries returned');
 
     // ── Step 2: Fetch real listings for top 5 search queries ──
-    body.innerHTML = '<div class="jm-loading"><div class="jm-spinner"></div><span>Fetching real job listings…</span></div>';
+    body.innerHTML = '<div class="jm-loading"><div class="jm-spinner"></div><span>Fetching live job listings from Google Jobs…</span></div>';
 
     var allJobs = [];
     var seenIds = {};
@@ -3972,7 +3973,7 @@ async function runJobMatch() {
         var r = await fetch('/api/jobs-search', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + tok },
-          body: JSON.stringify({ query: s.query, location: locPref, workType: _jmWorkType })
+          body: JSON.stringify({ query: s.query, location: locPref, workType: _jmWorkType, start: 0 })
         });
         if (!r.ok) return;
         var d = await r.json();
@@ -3980,14 +3981,17 @@ async function runJobMatch() {
           var dedupKey = (job.company + '|' + job.title).toLowerCase();
           if (!seenIds[dedupKey]) {
             seenIds[dedupKey] = true;
-            job._searchMeta = s; // attach why/skills from Claude
+            job._searchMeta = s;
             allJobs.push(job);
           }
         });
       } catch(e) { /* skip failed search */ }
     }));
 
-    renderRealJobs(allJobs, topKeywords, locPref, searches);
+    // Store state for load-more
+    _jmSearchState = { searches: searches, locPref: locPref, workType: _jmWorkType, page: 1, allJobs: allJobs, seenIds: seenIds, topKeywords: topKeywords };
+
+    renderRealJobs(allJobs, topKeywords, locPref, searches, true);
 
   } catch (err) {
     console.error('Job match error:', err);
@@ -4001,7 +4005,58 @@ async function runJobMatch() {
 // Helper: encode with + for spaces
 function jmEnc(s) { return encodeURIComponent(String(s || '')).replace(/%20/g, '+'); }
 
-function renderRealJobs(jobs, keywords, locPref, searches) {
+async function loadMoreJobs() {
+  if (!_jmSearchState) return;
+  var btn = document.getElementById('jmLoadMoreBtn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Loading…'; }
+
+  var tok = getToken();
+  var st  = _jmSearchState;
+  var nextStart = st.page * 10;
+  var newJobs = [];
+
+  await Promise.all(st.searches.slice(0, 5).map(async function(s) {
+    try {
+      var r = await fetch('/api/jobs-search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + tok },
+        body: JSON.stringify({ query: s.query, location: st.locPref, workType: st.workType, start: nextStart })
+      });
+      if (!r.ok) return;
+      var d = await r.json();
+      (d.jobs || []).forEach(function(job) {
+        var dedupKey = (job.company + '|' + job.title).toLowerCase();
+        if (!st.seenIds[dedupKey]) {
+          st.seenIds[dedupKey] = true;
+          job._searchMeta = s;
+          st.allJobs.push(job);
+          newJobs.push(job);
+        }
+      });
+    } catch(e) {}
+  }));
+
+  st.page++;
+  _jmSearchState = st;
+
+  if (newJobs.length) {
+    appendRealJobs(newJobs);
+    if (btn) { btn.disabled = false; btn.textContent = 'Load More Jobs'; }
+  } else {
+    if (btn) { btn.parentNode.removeChild(btn); }
+  }
+}
+
+function appendRealJobs(jobs) {
+  var container = document.getElementById('jmCardsContainer');
+  if (!container) return;
+  container.insertAdjacentHTML('beforeend', buildJobCards(jobs));
+  // Update result count
+  var countEl = document.getElementById('jmResultCount');
+  if (countEl && _jmSearchState) countEl.textContent = _jmSearchState.allJobs.length;
+}
+
+function renderRealJobs(jobs, keywords, locPref, searches, showLoadMore) {
   var body = document.getElementById('jmBody');
 
   if (!jobs.length) {
@@ -4041,77 +4096,19 @@ function renderRealJobs(jobs, keywords, locPref, searches) {
   // ── Meta header ──────────────────────────────────────────────
   var wtLabels = { any: '', remote: '🌐 Remote', hybrid: '🏠 Hybrid', onsite: '🏢 On-site' };
   var metaLine = [locPref ? '📍 ' + locPref : '', wtLabels[_jmWorkType] || ''].filter(Boolean).join('  ·  ');
-  var html = '';
-  if (metaLine) html += '<div style="font-size:.75rem;color:rgba(255,255,255,.35);margin-bottom:14px;font-weight:600">' + escJm(metaLine) + ' · ' + jobs.length + ' live listings</div>';
+  var html = '<div id="jmMetaBar" style="font-size:.75rem;color:rgba(255,255,255,.35);margin-bottom:14px;font-weight:600">';
+  html += escJm(metaLine || 'All locations') + ' · <span id="jmResultCount">' + jobs.length + '</span> live listings · via Google Jobs</div>';
 
-  html += '<div class="jm-cards">';
-  jobs.forEach(function(job) {
-    var locStr = locPref || '';
-    var q = jmEnc(job.title);
-    var liWt = { remote:'&f_WT=2', hybrid:'&f_WT=3', onsite:'&f_WT=1' }[_jmWorkType] || '';
-    var indLoc = _jmWorkType === 'remote' ? 'remote' : locStr;
-    var liUrl  = 'https://www.linkedin.com/jobs/search/?keywords=' + q + (locStr ? '&location=' + jmEnc(locStr) : '') + liWt;
-    var indUrl = 'https://www.indeed.com/jobs?q=' + q + (indLoc ? '&l=' + jmEnc(indLoc) : '') + (_jmWorkType === 'remote' ? '&remotejob=1' : '');
-    var gdUrl  = 'https://www.glassdoor.com/Job/jobs.htm?sc.keyword=' + jmEnc(locStr ? job.title + ' ' + locStr : job.title);
-    var hcUrl  = 'https://hiring.cafe/?searchState=' + encodeURIComponent(JSON.stringify({ searchQuery: locStr ? job.title + ' ' + locStr : job.title }));
+  html += '<div class="jm-cards" id="jmCardsContainer">';
+  html += buildJobCards(jobs, locPref);
+  html += '</div>';
 
-    // Posted date
-    var postedStr = '';
-    if (job.posted) {
-      var daysAgo = Math.round((Date.now() - new Date(job.posted).getTime()) / 86400000);
-      postedStr = daysAgo <= 0 ? 'Today' : daysAgo === 1 ? '1 day ago' : daysAgo + ' days ago';
-    }
-
-    html += '<div class="jm-card">';
-    html += '<div class="jm-card-top">';
-    html += '<div class="jm-card-left">';
-
-    // Company logo
-    if (job.companyLogo) {
-      html += '<img src="' + escJm(job.companyLogo) + '" alt="" style="height:28px;width:auto;max-width:90px;object-fit:contain;border-radius:4px;margin-bottom:6px;filter:brightness(1.1)" onerror="this.style.display=\'none\'">';
-    }
-
-    html += '<div class="jm-card-title">' + escJm(job.title) + '</div>';
-    html += '<div style="font-size:.82rem;color:rgba(255,255,255,.6);font-weight:600;margin-bottom:6px">' + escJm(job.company) + '</div>';
-    html += '<div class="jm-card-meta">';
-    if (job.location) html += '<span class="jm-tag">📍 ' + escJm(job.location) + '</span>';
-    if (job.isRemote) html += '<span class="jm-tag" style="background:rgba(16,185,129,.12);color:#6ee7b7;border-color:rgba(16,185,129,.3)">🌐 Remote</span>';
-    if (job.employmentType) html += '<span class="jm-tag">' + escJm(job.employmentType.replace(/_/g,' ')) + '</span>';
-    if (job.salary) html += '<span class="jm-tag salary">💰 ' + escJm(job.salary) + '</span>';
-    if (postedStr) html += '<span class="jm-tag" style="background:rgba(255,255,255,.05);color:rgba(255,255,255,.35)">🕒 ' + postedStr + '</span>';
-    html += '</div></div>';
-    html += '</div>'; // .jm-card-top
-
-    // Description snippet
-    if (job.description) {
-      html += '<div class="jm-why">' + escJm(job.description.slice(0, 280)) + (job.description.length > 280 ? '…' : '') + '</div>';
-    }
-
-    // Why match (from Claude's search meta)
-    if (job._searchMeta && job._searchMeta.why) {
-      html += '<div style="font-size:.76rem;color:#a5b4fc;margin-bottom:10px;font-style:italic">🤖 ' + escJm(job._searchMeta.why) + '</div>';
-    }
-
-    // Skills from Claude
-    if (job._searchMeta && (job._searchMeta.skills||[]).length) {
-      html += '<div class="jm-skills">';
-      job._searchMeta.skills.forEach(function(sk){ html += '<span class="jm-skill-chip">' + escJm(sk) + '</span>'; });
-      html += '</div>';
-    }
-
-    html += '<div class="jm-actions">';
-    if (job.applyUrl) {
-      html += '<a class="jm-action-btn primary" href="' + escJm(job.applyUrl) + '" target="_blank" rel="noopener">🚀 Apply Now</a>';
-    }
-    html += '<button class="jm-action-btn" onclick="jmUseRole(\'' + escJmAttr(job.title) + '\',\'' + escJmAttr(job.title) + '\')">🎯 Tailor resume</button>';
-    html += '<a class="jm-action-btn" href="' + liUrl + '" target="_blank" rel="noopener">🔗 LinkedIn</a>';
-    html += '<a class="jm-action-btn" href="' + indUrl + '" target="_blank" rel="noopener">🔍 Indeed</a>';
-    html += '<a class="jm-action-btn" href="' + gdUrl + '" target="_blank" rel="noopener">📊 Glassdoor</a>';
-    html += '<a class="jm-action-btn" href="' + hcUrl + '" target="_blank" rel="noopener">☕ Hiring.cafe</a>';
+  // Load More button
+  if (showLoadMore) {
+    html += '<div style="text-align:center;margin-top:18px">';
+    html += '<button id="jmLoadMoreBtn" class="jm-run-btn" style="margin:0 auto" onclick="loadMoreJobs()">Load More Jobs</button>';
     html += '</div>';
-    html += '</div>'; // .jm-card
-  });
-  html += '</div>'; // .jm-cards
+  }
 
   // Top keywords
   if (keywords.length) {
@@ -4123,6 +4120,84 @@ function renderRealJobs(jobs, keywords, locPref, searches) {
   }
 
   body.innerHTML = html;
+}
+
+function buildJobCards(jobs, locPref) {
+  var locStr = locPref || (_jmSearchState ? _jmSearchState.locPref : '') || '';
+  var wt = _jmWorkType || (_jmSearchState ? _jmSearchState.workType : 'any') || 'any';
+  var liWt   = { remote:'&f_WT=2', hybrid:'&f_WT=3', onsite:'&f_WT=1' }[wt] || '';
+  var indLoc = wt === 'remote' ? 'remote' : locStr;
+  var html = '';
+
+  jobs.forEach(function(job) {
+    var q      = jmEnc(job.title);
+    var liUrl  = 'https://www.linkedin.com/jobs/search/?keywords=' + q + (locStr ? '&location=' + jmEnc(locStr) : '') + liWt;
+    var indUrl = 'https://www.indeed.com/jobs?q=' + q + (indLoc ? '&l=' + jmEnc(indLoc) : '') + (wt === 'remote' ? '&remotejob=1' : '');
+    var gdUrl  = 'https://www.glassdoor.com/Job/jobs.htm?sc.keyword=' + jmEnc(locStr ? job.title + ' ' + locStr : job.title);
+    var hcUrl  = 'https://hiring.cafe/?searchState=' + encodeURIComponent(JSON.stringify({ searchQuery: locStr ? job.title + ' ' + locStr : job.title }));
+
+    // Posted date display
+    var postedStr = job.posted || '';
+    if (postedStr && /^\d{4}/.test(postedStr)) {
+      var daysAgo = Math.round((Date.now() - new Date(postedStr).getTime()) / 86400000);
+      postedStr = daysAgo <= 0 ? 'Today' : daysAgo === 1 ? '1 day ago' : daysAgo + ' days ago';
+    }
+
+    // Source badge colour
+    var srcColor = job.source === 'Google Jobs' ? '#60a5fa' : 'rgba(255,255,255,.3)';
+
+    html += '<div class="jm-card">';
+    html += '<div class="jm-card-top">';
+    html += '<div class="jm-card-left">';
+
+    if (job.companyLogo) {
+      html += '<img src="' + escJm(job.companyLogo) + '" alt="" style="height:26px;width:auto;max-width:80px;object-fit:contain;border-radius:3px;margin-bottom:6px" onerror="this.style.display=\'none\'">';
+    }
+
+    html += '<div class="jm-card-title">' + escJm(job.title) + '</div>';
+    html += '<div style="font-size:.82rem;color:rgba(255,255,255,.65);font-weight:600;margin-bottom:6px">' + escJm(job.company);
+    if (job.via) html += ' <span style="font-weight:400;color:rgba(255,255,255,.3);font-size:.75rem">via ' + escJm(job.via) + '</span>';
+    html += '</div>';
+    html += '<div class="jm-card-meta">';
+    if (job.location) html += '<span class="jm-tag">📍 ' + escJm(job.location) + '</span>';
+    if (job.isRemote) html += '<span class="jm-tag" style="background:rgba(16,185,129,.12);color:#6ee7b7;border-color:rgba(16,185,129,.3)">🌐 Remote</span>';
+    if (job.employmentType) html += '<span class="jm-tag">' + escJm(job.employmentType.replace(/_/g,' ')) + '</span>';
+    if (job.salary) html += '<span class="jm-tag salary">💰 ' + escJm(job.salary) + '</span>';
+    if (postedStr) html += '<span class="jm-tag" style="background:rgba(255,255,255,.04);color:rgba(255,255,255,.3)">🕒 ' + escJm(postedStr) + '</span>';
+    html += '<span class="jm-tag" style="color:' + srcColor + ';background:rgba(96,165,250,.08);border-color:rgba(96,165,250,.2)">' + escJm(job.source || '') + '</span>';
+    html += '</div></div>';
+    html += '</div>'; // .jm-card-top
+
+    if (job.description) {
+      html += '<div class="jm-why">' + escJm(job.description.slice(0, 300)) + (job.description.length > 300 ? '…' : '') + '</div>';
+    }
+    if (job._searchMeta && job._searchMeta.why) {
+      html += '<div style="font-size:.75rem;color:#a5b4fc;margin-bottom:10px;font-style:italic">🤖 ' + escJm(job._searchMeta.why) + '</div>';
+    }
+    if (job._searchMeta && (job._searchMeta.skills||[]).length) {
+      html += '<div class="jm-skills">';
+      job._searchMeta.skills.forEach(function(sk){ html += '<span class="jm-skill-chip">' + escJm(sk) + '</span>'; });
+      html += '</div>';
+    }
+
+    // Apply options (Google Jobs may return multiple apply sources)
+    html += '<div class="jm-actions">';
+    if (job.applyOptions && job.applyOptions.length > 1) {
+      job.applyOptions.slice(0, 3).forEach(function(opt) {
+        html += '<a class="jm-action-btn primary" href="' + escJm(opt.link) + '" target="_blank" rel="noopener">🚀 Apply on ' + escJm(opt.title) + '</a>';
+      });
+    } else if (job.applyUrl) {
+      html += '<a class="jm-action-btn primary" href="' + escJm(job.applyUrl) + '" target="_blank" rel="noopener">🚀 Apply Now</a>';
+    }
+    html += '<button class="jm-action-btn" onclick="jmUseRole(\'' + escJmAttr(job.title) + '\',\'' + escJmAttr(job.title) + '\')">🎯 Tailor resume</button>';
+    html += '<a class="jm-action-btn" href="' + liUrl + '" target="_blank" rel="noopener">🔗 LinkedIn</a>';
+    html += '<a class="jm-action-btn" href="' + indUrl + '" target="_blank" rel="noopener">🔍 Indeed</a>';
+    html += '<a class="jm-action-btn" href="' + gdUrl + '" target="_blank" rel="noopener">📊 Glassdoor</a>';
+    html += '<a class="jm-action-btn" href="' + hcUrl + '" target="_blank" rel="noopener">☕ Hiring.cafe</a>';
+    html += '</div>';
+    html += '</div>'; // .jm-card
+  });
+  return html;
 }
 
 function jmUseRole(title, searchQuery) {

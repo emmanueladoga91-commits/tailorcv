@@ -3983,10 +3983,11 @@ function renderJobMatchResults(data) {
     return;
   }
 
-  // LinkedIn work-type filter params
+  // Helper: encode a string using + for spaces (application/x-www-form-urlencoded style)
+  function jmEnc(s) { return encodeURIComponent(String(s || '')).replace(/%20/g, '+'); }
+
+  // LinkedIn work-type filter params (f_WT: 2=remote, 3=hybrid, 1=on-site)
   var liWtParam = { remote: '&f_WT=2', hybrid: '&f_WT=3', onsite: '&f_WT=1' }[_jmWorkType] || '';
-  // Indeed remote param
-  var indRemote = _jmWorkType === 'remote' ? '&remotejob=1' : '';
 
   var wtLabels = { any: '', remote: '🌐 Remote', hybrid: '🏠 Hybrid', onsite: '🏢 On-site' };
   var metaLine = [location ? '📍 ' + location : '', wtLabels[_jmWorkType] || ''].filter(Boolean).join('  ·  ');
@@ -3995,11 +3996,28 @@ function renderJobMatchResults(data) {
     : '';
   html += '<div class="jm-cards">';
   roles.forEach(function(role) {
-    var q   = encodeURIComponent(role.search_query || role.title);
-    var loc = encodeURIComponent(location);
-    var liUrl  = 'https://www.linkedin.com/jobs/search/?keywords=' + q + (loc ? '&location=' + loc : '') + liWtParam;
-    var indUrl = 'https://www.indeed.com/jobs?q=' + q + (loc ? '&l=' + loc : '') + indRemote;
-    var gdUrl  = 'https://www.glassdoor.com/Job/jobs.htm?suggestCount=0&typedKeyword=' + q + (loc ? '&locKeyword=' + loc : '');
+    var query   = role.search_query || role.title;
+    var q       = jmEnc(query);
+    var locStr  = location || '';
+
+    // ── LinkedIn ──────────────────────────────────────────────────
+    // keywords + location as plain text + work-type filter
+    var liUrl = 'https://www.linkedin.com/jobs/search/?keywords=' + q
+      + (locStr ? '&location=' + jmEnc(locStr) : '')
+      + liWtParam;
+
+    // ── Indeed ────────────────────────────────────────────────────
+    // q = job title, l = location (use "remote" when work type is remote)
+    var indLoc = (_jmWorkType === 'remote') ? 'remote' : locStr;
+    var indUrl = 'https://www.indeed.com/jobs?q=' + q
+      + (indLoc ? '&l=' + jmEnc(indLoc) : '')
+      + (_jmWorkType === 'remote' ? '&remotejob=1' : '');
+
+    // ── Glassdoor ─────────────────────────────────────────────────
+    // Glassdoor needs numeric location IDs for proper filtering,
+    // so we embed location in the keyword string as a reliable fallback.
+    var gdKeyword = locStr ? query + ' ' + locStr : query;
+    var gdUrl = 'https://www.glassdoor.com/Job/jobs.htm?sc.keyword=' + jmEnc(gdKeyword);
 
     var scoreColor = role.match_score >= 85 ? '#86efac' : role.match_score >= 70 ? '#fcd34d' : '#fca5a5';
     var skills = (role.key_skills || []).slice(0, 5);

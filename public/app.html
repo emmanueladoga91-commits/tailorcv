@@ -778,6 +778,8 @@
       transition:all var(--t);
     }
     .user-link:hover { background:rgba(255,255,255,.2); border-color:rgba(255,255,255,.3); }
+    .user-link-jobs { background:linear-gradient(135deg,rgba(124,58,237,.55),rgba(91,99,240,.55)); border-color:rgba(167,139,250,.4); font-weight:700; }
+    .user-link-jobs:hover { background:linear-gradient(135deg,rgba(124,58,237,.75),rgba(91,99,240,.75)); border-color:rgba(167,139,250,.6); }
 
     /* ── Resume Library / Upload Tabs ── */
     .upload-tabs {
@@ -1527,6 +1529,7 @@
     <span class="user-email" id="userEmailDisplay">Loading…</span>
     <a href="/" class="user-link">🏠 Home</a>
     <a href="/tracker.html" class="user-link">📋 Tracker</a>
+    <button class="user-link user-link-jobs" onclick="openJobMatch()">🎯 Find Jobs</button>
     <a href="/account.html" class="user-link">Account</a>
     <button class="user-link" onclick="doLogout()">Sign out</button>
   </div>

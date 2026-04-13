@@ -3915,7 +3915,7 @@ async function runJobMatch() {
   body.innerHTML = '<div class="jm-loading"><div class="jm-spinner"></div><span>Claude is analysing your profile and finding the best-fit roles…</span></div>';
 
   // ── Claude prompt ─────────────────────────────────────────
-  var systemPrompt = 'You are an expert career coach and job market analyst. Analyse the provided resume and return ONLY a valid JSON object — no markdown, no explanation. The JSON must follow this exact structure:\n{\n  "roles": [\n    {\n      "title": "Senior Product Manager",\n      "seniority": "Senior",\n      "industry": "SaaS / Technology",\n      "match_score": 91,\n      "salary_range": "$140k – $175k",\n      "why_match": "One sentence explaining why this role fits the candidate\'s background.",\n      "key_skills": ["Skill1","Skill2","Skill3","Skill4"],\n      "search_query": "Senior Product Manager SaaS"\n    }\n  ],\n  "top_keywords": ["keyword1","keyword2","keyword3","keyword4","keyword5"],\n  "inferred_location": "New York, NY"\n}\nReturn 6 diverse but highly relevant roles, ranked by match score. Match score is 0-100. Be specific and realistic about salary ranges for the candidate\'s level and location.';
+  var systemPrompt = 'You are an expert career coach and job market analyst. Analyse the provided resume and return ONLY a valid JSON object — no markdown, no explanation. The JSON must follow this exact structure:\n{\n  "roles": [\n    {\n      "title": "Senior Product Manager",\n      "seniority": "Senior",\n      "industry": "SaaS / Technology",\n      "match_score": 91,\n      "salary_range": "$140k – $175k",\n      "why_match": "One sentence explaining why this role fits the candidate\'s background.",\n      "key_skills": ["Skill1","Skill2","Skill3","Skill4"],\n      "search_query": "Senior Product Manager SaaS"\n    }\n  ],\n  "top_keywords": ["keyword1","keyword2","keyword3","keyword4","keyword5"],\n  "inferred_location": "New York, NY"\n}\nReturn exactly 10 diverse but highly relevant roles, ranked by match score descending. Match score is 0-100. Be specific and realistic about salary ranges for the candidate\'s level and location.';
 
   var userMsg = 'Here is the candidate\'s resume:\n\n' + resumeText.slice(0, 4000) + '\n\nAnalyse this profile and return the JSON job match results.';
 
@@ -3923,7 +3923,7 @@ async function runJobMatch() {
     var res = await fetch('/api/claude', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + tok },
-      body: JSON.stringify({ type: 'jobs', system: systemPrompt, userMsg: userMsg, maxTokens: 1800 })
+      body: JSON.stringify({ type: 'jobs', system: systemPrompt, userMsg: userMsg, maxTokens: 2800 })
     });
 
     if (res.status === 402) {

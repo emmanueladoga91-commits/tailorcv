@@ -4019,6 +4019,11 @@ function renderJobMatchResults(data) {
     var gdKeyword = locStr ? query + ' ' + locStr : query;
     var gdUrl = 'https://www.glassdoor.com/Job/jobs.htm?sc.keyword=' + jmEnc(gdKeyword);
 
+    // ── Hiring.cafe ───────────────────────────────────────────────
+    // Uses searchState JSON param; embed location in searchQuery for filtering.
+    var hcQuery = locStr ? query + ' ' + locStr : query;
+    var hcUrl = 'https://hiring.cafe/?searchState=' + encodeURIComponent(JSON.stringify({ searchQuery: hcQuery }));
+
     var scoreColor = role.match_score >= 85 ? '#86efac' : role.match_score >= 70 ? '#fcd34d' : '#fca5a5';
     var skills = (role.key_skills || []).slice(0, 5);
 
@@ -4050,9 +4055,10 @@ function renderJobMatchResults(data) {
     }
     html += '<div class="jm-actions">';
     html += '<button class="jm-action-btn primary" onclick="jmUseRole(\'' + escJmAttr(role.title) + '\',\'' + escJmAttr(role.search_query || role.title) + '\')">🎯 Tailor resume for this role</button>';
-    html += '<a class="jm-action-btn" href="' + liUrl + '" target="_blank" rel="noopener">🔗 LinkedIn Jobs</a>';
+    html += '<a class="jm-action-btn" href="' + liUrl + '" target="_blank" rel="noopener">🔗 LinkedIn</a>';
     html += '<a class="jm-action-btn" href="' + indUrl + '" target="_blank" rel="noopener">🔍 Indeed</a>';
     html += '<a class="jm-action-btn" href="' + gdUrl + '" target="_blank" rel="noopener">📊 Glassdoor</a>';
+    html += '<a class="jm-action-btn" href="' + hcUrl + '" target="_blank" rel="noopener">☕ Hiring.cafe</a>';
     html += '</div>';
     html += '</div>'; // .jm-card
   });

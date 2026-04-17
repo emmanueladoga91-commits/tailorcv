@@ -3967,6 +3967,7 @@ async function runJobMatch() {
 
     var allJobs = [];
     var seenIds = {};
+    var apiErrors = [];
 
     await Promise.all(searches.slice(0, 5).map(async function(s) {
       try {
@@ -3975,8 +3976,9 @@ async function runJobMatch() {
           headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + tok },
           body: JSON.stringify({ query: s.query, location: locPref, workType: _jmWorkType, start: 0 })
         });
-        if (!r.ok) return;
+        if (!r.ok) { apiErrors.push('HTTP ' + r.status + ' for "' + s.query + '"'); return; }
         var d = await r.json();
+        if (d._errors) apiErrors = apiErrors.concat(d._errors);
         (d.jobs || []).forEach(function(job) {
           var dedupKey = (job.company + '|' + job.title).toLowerCase();
           if (!seenIds[dedupKey]) {
@@ -3985,11 +3987,24 @@ async function runJobMatch() {
             allJobs.push(job);
           }
         });
-      } catch(e) { /* skip failed search */ }
+      } catch(e) { apiErrors.push(e.message); }
     }));
 
     // Store state for load-more
     _jmSearchState = { searches: searches, locPref: locPref, workType: _jmWorkType, page: 1, allJobs: allJobs, seenIds: seenIds, topKeywords: topKeywords };
+
+    // Show API error banner if no jobs and errors exist
+    if (!allJobs.length && apiErrors.length) {
+      var uniqueErrors = apiErrors.filter(function(e, i, a){ return a.indexOf(e) === i; });
+      body.innerHTML = '<div class="jm-error" style="margin-bottom:16px">'
+        + '<strong>⚠️ Job search API issue:</strong><br>'
+        + uniqueErrors.map(function(e){ return escJm(e); }).join('<br>')
+        + '<br><br><small style="opacity:.7">Check your API key in Render environment variables, or visit <code>/api/jobs-test</code> while logged in to diagnose.</small>'
+        + '</div>';
+      // Still show search-link fallback below the error
+      renderRealJobs(allJobs, topKeywords, locPref, searches, false);
+      return;
+    }
 
     renderRealJobs(allJobs, topKeywords, locPref, searches, true);
 

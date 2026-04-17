@@ -1149,6 +1149,59 @@ app.post('/api/career', requireAuth, async (req, res) => {
   }
 });
 
+// ── Jobs API diagnostic endpoint ────────────────────────────────
+// Visit /api/jobs-test in browser (while logged in) to check config + live call.
+app.get('/api/jobs-test', requireAuth, async (req, res) => {
+  const serperKey = process.env.SERPER_API_KEY;
+  const rapidKey  = process.env.RAPIDAPI_KEY;
+  const result = {
+    keys: {
+      SERPER_API_KEY: serperKey ? `set (${serperKey.slice(0,6)}…)` : 'NOT SET',
+      RAPIDAPI_KEY:   rapidKey  ? `set (${rapidKey.slice(0,6)}…)`  : 'NOT SET',
+    },
+    tests: {}
+  };
+
+  if (serperKey) {
+    try {
+      const r = await fetch('https://google.serper.dev/jobs', {
+        method: 'POST',
+        headers: { 'X-API-KEY': serperKey, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ q: 'software engineer canada', num: 2 }),
+        signal: AbortSignal.timeout(10000),
+      });
+      const d = await r.json();
+      result.tests.serper = r.ok
+        ? { ok: true, jobCount: (d.jobs || []).length, firstJob: (d.jobs||[])[0]?.title || 'none' }
+        : { ok: false, status: r.status, body: JSON.stringify(d).slice(0, 200) };
+    } catch(e) { result.tests.serper = { ok: false, error: e.message }; }
+  }
+
+  if (rapidKey) {
+    try {
+      const r = await fetch('https://jsearch.p.rapidapi.com/search?query=software+engineer+canada&page=1&num_pages=1', {
+        headers: { 'x-rapidapi-key': rapidKey, 'x-rapidapi-host': 'jsearch.p.rapidapi.com' },
+        signal: AbortSignal.timeout(10000),
+      });
+      const d = await r.json();
+      result.tests.jsearch = r.ok
+        ? { ok: true, jobCount: (d.data || []).length, firstJob: (d.data||[])[0]?.job_title || 'none' }
+        : { ok: false, status: r.status, body: JSON.stringify(d).slice(0, 200) };
+    } catch(e) { result.tests.jsearch = { ok: false, error: e.message }; }
+  }
+
+  // Always test Remotive (free, no auth)
+  try {
+    const r = await fetch('https://remotive.com/api/remote-jobs?search=software+engineer&limit=2', { signal: AbortSignal.timeout(8000) });
+    const d = await r.json();
+    result.tests.remotive = r.ok
+      ? { ok: true, jobCount: (d.jobs||[]).length }
+      : { ok: false, status: r.status };
+  } catch(e) { result.tests.remotive = { ok: false, error: e.message }; }
+
+  res.json(result);
+});
+
 // ── Real Job Listings ───────────────────────────────────────────
 // Priority: Serper.dev Google Jobs → JSearch (RapidAPI) → Remotive fallback
 // Supports pagination via `start` param (0, 10, 20…).
@@ -1158,6 +1211,7 @@ app.post('/api/jobs-search', requireAuth, async (req, res) => {
 
   const serperKey  = process.env.SERPER_API_KEY;
   const rapidKey   = process.env.RAPIDAPI_KEY;
+  const errors     = []; // collect errors from each source for debugging
 
   // Detect ISO country code from a plain-text location string
   function countryCode(loc) {
@@ -1221,6 +1275,7 @@ app.post('/api/jobs-search', requireAuth, async (req, res) => {
       return res.json({ jobs, source: 'google', hasMore: jobs.length >= 10 });
     } catch (err) {
       console.error('Serper error:', err.message);
+      errors.push('Serper: ' + err.message);
       // fall through to JSearch
     }
   }
@@ -1267,6 +1322,7 @@ app.post('/api/jobs-search', requireAuth, async (req, res) => {
       return res.json({ jobs, source: 'jsearch', hasMore: jobs.length >= 10 });
     } catch (err) {
       console.error('JSearch error:', err.message);
+      errors.push('JSearch: ' + err.message);
     }
   }
 
@@ -1304,10 +1360,12 @@ app.post('/api/jobs-search', requireAuth, async (req, res) => {
       via:            null,
     }));
 
-    return res.json({ jobs: mapped, source: 'remotive', hasMore: jobs.length > start + 10 });
+    return res.json({ jobs: mapped, source: 'remotive', hasMore: jobs.length > start + 10, _debug: errors.length ? errors : undefined });
   } catch (err) {
     console.error('Remotive error:', err.message);
-    return res.status(503).json({ error: 'Job search unavailable. Please try again.' });
+    errors.push('Remotive: ' + err.message);
+    // All sources failed — return empty with full debug info
+    return res.json({ jobs: [], source: 'none', hasMore: false, _errors: errors });
   }
 });
 

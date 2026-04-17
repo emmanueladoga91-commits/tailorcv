@@ -1256,56 +1256,38 @@ app.post('/api/jobs-search', requireAuth, async (req, res) => {
   if (serperKey) {
     const gl = countryCode(location);
 
-    // Returns true only if a URL looks like an individual job posting (not a search page)
-    function isIndividualJobUrl(url) {
-      if (!url) return false;
-      try {
-        const u    = new URL(url);
-        const host = u.hostname.replace('www.', '');
-        const path = u.pathname;
-        const qs   = u.search;
-        // Google Jobs redirect — not a direct URL
-        if (host.includes('google.com')) return false;
-        // LinkedIn individual posting: /jobs/view/NUMBERS
-        if (host.includes('linkedin.com'))    return /\/jobs\/view\/\d+/.test(path);
-        // Indeed individual posting: contains jk= or path has /viewjob
-        if (host.includes('indeed.com'))      return qs.includes('jk=') || path.includes('viewjob');
-        // Glassdoor individual listing
-        if (host.includes('glassdoor.com'))   return path.includes('/job-listing/') || /\/Job\//.test(path);
-        // Greenhouse individual job
-        if (host.includes('greenhouse.io'))   return /\/jobs\/\d+/.test(path);
-        // Lever individual job (UUID path segment)
-        if (host.includes('lever.co'))        return /\/[0-9a-f]{8}-[0-9a-f]{4}/.test(path);
-        // Workday individual job
-        if (host.includes('workday.com'))     return path.includes('/job/') || path.includes('/jobs/');
-        // Ashby
-        if (host.includes('ashbyhq.com'))     return path.split('/').length >= 4;
-        // SmartRecruiters
-        if (host.includes('smartrecruiters.com')) return path.split('/').length >= 4;
-        // Any other ATS — if path has ≥3 segments it's likely an individual listing
-        return path.split('/').filter(Boolean).length >= 3;
-      } catch (e) { return false; }
+    // Known job board hostnames → display label
+    const BOARD_LABELS = {
+      'linkedin.com': 'LinkedIn', 'indeed.com': 'Indeed', 'ca.indeed.com': 'Indeed',
+      'glassdoor.com': 'Glassdoor', 'lever.co': 'Lever', 'greenhouse.io': 'Greenhouse',
+      'workday.com': 'Workday', 'ashbyhq.com': 'Ashby', 'smartrecruiters.com': 'SmartRecruiters',
+      'dover.com': 'Dover', 'jobs.google.com': 'Google Careers', 'careers.google.com': 'Google Careers',
+    };
+
+    // Pick the best direct URL from a Serper job object.
+    // Priority: non-Google applyOptions link → applyLink → link
+    function pickBestUrl(j) {
+      const opts = j.applyOptions || [];
+      const direct = opts.find(o => o.link && !o.link.includes('google.com') && !o.link.includes('goo.gl'));
+      return (direct && direct.link) || j.applyLink || j.link || null;
     }
 
-    // Helper to normalise a Serper job object (handles both camelCase and snake_case)
+    // Derive a readable board/platform label from a URL
+    function platformLabel(url) {
+      if (!url) return null;
+      try {
+        const host = new URL(url).hostname.replace('www.', '');
+        for (const [k, v] of Object.entries(BOARD_LABELS)) { if (host.includes(k)) return v; }
+        return host;
+      } catch (e) { return null; }
+    }
+
+    // Normalise a Serper /jobs result into a standard job object
     function normaliseSerperJob(j) {
-      const ext = j.detectedExtensions || j.detected_extensions || {};
+      const ext  = j.detectedExtensions || j.detected_extensions || {};
       const opts = (j.applyOptions || []).map(o => ({ title: o.title, link: o.link }));
-      // Prefer a direct source link from applyOptions (skip Google redirect in applyLink)
-      const directOpt = opts.find(o => o.link && !o.link.includes('google.com') && !o.link.includes('goo.gl'));
-      const applyUrl  = (directOpt && directOpt.link) || j.applyLink || j.link || null;
-      // Derive the platform label from the best link
-      let via = j.via || null;
-      if (!via && applyUrl) {
-        try {
-          const host = new URL(applyUrl).hostname.replace('www.', '');
-          const board = { 'linkedin.com': 'LinkedIn', 'indeed.com': 'Indeed', 'glassdoor.com': 'Glassdoor',
-                          'greenhouse.io': 'Greenhouse', 'lever.co': 'Lever', 'workday.com': 'Workday',
-                          'ashbyhq.com': 'Ashby', 'smartrecruiters.com': 'SmartRecruiters' };
-          for (const [k, v] of Object.entries(board)) { if (host.includes(k)) { via = v; break; } }
-          if (!via) via = host;
-        } catch (e) {}
-      }
+      const applyUrl = pickBestUrl(j);
+      const via  = j.via || platformLabel(applyUrl);
       return {
         id:             j.jobId || j.job_id || (j.companyName + '|' + j.title),
         title:          j.title,
@@ -1314,8 +1296,8 @@ app.post('/api/jobs-search', requireAuth, async (req, res) => {
         location:       j.location || '',
         isRemote:       (j.location || '').toLowerCase().includes('remote') || workType === 'remote',
         applyUrl,
-        applyOptions:   opts,
-        description:    (j.description || j.snippet || '').replace(/\s+/g, ' ').slice(0, 400),
+        applyOptions:   opts.filter(o => o.link && !o.link.includes('google.com')), // only direct links
+        description:    (j.description || j.snippet || '').replace(/\s+/g, ' ').slice(0, 500),
         salary:         ext.salary || ext.salaryInfo || null,
         employmentType: ext.scheduleType || ext.schedule_type || null,
         posted:         ext.postedAt || ext.posted_at || null,
@@ -1324,15 +1306,45 @@ app.post('/api/jobs-search', requireAuth, async (req, res) => {
       };
     }
 
-    // Strategy A: dedicated /jobs endpoint
+    // Normalise a Serper /search organic result into a standard job object
+    function normaliseOrganicResult(r, i) {
+      const url = r.link || '';
+      const via = platformLabel(url);
+      // Strip "- LinkedIn" / "| Indeed" / "- Company Name" from end of title
+      const cleanTitle = (r.title || '')
+        .replace(/\s*[|\-–]\s*(LinkedIn|Indeed|Glassdoor|Workday|Lever|Greenhouse|Ashby|SmartRecruiters|ZipRecruiter|Monster).*$/i, '')
+        .trim();
+      // Google snippet format: "Company · Location · Full-time\nDescription…"
+      let company = '';
+      const snippetMeta = (r.snippet || '').match(/^([^·\n\|]+)\s*·/);
+      if (snippetMeta) company = snippetMeta[1].trim();
+      return {
+        id:             'org-' + i + '-' + url.slice(-10),
+        title:          cleanTitle || r.title || 'Job Opening',
+        company,
+        companyLogo:    null,
+        location:       location || '',
+        isRemote:       workType === 'remote' || (r.snippet || '').toLowerCase().includes('remote'),
+        applyUrl:       url,
+        applyOptions:   [],
+        description:    (r.snippet || '').replace(/^[^·\n]+·[^·\n]+·[^·\n]*\n?/, '').trim(), // skip meta prefix
+        salary:         null,
+        employmentType: null,
+        posted:         null,
+        source:         'Google Jobs',
+        via,
+      };
+    }
+
+    // Strategy A: Serper dedicated /jobs endpoint (Google Jobs panel data)
     try {
       let q = query.trim() + expSuffix;
       if (workType === 'remote') q += ' remote';
+      if (location && !gl) q += ' ' + location.trim(); // append city if no country code mapping
 
       const body = { q, num: 10 };
       if (start > 0) body.start = start;
       if (gl) body.gl = gl;
-      // Note: do NOT pass `location` text to /jobs — gl is enough and location can break results
       if (dateMap[datePosted]) body.datePosted = dateMap[datePosted];
 
       const sresp = await fetch('https://google.serper.dev/jobs', {
@@ -1343,33 +1355,19 @@ app.post('/api/jobs-search', requireAuth, async (req, res) => {
       });
       if (!sresp.ok) throw new Error(`Serper /jobs HTTP ${sresp.status}`);
       const sdata = await sresp.json();
-      const jobs = (sdata.jobs || []).map(normaliseSerperJob);
-      console.log(`Serper /jobs returned ${jobs.length} results for "${q}"`);
-
-      if (jobs.length > 0) {
-        return res.json({ jobs, source: 'google', hasMore: jobs.length >= 10 });
-      }
-      // 0 results — fall through to Strategy B
+      const jobs  = (sdata.jobs || []).map(normaliseSerperJob);
+      console.log(`Serper /jobs → ${jobs.length} results for "${q}"`);
+      if (jobs.length > 0) return res.json({ jobs, source: 'google', hasMore: jobs.length >= 10 });
     } catch (err) {
       console.error('Serper /jobs error:', err.message);
       errors.push('Serper /jobs: ' + err.message);
     }
 
-    // Strategy B: /search endpoint scoped to specific job-posting URL patterns
+    // Strategy B: Serper /search scoped to job-board domains (fallback)
+    // Uses site: operators so Google only indexes pages from known job boards.
     try {
-      // Scope to URL patterns that are individual postings, not search pages
-      const jobSites = [
-        'site:linkedin.com/jobs/view',          // LinkedIn individual posting
-        'site:indeed.com/viewjob',              // Indeed individual posting
-        'site:ca.indeed.com/viewjob',           // Indeed Canada
-        'site:glassdoor.com/job-listing',       // Glassdoor individual
-        'site:jobs.lever.co',                   // Lever ATS
-        'site:boards.greenhouse.io',            // Greenhouse ATS
-        'site:ashbyhq.com',                     // Ashby ATS
-        'site:app.dover.com',                   // Dover
-        'site:smartrecruiters.com/jobs',        // SmartRecruiters
-      ].join(' OR ');
-      let q = `"${query.trim()}"${expSuffix} (${jobSites})`;
+      const jobSites = 'site:linkedin.com/jobs OR site:indeed.com OR site:glassdoor.com/job-listing OR site:jobs.lever.co OR site:boards.greenhouse.io OR site:ashbyhq.com OR site:smartrecruiters.com/jobs OR site:ziprecruiter.com/jobs OR site:wellfound.com/jobs';
+      let q = `${query.trim()}${expSuffix} (${jobSites})`;
       if (workType === 'remote') q += ' remote';
       if (location) q += ' ' + location.trim();
 
@@ -1386,61 +1384,19 @@ app.post('/api/jobs-search', requireAuth, async (req, res) => {
       if (!sresp.ok) throw new Error(`Serper /search HTTP ${sresp.status}`);
       const sdata = await sresp.json();
 
-      // Pull from jobs block if present (already individual postings)
+      // If the response includes a jobs block, use it (already individual postings)
       if ((sdata.jobs || []).length > 0) {
         const jobs = sdata.jobs.map(normaliseSerperJob);
         return res.json({ jobs, source: 'google', hasMore: jobs.length >= 10 });
       }
 
-      // Filter organic results — keep ONLY individual job posting URLs
-      const knownBoards = {
-        'linkedin.com': 'LinkedIn', 'indeed.com': 'Indeed', 'ca.indeed.com': 'Indeed',
-        'glassdoor.com': 'Glassdoor', 'lever.co': 'Lever', 'greenhouse.io': 'Greenhouse',
-        'workday.com': 'Workday', 'ashbyhq.com': 'Ashby', 'smartrecruiters.com': 'SmartRecruiters',
-        'dover.com': 'Dover',
-      };
-      const organic = (sdata.organic || [])
-        .filter(r => isIndividualJobUrl(r.link))  // drop search/results pages
-        .slice(0, 10);
-
+      // Use organic results — scoped to job board URLs so they're individual listings
+      const organic = (sdata.organic || []).slice(0, 10);
       if (organic.length > 0) {
-        const jobs = organic.map((r, i) => {
-          let via = null;
-          let company = '';
-          try {
-            const host = new URL(r.link).hostname.replace('www.', '');
-            for (const [k, v] of Object.entries(knownBoards)) { if (host.includes(k)) { via = v; break; } }
-            if (!via) via = host;
-          } catch (e) {}
-          // Title: strip "- LinkedIn" / "| Indeed" suffix to get the actual job title
-          const cleanTitle = (r.title || '')
-            .replace(/\s*[|\-–]\s*(LinkedIn|Indeed|Glassdoor|Workday|Lever|Greenhouse|Ashby|SmartRecruiters).*$/i, '')
-            .trim();
-          // Snippet often starts with "Company · Location · ..." — extract company
-          const snippetMatch = (r.snippet || '').match(/^([^·\n]+)\s*·/);
-          if (snippetMatch) company = snippetMatch[1].trim();
-          return {
-            id:             'organic-' + i + '-' + (r.link || '').slice(-8),
-            title:          cleanTitle || r.title,
-            company,
-            companyLogo:    null,
-            location:       location || '',
-            isRemote:       workType === 'remote' || (r.snippet || '').toLowerCase().includes('remote'),
-            applyUrl:       r.link,
-            applyOptions:   [],
-            description:    r.snippet || '',
-            salary:         null,
-            employmentType: null,
-            posted:         null,
-            source:         'Google Jobs',
-            via,
-          };
-        });
-        if (jobs.length > 0) {
-          return res.json({ jobs, source: 'google-search', hasMore: jobs.length >= 10 });
-        }
+        const jobs = organic.map(normaliseOrganicResult).filter(j => j.applyUrl);
+        if (jobs.length > 0) return res.json({ jobs, source: 'google-search', hasMore: jobs.length >= 10 });
       }
-      errors.push('Serper /search: 0 individual-posting results');
+      errors.push('Serper /search: 0 results');
     } catch (err) {
       console.error('Serper /search error:', err.message);
       errors.push('Serper /search: ' + err.message);

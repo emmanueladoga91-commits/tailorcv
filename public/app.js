@@ -4218,61 +4218,77 @@ function buildJobCards(jobs, locPref) {
       html += '</div>';
     }
 
-    // ── Apply button → inline action panel ────────────────────
-    var cardId = 'jmCard' + Math.random().toString(36).slice(2, 8);
-    var primaryUrl = (job.applyOptions && job.applyOptions.length > 0)
-      ? job.applyOptions[0].link
-      : (job.applyUrl || '');
-    var applyLabel = (job.applyOptions && job.applyOptions.length > 1)
-      ? 'Apply (' + job.applyOptions.length + ' sources)'
-      : 'Apply Now';
+    // ── Apply section ──────────────────────────────────────────
+    // primaryUrl: use job.applyUrl (server picks best direct link from applyOptions),
+    // fall back to first applyOption, then empty string.
+    var cardId    = 'jmCard' + Math.random().toString(36).slice(2, 8);
+    var primaryUrl = job.applyUrl
+      || (job.applyOptions && job.applyOptions.length > 0 && job.applyOptions[0].link)
+      || '';
+    // Collect all direct apply links (deduplicated)
+    var allApplyOpts = [];
+    if (primaryUrl) allApplyOpts.push({ title: job.via || 'Source', link: primaryUrl });
+    (job.applyOptions || []).forEach(function(o) {
+      if (o.link && o.link !== primaryUrl) allApplyOpts.push(o);
+    });
 
     html += '<div class="jm-actions">';
+
+    // Primary: "Apply Now →" direct link — opens the specific job posting
     if (primaryUrl) {
-      html += '<button class="jm-action-btn primary jm-apply-trigger" onclick="jmToggleApplyPanel(\'' + cardId + '\')">'
-            + '🚀 ' + escJm(applyLabel) + ' ▾</button>';
+      html += '<a class="jm-action-btn primary" href="' + escJm(primaryUrl) + '" target="_blank" rel="noopener">'
+            + '🚀 Apply Now →</a>';
     }
+
+    // Secondary: auto-fill button → fetch JD + go to resume builder
+    if (primaryUrl) {
+      html += '<button class="jm-action-btn accent-btn" onclick="jmToggleApplyPanel(\'' + cardId + '\')">'
+            + '⚡ Build Tailored Resume</button>';
+    }
+
     html += '<button class="jm-action-btn" onclick="jmUseRole(\'' + escJmAttr(job.title) + '\',\'' + escJmAttr(job.title) + '\')">🎯 Tailor resume</button>';
-    html += '<a class="jm-action-btn" href="' + liUrl + '" target="_blank" rel="noopener">🔗 LinkedIn</a>';
-    html += '<a class="jm-action-btn" href="' + indUrl + '" target="_blank" rel="noopener">🔍 Indeed</a>';
-    html += '<a class="jm-action-btn" href="' + gdUrl + '" target="_blank" rel="noopener">📊 Glassdoor</a>';
-    html += '<a class="jm-action-btn" href="' + hcUrl + '" target="_blank" rel="noopener">☕ Hiring.cafe</a>';
+
+    // If multiple apply sources, show a "More sources ▾" toggle
+    if (allApplyOpts.length > 1) {
+      html += '<button class="jm-action-btn" onclick="jmToggleApplyPanel(\'' + cardId + 'Src\')" style="font-size:.74rem">'
+            + '🌐 ' + allApplyOpts.length + ' sources ▾</button>';
+    }
     html += '</div>'; // .jm-actions
 
-    // ── Inline apply panel (hidden until triggered) ───────────
+    // ── Inline panels ──────────────────────────────────────────
     if (primaryUrl) {
+      // Auto-fill panel
       html += '<div class="jm-apply-panel" id="' + cardId + '">';
-      html += '<div class="jm-apply-panel-title">How would you like to apply?</div>';
-
-      // Option 1 — Visit source site(s)
-      if (job.applyOptions && job.applyOptions.length > 1) {
-        job.applyOptions.slice(0, 3).forEach(function(opt) {
-          html += '<a class="jm-apply-opt" href="' + escJm(opt.link) + '" target="_blank" rel="noopener">'
-                + '<span class="jm-apply-opt-icon">🌐</span>'
-                + '<span class="jm-apply-opt-text">'
-                + '<span class="jm-apply-opt-label">Visit ' + escJm(opt.title) + '</span>'
-                + '<span class="jm-apply-opt-desc">Open the original job posting on ' + escJm(opt.title) + ' and apply directly.</span>'
-                + '</span></a>';
-        });
-      } else {
-        html += '<a class="jm-apply-opt" href="' + escJm(primaryUrl) + '" target="_blank" rel="noopener">'
-              + '<span class="jm-apply-opt-icon">🌐</span>'
-              + '<span class="jm-apply-opt-text">'
-              + '<span class="jm-apply-opt-label">Visit job site</span>'
-              + '<span class="jm-apply-opt-desc">Open the original posting and apply directly on the employer\'s site.</span>'
-              + '</span></a>';
-      }
-
-      // Option 2 — Auto-fill & build tailored resume
+      html += '<div class="jm-apply-panel-title">Build a resume for this role</div>';
       html += '<button class="jm-apply-opt accent" id="' + cardId + 'Fill"'
             + ' onclick="jmAutoFill(\'' + escJmAttr(job.title) + '\',\'' + escJmAttr(primaryUrl) + '\',\'' + cardId + '\')">'
             + '<span class="jm-apply-opt-icon">⚡</span>'
             + '<span class="jm-apply-opt-text">'
-            + '<span class="jm-apply-opt-label">Auto-fill &amp; build tailored resume</span>'
-            + '<span class="jm-apply-opt-desc">Fetch the job description automatically and jump to the resume builder — pre-loaded with this role.</span>'
+            + '<span class="jm-apply-opt-label">Auto-fetch job description &amp; build tailored resume</span>'
+            + '<span class="jm-apply-opt-desc">We\'ll pull the job description from the source, pre-fill the resume builder, and take you straight to tailoring.</span>'
             + '</span></button>';
+      html += '<a class="jm-apply-opt" href="' + escJm(primaryUrl) + '" target="_blank" rel="noopener">'
+            + '<span class="jm-apply-opt-icon">🌐</span>'
+            + '<span class="jm-apply-opt-text">'
+            + '<span class="jm-apply-opt-label">Open job posting &amp; copy description manually</span>'
+            + '<span class="jm-apply-opt-desc">Visit the original posting, copy the job description, then paste it into the resume builder.</span>'
+            + '</span></a>';
+      html += '</div>'; // auto-fill panel
+    }
 
-      html += '</div>'; // .jm-apply-panel
+    // Sources panel (only if multiple apply links)
+    if (allApplyOpts.length > 1) {
+      html += '<div class="jm-apply-panel" id="' + cardId + 'Src">';
+      html += '<div class="jm-apply-panel-title">Apply directly on:</div>';
+      allApplyOpts.slice(0, 5).forEach(function(opt) {
+        html += '<a class="jm-apply-opt" href="' + escJm(opt.link) + '" target="_blank" rel="noopener">'
+              + '<span class="jm-apply-opt-icon">🌐</span>'
+              + '<span class="jm-apply-opt-text">'
+              + '<span class="jm-apply-opt-label">' + escJm(opt.title || 'Apply') + '</span>'
+              + '<span class="jm-apply-opt-desc">' + escJm(opt.link) + '</span>'
+              + '</span></a>';
+      });
+      html += '</div>'; // sources panel
     }
 
     html += '</div>'; // .jm-card

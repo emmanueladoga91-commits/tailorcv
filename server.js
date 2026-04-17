@@ -610,25 +610,40 @@ async function timedFetch(url, options = {}, ms = 12000) {
 
 function htmlToText(html) {
   if (!html) return '';
-  return html
-    .replace(/<script[\s\S]*?<\/script>/gi, '')
-    .replace(/<style[\s\S]*?<\/style>/gi, '')
-    .replace(/<br\s*\/?>/gi, '\n')
-    .replace(/<\/p>/gi, '\n\n')
-    .replace(/<\/?(h[1-6])[^>]*>/gi, (_, tag) => tag ? '\n\n' : '')  // headings get spacing
-    .replace(/<li[^>]*>/gi, '\n• ')    // list items become bullet points
-    .replace(/<\/li>/gi, '')
-    .replace(/<\/ul>/gi, '\n').replace(/<\/ol>/gi, '\n')
-    .replace(/<strong[^>]*>/gi, '').replace(/<\/strong>/gi, '')  // strip bold markup
-    .replace(/<em[^>]*>/gi, '').replace(/<\/em>/gi, '')
-    .replace(/<[^>]+>/g, ' ')          // strip remaining tags
-    .replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'")
-    .replace(/&[a-z0-9#]+;/gi, ' ')
-    .replace(/[ \t]{2,}/g, ' ')
-    .replace(/\n[ \t]+/g, '\n')        // trim leading spaces on each line
-    .replace(/\n{3,}/g, '\n\n')
-    .trim();
+  // Step 1: remove script/style blocks entirely
+  html = html.replace(/<script[\s\S]*?<\/script>/gi, '');
+  html = html.replace(/<style[\s\S]*?<\/style>/gi, '');
+  // Step 2: convert block/line elements to whitespace BEFORE stripping tags
+  html = html.replace(/<br\s*\/?>/gi, '\n');
+  html = html.replace(/<\/p>/gi, '\n\n');
+  html = html.replace(/<p[^>]*>/gi, '');
+  html = html.replace(/<\/h[1-6]>/gi, '\n\n');
+  html = html.replace(/<h[1-6][^>]*>/gi, '\n');
+  html = html.replace(/<\/div>/gi, '\n');
+  html = html.replace(/<\/tr>/gi, '\n');
+  html = html.replace(/<\/td>/gi, ' ');
+  // Step 3: list items → bullet points
+  html = html.replace(/<li[^>]*>/gi, '\n• ');
+  html = html.replace(/<\/li>/gi, '');
+  html = html.replace(/<\/ul>/gi, '\n');
+  html = html.replace(/<\/ol>/gi, '\n');
+  // Step 4: strip ALL remaining HTML tags (catches <strong>, <em>, <a>, <span>, etc.)
+  html = html.replace(/<[^>]+>/g, '');
+  // Step 5: decode HTML entities
+  html = html
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&#x27;/g, "'")
+    .replace(/&[a-z0-9#]+;/gi, ' ');
+  // Step 6: normalise whitespace
+  html = html.replace(/[ \t]{2,}/g, ' ');
+  html = html.replace(/\n[ \t]+/g, '\n');
+  html = html.replace(/\n{3,}/g, '\n\n');
+  return html.trim();
 }
 
 // Format a JSON-LD jobLocation value into a readable string

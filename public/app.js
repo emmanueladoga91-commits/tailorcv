@@ -4310,6 +4310,33 @@ function jmToggleApplyPanel(cardId) {
 }
 
 // Fetch job description from URL, pre-fill resume builder, close modal
+// DOM-based HTML → plain text converter (runs in browser, catches anything the server missed)
+function cleanJobDescriptionText(text) {
+  if (!text) return '';
+  // If no HTML tags at all, return as-is
+  if (!/<[a-zA-Z]/.test(text)) return text;
+  // Convert structural tags to newlines/bullets before stripping
+  text = text
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/p>/gi, '\n\n')
+    .replace(/<p[^>]*>/gi, '')
+    .replace(/<\/h[1-6]>/gi, '\n\n')
+    .replace(/<h[1-6][^>]*>/gi, '\n')
+    .replace(/<\/div>/gi, '\n')
+    .replace(/<li[^>]*>/gi, '\n• ')
+    .replace(/<\/li>/gi, '')
+    .replace(/<\/ul>/gi, '\n')
+    .replace(/<\/ol>/gi, '\n');
+  // Use a hidden div to let the browser strip remaining tags
+  var div = document.createElement('div');
+  div.innerHTML = text;
+  var plain = div.innerText || div.textContent || '';
+  return plain
+    .replace(/\n[ \t]+/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
 async function jmAutoFill(jobTitle, applyUrl, cardId) {
   var btn = document.getElementById(cardId + 'Fill');
   if (btn) {
@@ -4330,9 +4357,9 @@ async function jmAutoFill(jobTitle, applyUrl, cardId) {
     });
     var d = await r.json();
     if (r.ok && d.text && d.text.length > 50) {
-      fetchedJd = d.text;
+      // Always run through client-side cleaner in case server left any HTML
+      fetchedJd = cleanJobDescriptionText(d.text);
     } else {
-      // Couldn't auto-fetch — still navigate but leave JD empty with hint
       fetchedJd = '';
     }
   } catch(e) {

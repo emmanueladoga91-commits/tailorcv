@@ -609,20 +609,57 @@ async function timedFetch(url, options = {}, ms = 12000) {
 }
 
 function htmlToText(html) {
+  if (!html) return '';
   return html
     .replace(/<script[\s\S]*?<\/script>/gi, '')
     .replace(/<style[\s\S]*?<\/style>/gi, '')
     .replace(/<br\s*\/?>/gi, '\n')
     .replace(/<\/p>/gi, '\n\n')
-    .replace(/<\/li>/gi, '\n')
-    .replace(/<\/?(h[1-6])[^>]*>/gi, '\n')
-    .replace(/<[^>]+>/g, ' ')
+    .replace(/<\/?(h[1-6])[^>]*>/gi, (_, tag) => tag ? '\n\n' : '')  // headings get spacing
+    .replace(/<li[^>]*>/gi, '\n• ')    // list items become bullet points
+    .replace(/<\/li>/gi, '')
+    .replace(/<\/ul>/gi, '\n').replace(/<\/ol>/gi, '\n')
+    .replace(/<strong[^>]*>/gi, '').replace(/<\/strong>/gi, '')  // strip bold markup
+    .replace(/<em[^>]*>/gi, '').replace(/<\/em>/gi, '')
+    .replace(/<[^>]+>/g, ' ')          // strip remaining tags
     .replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'")
     .replace(/&[a-z0-9#]+;/gi, ' ')
     .replace(/[ \t]{2,}/g, ' ')
+    .replace(/\n[ \t]+/g, '\n')        // trim leading spaces on each line
     .replace(/\n{3,}/g, '\n\n')
     .trim();
+}
+
+// Format a JSON-LD jobLocation value into a readable string
+function formatJobLocation(loc) {
+  if (!loc) return '';
+  if (typeof loc === 'string') return loc;
+  if (Array.isArray(loc)) return loc.map(formatJobLocation).filter(Boolean).join(', ');
+  // Schema.org Place / PostalAddress
+  const addr = loc.address || loc;
+  const parts = [
+    addr.streetAddress,
+    addr.addressLocality,
+    addr.addressRegion,
+    addr.addressCountry,
+  ].filter(Boolean);
+  return parts.join(', ');
+}
+
+// Format a JSON-LD MonetaryAmount / baseSalary value into a readable string
+function formatSalary(sal) {
+  if (!sal) return '';
+  if (typeof sal === 'string' || typeof sal === 'number') return String(sal);
+  const val = sal.value || sal;
+  if (val && typeof val === 'object') {
+    const min = val.minValue || val.min;
+    const max = val.maxValue || val.max;
+    const cur = sal.currency || val.currency || '';
+    if (min && max) return `${cur}${min} – ${cur}${max}`.trim();
+    if (min || max) return `${cur}${min || max}`.trim();
+  }
+  return '';
 }
 
 function extractJsonLd(html) {
@@ -636,15 +673,17 @@ function extractJsonLd(html) {
         const type = (item['@type'] || '').toLowerCase();
         if (type === 'jobposting' || type.includes('job')) {
           const parts = [];
-          if (item.title)           parts.push('Job Title: ' + item.title);
+          if (item.title)                    parts.push('Job Title: ' + item.title);
           if (item.hiringOrganization?.name) parts.push('Company: ' + item.hiringOrganization.name);
-          if (item.jobLocation)     parts.push('Location: ' + JSON.stringify(item.jobLocation));
-          if (item.employmentType)  parts.push('Type: ' + item.employmentType);
-          if (item.description)     parts.push('\n' + htmlToText(item.description));
-          if (item.responsibilities) parts.push('Responsibilities:\n' + item.responsibilities);
-          if (item.qualifications)   parts.push('Qualifications:\n' + item.qualifications);
-          if (item.skills)           parts.push('Skills: ' + item.skills);
-          if (item.baseSalary)       parts.push('Salary: ' + JSON.stringify(item.baseSalary));
+          const loc = formatJobLocation(item.jobLocation);
+          if (loc)                           parts.push('Location: ' + loc);
+          if (item.employmentType)           parts.push('Type: ' + item.employmentType);
+          const sal = formatSalary(item.baseSalary);
+          if (sal)                           parts.push('Salary: ' + sal);
+          if (item.description)              parts.push('\n' + htmlToText(item.description));
+          if (item.responsibilities)         parts.push('Responsibilities:\n' + htmlToText(String(item.responsibilities)));
+          if (item.qualifications)           parts.push('Qualifications:\n' + htmlToText(String(item.qualifications)));
+          if (item.skills)                   parts.push('Skills: ' + (Array.isArray(item.skills) ? item.skills.join(', ') : item.skills));
           const text = parts.join('\n').replace(/\n{3,}/g, '\n\n').trim();
           if (text.length > 200) return text;
         }

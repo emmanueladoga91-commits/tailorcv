@@ -1225,8 +1225,8 @@ app.post('/api/jobs-search', requireAuth, async (req, res) => {
   if (!query) return res.status(400).json({ error: 'query is required' });
 
   // Map date filter to Serper values
-  const dateMap = { today: 'today', week: 'week', month: 'month' };
-  const tbsMap  = { today: 'qdr:d', week: 'qdr:w', month: 'qdr:m' }; // for /search tbs param
+  const dateMap = { today: 'today', '3days': 'today', week: 'week', month: 'month' }; // Serper /jobs uses 'today' as closest for 3-day
+  const tbsMap  = { today: 'qdr:d', '3days': 'qdr:d3', week: 'qdr:w', month: 'qdr:m' }; // for /search tbs param
 
   // Map experience level to query suffix
   const expSuffix = { entry: ' entry level junior', mid: ' mid level', senior: ' senior' }[exp] || '';
@@ -1380,7 +1380,7 @@ app.post('/api/jobs-search', requireAuth, async (req, res) => {
       if (workType === 'remote') searchQ += ' remote';
       else if (location)         searchQ += ' ' + location.trim();
 
-      const jDateMap = { today: 'today', week: 'week', month: 'month' };
+      const jDateMap = { today: 'today', '3days': 'today', week: 'week', month: 'month' };
       const params = new URLSearchParams({
         query:       searchQ + expSuffix,
         page:        String(Math.floor(start / 10) + 1),

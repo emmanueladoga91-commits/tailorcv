@@ -1785,6 +1785,7 @@ app.post('/api/jobs-authentic', requireAuth, async (req, res) => {
     'workday.com': 'Workday',
     'successfactors.com': 'SAP SuccessFactors',
     'hireez.com': 'HireEZ',
+    'hiring.cafe': 'Hiring.cafe',
   };
 
   function detectATS(url) {
@@ -1811,6 +1812,7 @@ app.post('/api/jobs-authentic', requireAuth, async (req, res) => {
     'site:dover.com/jobs',
     'site:recruitee.com',
     'site:teamtailor.com/jobs',
+    'site:hiring.cafe',
   ].join(' OR ');
 
   let q = `${query.trim()} (${atsSites})`;
@@ -1861,6 +1863,10 @@ app.post('/api/jobs-authentic', requireAuth, async (req, res) => {
         if (!company) {
           const wdMatch = url.match(/([^.]+)\.myworkdayjobs\.com/);
           if (wdMatch) company = wdMatch[1].replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+        }
+        if (!company) {
+          const hcMatch = url.match(/hiring\.cafe\/companies\/([^\/]+)/);
+          if (hcMatch) company = hcMatch[1].replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
         }
 
         const isRemote =

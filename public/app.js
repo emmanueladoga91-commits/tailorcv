@@ -339,10 +339,12 @@ function getSystemPrompt(profileKey, pages) {
     '6. KEY SKILLS / CORE COMPETENCE: Exactly 12 items. Front-load the most JD-relevant ones.',
     projectRule,
     '8. Keep all real metrics from the original resume. Do not water down quantified achievements.',
-    '9. COVER LETTER — THREE-PILLAR FRAMEWORK (read carefully):',
-    '   openingParagraph: One strong hook sentence naming the candidate\'s best match signal for this role. Then ONE sentence that shows genuine company knowledge by mirroring specific language from the JD — their mission statement, named programs, values phrases, or strategic initiatives. Do NOT write "I am writing to apply for…". Start with a confident value statement.',
-    '   bodyParagraph1, bodyParagraph2, bodyParagraph3: Each paragraph is a named PILLAR. Begin every body paragraph with a SHORT BOLD LABEL in title case (2–5 words), a colon, then a space, then the evidence paragraph. Format exactly: "Label Title: [rest of paragraph]". Example: "Data Integrity & Reporting: In my current role I manage…". Each pillar must (a) name a specific credential, tool, or achievement from the resume and (b) map it directly to a named requirement in the JD. No generic claims.',
-    '   closingParagraph: Starts "Thank you for your time and consideration." Follow with one sentence connecting the candidate\'s specific value to the company\'s stated mission or transformation goal.',
+    '9. COVER LETTER — FIVE-PART STRUCTURE (follow this exactly, in this order):',
+    '   PART 1 — openingParagraph (3–4 sentences, warm and enthusiastic): Open with "It is with great enthusiasm that I submit my application for [exact role] at [company]." Second sentence: show specific company knowledge — mirror a named program, mission phrase, strategic initiative, or value from the JD (quote it if possible). Third sentence: state personal inspiration — why THIS mission moves the candidate, connected to their own professional values.',
+    '   PART 2 — whyTeamParagraph (3–4 sentences, emotional and values-driven): Answer "Why I Want to Be Part of Your Team." Explain what specifically draws the candidate to this organisation — not the role, but the company\'s mission, culture, or transformation. Connect the candidate\'s personal values to the company\'s stated goals. End with why this environment excites them (e.g., a digital transformation, a mission-driven community, a specific initiative from the JD).',
+    '   PART 3 — idealCandidateIntro (2 sentences): Answer the opening of "What Makes Me Your Ideal Candidate." First sentence: a confident positioning statement (e.g., "I am a [descriptor] who views [X] as [Y]."). Second sentence: "My candidacy is built on three pillars that align with [specific JD project, transformation, or requirement]:"',
+    '   PART 4 — pillar1, pillar2, pillar3 (bullet points, each 50–70 words): Each pillar is a named bullet. Format exactly: "Label Title: [evidence paragraph]". Label is 2–5 words in title case. Evidence must (a) name a specific credential, tool, or achievement from the resume, (b) quantify impact where possible, and (c) directly map to a named JD requirement. Each pillar covers a DIFFERENT dimension of the candidate\'s fit.',
+    '   PART 5 — closingParagraph (2 sentences): First: bridge from pillars to company mission — "I am eager to apply [X] to help [company] [their stated goal from JD]." Second: warm thank-you — "Thank you for your time and [company-specific acknowledgment of their work]. I look forward to [forward-looking statement]."',
     '   Sign-off: "Warm regards,"',
     '10. ' + (PAGE_INSTR[pages] || PAGE_INSTR[2]),
     '11. Return ONLY valid JSON — no markdown fences, no explanation, no text before or after the JSON object.',
@@ -1238,6 +1240,32 @@ function buildCoverDoc(d, tmplName){
     }
     return bp(t,a);
   }
+  // Section heading (bold standalone line — "Why I Want to Be Part of Your Team")
+  function sectionHdr(text){
+    return new Paragraph({
+      children:[r(text,{bold:true})],
+      alignment:tc.bodyAlign,
+      spacing:{before:160,after:80}
+    });
+  }
+  // Bullet pillar: "● Label: body text" with bold label
+  function pillarBullet(t,a){
+    if(!t) return new Paragraph({children:[],spacing:{after:a||120}});
+    var ci = t.indexOf(': ');
+    if(ci > 0 && ci < 80){
+      return new Paragraph({
+        children:[r('\u25CF ',{bold:true}), r(t.slice(0,ci)+':',{bold:true}), r(' '+t.slice(ci+2))],
+        alignment:tc.bodyAlign,
+        spacing:{after:a||140},
+        indent:{left:360,hanging:280}
+      });
+    }
+    return new Paragraph({
+      children:[r('\u25CF ',{bold:true}), r(t)],
+      spacing:{after:a||140},
+      indent:{left:360,hanging:280}
+    });
+  }
   function lbl(text){ return r(tc.prefix+text,{bold:tc.bold,color:tc.accent}); }
   function hr(){
     return new Paragraph({border:{bottom:{style:BorderStyle.SINGLE,size:8,color:tc.accent,space:4}},spacing:{after:180}});
@@ -1270,9 +1298,21 @@ function buildCoverDoc(d, tmplName){
   if(tc.divider)             ch.push(hr());
   ch.push(lp([r('Dear Hiring Manager,')],160));
   if(cl.openingParagraph) ch.push(bp(cl.openingParagraph));
-  if(cl.bodyParagraph1)   ch.push(bpp(cl.bodyParagraph1));
-  if(cl.bodyParagraph2)   ch.push(bpp(cl.bodyParagraph2));
-  if(cl.bodyParagraph3)   ch.push(bpp(cl.bodyParagraph3));
+  if(cl.whyTeamParagraph){
+    // New 5-part structure
+    ch.push(sectionHdr('Why I Want to Be Part of Your Team'));
+    ch.push(bp(cl.whyTeamParagraph));
+    ch.push(sectionHdr('What Makes Me Your Ideal Candidate'));
+    if(cl.idealCandidateIntro) ch.push(bp(cl.idealCandidateIntro));
+    if(cl.pillar1) ch.push(pillarBullet(cl.pillar1));
+    if(cl.pillar2) ch.push(pillarBullet(cl.pillar2));
+    if(cl.pillar3) ch.push(pillarBullet(cl.pillar3));
+  } else {
+    // Backward compat: old body paragraph structure
+    if(cl.bodyParagraph1) ch.push(bpp(cl.bodyParagraph1));
+    if(cl.bodyParagraph2) ch.push(bpp(cl.bodyParagraph2));
+    if(cl.bodyParagraph3) ch.push(bpp(cl.bodyParagraph3));
+  }
   if(cl.closingParagraph) ch.push(bp(cl.closingParagraph,200));
   ch.push(lp([r('Warm regards,')],200));
   ch.push(lp([r(d.name||'',{bold:true})],40));
@@ -1332,10 +1372,10 @@ async function build(){
       '',
       (function(){
         var lInstr = {
-          short:  'COVER LETTER LENGTH: Short (~180-220 words total). Write openingParagraph (2 sentences: hook + company-specific reason) and ONE pillar in bodyParagraph1 ("Label: evidence paragraph"). Leave bodyParagraph2 and bodyParagraph3 as empty strings "". closingParagraph is 1-2 sentences starting "Thank you for your time and consideration."',
-          medium: 'COVER LETTER LENGTH: Medium (~320-380 words total). Write openingParagraph (2-3 sentences: hook + company-specific reason), TWO pillars in bodyParagraph1 and bodyParagraph2 (each formatted "Label: evidence paragraph", 60-80 words each). Leave bodyParagraph3 as empty string "". closingParagraph starts "Thank you for your time and consideration."',
-          long:   'COVER LETTER LENGTH: Long (~480-560 words total). Write openingParagraph (3 sentences: hook + company-specific reason + bridge to pillars), THREE pillars in bodyParagraph1, bodyParagraph2, bodyParagraph3 (each formatted "Label: evidence paragraph", 80-100 words each). closingParagraph starts "Thank you for your time and consideration."'
-        }[clLength] || 'COVER LETTER LENGTH: Medium (~320-380 words total). Write openingParagraph (2-3 sentences: hook + company-specific reason), TWO pillars in bodyParagraph1 and bodyParagraph2 (each "Label: evidence paragraph"). Leave bodyParagraph3 as empty string "".';
+          short:  'COVER LETTER LENGTH: Short (~280-320 words). Fill: openingParagraph (3 sentences), whyTeamParagraph (2-3 sentences), idealCandidateIntro (2 sentences), pillar1 and pillar2 only (40-50 words each) — leave pillar3 as empty string "", closingParagraph (2 sentences).',
+          medium: 'COVER LETTER LENGTH: Medium (~380-430 words). Fill: openingParagraph (3-4 sentences), whyTeamParagraph (3-4 sentences), idealCandidateIntro (2 sentences), all three pillars pillar1 + pillar2 + pillar3 (50-70 words each), closingParagraph (2 sentences).',
+          long:   'COVER LETTER LENGTH: Long (~500-560 words). Fill: openingParagraph (4 sentences), whyTeamParagraph (4 sentences), idealCandidateIntro (2 sentences), all three pillars pillar1 + pillar2 + pillar3 (70-90 words each), closingParagraph (2-3 sentences).'
+        }[clLength] || 'COVER LETTER LENGTH: Medium (~380-430 words). Fill: openingParagraph (3-4 sentences), whyTeamParagraph (3-4 sentences), idealCandidateIntro (2 sentences), pillar1 + pillar2 + pillar3 (50-70 words each), closingParagraph (2 sentences).';
         return lInstr;
       })(),
       '',
@@ -1352,7 +1392,7 @@ async function build(){
       '  "technicalSkills": [{"category":"","items":""}],',
       '  "certifications": [""],',
       '  "education": [{"degree":"","institution":"","location":""}],',
-      '  "coverLetter": {"date":"","recipientTitle":"Hiring Manager","recipientDepartment":"","recipientOrg":"","recipientLocation":"City, State","reLine":"[Job Title] - [Req ID if in JD]","openingParagraph":"[Hook sentence + company-specific sentence mirroring JD language — do NOT start with \'I am writing to apply\']","bodyParagraph1":"[Pillar Label: evidence paragraph mapping resume credential to JD requirement]","bodyParagraph2":"[Pillar Label: evidence paragraph mapping resume credential to JD requirement]","bodyParagraph3":"","closingParagraph":"Thank you for your time and consideration. [one sentence connecting candidate value to company mission]"}',
+      '  "coverLetter": {"date":"","recipientTitle":"Hiring Manager","recipientDepartment":"","recipientOrg":"","recipientLocation":"City, State","reLine":"[Job Title] - [Req ID if in JD]","openingParagraph":"It is with great enthusiasm that I submit my application for [role] at [company]. [Company-specific sentence mirroring JD language.] [Personal inspiration tied to company mission.]","whyTeamParagraph":"[Why this organisation specifically — values alignment, emotional connection, what excites the candidate about this environment or mission.]","idealCandidateIntro":"[Positioning statement.] My candidacy is built on three pillars that align with [specific JD project or transformation]:","pillar1":"[Label Title]: [evidence paragraph — specific credential + business impact + JD requirement mapping]","pillar2":"[Label Title]: [evidence paragraph — specific credential + business impact + JD requirement mapping]","pillar3":"[Label Title]: [evidence paragraph — specific credential + business impact + JD requirement mapping]","closingParagraph":"I am eager to apply [X] to help [company] [their stated mission/goal]. Thank you for your time and [company-specific acknowledgment]. I look forward to [forward-looking statement]."}',
       '}'
     ].join('\n');
 
@@ -3024,7 +3064,7 @@ function buildCoverLetterHtml(tailored, tmpl) {
     if (!text) return '';
     return '<p style="margin:0 0 14px;' + (style||'') + '">' + es(text) + '</p>';
   }
-  // Pillar paragraph for HTML: bolds "Label:" prefix when present
+  // Pillar paragraph for HTML: bolds "Label:" prefix when present (backward compat)
   function pp(text, style) {
     if (!text) return '';
     var ci = text.indexOf(': ');
@@ -3032,6 +3072,20 @@ function buildCoverLetterHtml(tailored, tmpl) {
       return '<p style="margin:0 0 14px;' + (style||'') + '"><strong style="font-weight:700">' + es(text.slice(0,ci)) + ':</strong> ' + es(text.slice(ci+2)) + '</p>';
     }
     return p(text, style);
+  }
+  // Section heading: bold standalone line
+  function sh(text) {
+    if (!text) return '';
+    return '<p style="margin:18px 0 6px;font-weight:700;color:' + hc.accent + '">' + es(text) + '</p>';
+  }
+  // Bullet pillar: ● bold label + body text
+  function pb(text) {
+    if (!text) return '';
+    var ci = text.indexOf(': ');
+    if (ci > 0 && ci < 80) {
+      return '<p style="margin:0 0 10px;padding-left:18px;text-indent:-14px">\u25CF <strong style="font-weight:700">' + es(text.slice(0,ci)) + ':</strong> ' + es(text.slice(ci+2)) + '</p>';
+    }
+    return '<p style="margin:0 0 10px;padding-left:18px;text-indent:-14px">\u25CF ' + es(text) + '</p>';
   }
   function lbl(labelText, restText, style) {
     if (!restText && restText !== '') return '';
@@ -3080,9 +3134,21 @@ function buildCoverLetterHtml(tailored, tmpl) {
 
   out += p('Dear Hiring Manager,');
   out += p(cl.openingParagraph);
-  out += pp(cl.bodyParagraph1);
-  out += pp(cl.bodyParagraph2);
-  out += pp(cl.bodyParagraph3);
+  if (cl.whyTeamParagraph) {
+    // New 5-part structure
+    out += sh('Why I Want to Be Part of Your Team');
+    out += p(cl.whyTeamParagraph);
+    out += sh('What Makes Me Your Ideal Candidate');
+    if (cl.idealCandidateIntro) out += p(cl.idealCandidateIntro);
+    if (cl.pillar1) out += pb(cl.pillar1);
+    if (cl.pillar2) out += pb(cl.pillar2);
+    if (cl.pillar3) out += pb(cl.pillar3);
+  } else {
+    // Backward compat: old body paragraph structure
+    out += pp(cl.bodyParagraph1);
+    out += pp(cl.bodyParagraph2);
+    out += pp(cl.bodyParagraph3);
+  }
   out += p(cl.closingParagraph);
   out += '<p style="margin:20px 0 4px">Warm regards,</p>';
   out += '<p style="margin:0;font-weight:700">' + es(name) + '</p>';

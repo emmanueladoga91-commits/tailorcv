@@ -4004,6 +4004,52 @@ function jmSetSource(src) {
   _jmSource = src;
   document.getElementById('jmSrcVault').classList.toggle('active', src === 'vault');
   document.getElementById('jmSrcResume').classList.toggle('active', src === 'resume');
+  // Show inline upload panel only when resume source is selected
+  var panel = document.getElementById('jmUploadPanel');
+  if (panel) panel.classList.toggle('visible', src === 'resume');
+}
+
+// Handle file upload directly inside Job Match panel
+async function jmHandleFileUpload(file) {
+  if (!file) return;
+  var status = document.getElementById('jmUploadStatus');
+  if (!file.name.match(/\.(pdf|docx)$/i)) {
+    if (status) status.textContent = '⚠ Only .pdf or .docx supported';
+    return;
+  }
+  if (status) status.textContent = '⏳ Reading…';
+  try {
+    var buffer = await new Promise(function(resolve, reject) {
+      var reader = new FileReader();
+      reader.onload = function(e) { resolve(e.target.result); };
+      reader.onerror = function() { reject(new Error('Read error')); };
+      reader.readAsArrayBuffer(file);
+    });
+    // Extract text — reuse existing extraction pipeline
+    var text = await extractText(buffer, file.name);
+    if (text && text.length > 60) {
+      extractedText = text;
+      fileBuffer    = buffer;
+      fileName      = file.name;
+      // Pre-fill paste area so user can see/edit
+      var pa = document.getElementById('jmPasteArea');
+      if (pa) pa.value = text;
+      if (status) status.textContent = '✓ ' + file.name + ' loaded';
+    } else {
+      if (status) status.textContent = '⚠ Could not extract text — try pasting below';
+    }
+  } catch(e) {
+    if (status) status.textContent = '⚠ Error: ' + e.message;
+  }
+}
+
+// Handle paste directly inside Job Match panel
+function jmHandlePaste(text) {
+  if (text && text.trim().length > 60) {
+    extractedText = text.trim();
+    var status = document.getElementById('jmUploadStatus');
+    if (status) status.textContent = '';
+  }
 }
 
 function jmSetWorkType(wt) {

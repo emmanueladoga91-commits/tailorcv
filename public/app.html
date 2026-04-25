@@ -1572,6 +1572,30 @@
   .jm-source-chip.active {
     background: rgba(91,99,240,.25); border-color: rgba(91,99,240,.5); color: #a5b4fc;
   }
+  /* ── Job Match inline resume upload panel ── */
+  .jm-upload-panel {
+    display: none; margin: 0 24px 0 24px; padding: 16px 20px;
+    background: rgba(91,99,240,.07); border: 1.5px dashed rgba(91,99,240,.35);
+    border-radius: 12px; gap: 12px; flex-direction: column;
+  }
+  .jm-upload-panel.visible { display: flex; }
+  .jm-upload-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .jm-upload-label { font-size: .75rem; color: rgba(255,255,255,.5); font-weight: 600; }
+  .jm-upload-btn {
+    background: rgba(91,99,240,.22); border: 1px solid rgba(91,99,240,.45);
+    color: #a5b4fc; font-size: .78rem; font-weight: 700; padding: 6px 16px;
+    border-radius: 8px; cursor: pointer; transition: background .15s;
+  }
+  .jm-upload-btn:hover { background: rgba(91,99,240,.38); }
+  .jm-upload-status { font-size: .75rem; color: #6ee7b7; font-weight: 600; }
+  .jm-paste-area {
+    width: 100%; min-height: 90px; resize: vertical;
+    background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.12);
+    border-radius: 8px; color: rgba(255,255,255,.85); font-size: .78rem;
+    padding: 10px 12px; font-family: inherit; line-height: 1.5;
+  }
+  .jm-paste-area::placeholder { color: rgba(255,255,255,.25); }
+  .jm-paste-area:focus { outline: none; border-color: rgba(91,99,240,.5); }
   .jm-run-btn {
     margin-left: auto; background: linear-gradient(135deg,#7c3aed,#5b63f0);
     color: #fff; border: none; border-radius: 99px;
@@ -2807,6 +2831,18 @@
         <span id="jmRunIcon">✨</span> Find Matching Jobs
       </button>
     </div>
+    <!-- Inline resume upload/paste — shown when user picks "Uploaded Resume" source -->
+    <div class="jm-upload-panel" id="jmUploadPanel">
+      <div class="jm-upload-row">
+        <span class="jm-upload-label">Upload file (.pdf or .docx):</span>
+        <button class="jm-upload-btn" onclick="document.getElementById('jmFileInput').click()">📂 Choose File</button>
+        <input type="file" id="jmFileInput" accept=".pdf,.docx" style="display:none" onchange="jmHandleFileUpload(this.files[0])"/>
+        <span class="jm-upload-status" id="jmUploadStatus"></span>
+      </div>
+      <div class="jm-upload-label" style="margin-top:4px">Or paste resume text directly:</div>
+      <textarea class="jm-paste-area" id="jmPasteArea" placeholder="Paste your resume text here (name, experience, skills, education)…" oninput="jmHandlePaste(this.value)"></textarea>
+    </div>
+
     <div class="jm-loc-bar">
       <span class="jm-loc-icon">📍</span>
       <input class="jm-loc-input" id="jmLocInput" type="text" placeholder="City, state or country (e.g. London, Remote, New York)" />
@@ -2912,7 +2948,7 @@
   })();
   // ── End app hamburger ─────────────────────────────────
 </script>
-<script src="app.js?v=11"></script>
+<script src="app.js?v=12"></script>
 
 <!-- Upgrade Modal -->
 <div id="upgradeModal" style="display:none;position:fixed;inset:0;z-index:2000;background:rgba(15,23,42,.72);display:none;align-items:center;justify-content:center;padding:20px">

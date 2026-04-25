@@ -444,8 +444,28 @@ app.post('/api/claude', requireAuth, aiLimiter, async (req, res) => {
   const isPro = isOwner || (user.plan === 'pro' && ['active', 'beta'].includes(user.subscription_status));
 
   // 'score' type (pre-tailoring match preview) is free for all users
+  // 'jobs'  type (job match engine keyword extraction) — free with 3 searches/day limit
   if (type === 'score') {
     // no gating — everyone can check their match score
+  } else if (type === 'jobs') {
+    // Free users get 3 job searches per day; Pro users are unlimited
+    if (!isPro) {
+      const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+      const jobSearchKey = `job_searches_${today}`;
+      const dailyCount = user[jobSearchKey] || 0;
+      const FREE_JOB_SEARCH_LIMIT = 3;
+      if (dailyCount >= FREE_JOB_SEARCH_LIMIT) {
+        return res.status(402).json({
+          error: 'upgrade_required',
+          message: `You have used your ${FREE_JOB_SEARCH_LIMIT} free job searches for today. Upgrade to Pro for unlimited searches.`,
+        });
+      }
+      // Increment daily counter (best-effort — don't fail if DB update fails)
+      pool.query(
+        `UPDATE users SET "${jobSearchKey}" = COALESCE("${jobSearchKey}", 0) + 1 WHERE id = $1`,
+        [user.id]
+      ).catch(() => {});
+    }
   } else if (type === 'tailor') {
     const freeLimit = 1 + (user.referral_credits || 0);
     if (!isPro && user.tailoring_count >= freeLimit) {

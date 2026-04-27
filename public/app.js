@@ -4230,12 +4230,29 @@ async function runJobMatch() {
 
     if (!searches.length) throw new Error('No search queries returned');
 
-    // Build a fast title-relevance checker: a job title is relevant if it contains
-    // at least one of the title_keywords extracted from the resume
+    // Aggregator/search-page titles — Indeed/LinkedIn category pages, not real postings
+    // e.g. "Data Analyst, SQL, Power BI jobs in Greater Toronto Area, ON"
+    function isAggregatorTitle(title) {
+      if (!title) return true;
+      return /\bjobs? (in|at|near|now available|available)\b/i.test(title)
+          || /\d[\d,]* .+ jobs?\b/i.test(title)
+          || /^search \d/i.test(title)
+          || /\d+ (open|new|current) (position|job|role)s?\b/i.test(title);
+    }
+
+    // Title relevance — word-level, not phrase-level.
+    // "Business Systems Analyst" doesn't contain "Business Analyst" as a phrase,
+    // but DOES contain "business" and "analyst" — so we check individual words too.
     function isTitleRelevant(jobTitle) {
-      if (!titleKeywords.length) return true; // no filter if Claude didn't return keywords
+      if (!titleKeywords.length) return true;
       var t = (jobTitle || '').toLowerCase();
-      return titleKeywords.some(function(kw){ return t.includes(kw); });
+      var words = [];
+      titleKeywords.forEach(function(kw) {
+        words.push(kw); // full phrase check
+        kw.split(/\s+/).forEach(function(w){ if (w.length > 2) words.push(w); }); // word-level
+      });
+      words = words.filter(function(w, i, a){ return a.indexOf(w) === i; });
+      return words.some(function(w){ return t.includes(w); });
     }
 
     // ── Step 2: Fetch real listings + authentic ATS jobs in parallel ──
@@ -4327,12 +4344,14 @@ async function runJobMatch() {
     // Wait for all three to finish
     await Promise.all([regularPromise, authPromise, govPromise]);
 
-    // Apply title relevance filter to gov + ATS jobs (keeps only titles that match the career vault role)
-    // Regular board results are kept as-is since they're already ranked by the job board
-    if (titleKeywords.length) {
-      govJobs  = govJobs.filter(function(j){ return isTitleRelevant(j.title); });
-      authJobs = authJobs.filter(function(j){ return isTitleRelevant(j.title); });
-    }
+    // ── Relevance + aggregator filtering ─────────────────────────
+    // Gov jobs: DON'T title-filter — the query was already role-specific (primary_role).
+    //   Only strip aggregator pages (e.g. "All Analyst Jobs in Alberta").
+    govJobs = govJobs.filter(function(j){ return !isAggregatorTitle(j.title); });
+
+    // ATS + regular board jobs: strip aggregator pages AND apply title relevance filter.
+    authJobs = authJobs.filter(function(j){ return !isAggregatorTitle(j.title) && isTitleRelevant(j.title); });
+    allJobs  = allJobs.filter(function(j){ return !isAggregatorTitle(j.title) && isTitleRelevant(j.title); });
 
     // Priority order: 🏛️ Gov Canada first → ✓ Direct ATS second → Regular boards last
     allJobs = govJobs.concat(authJobs).concat(allJobs);

@@ -4112,7 +4112,7 @@ async function runJobMatch() {
   if (locPref) locInstruction += ' Location preference: ' + locPref + '.';
   if (_jmWorkType !== 'any') locInstruction += ' Work type: ' + wtLabel + '.';
 
-  var systemPrompt = 'You are a career coach. Analyse the resume and return ONLY a valid JSON object — no markdown, no explanation. Format:\n{\n  "searches": [\n    { "query": "Business Analyst ERP", "title": "Business Analyst", "why": "One sentence why this fits.", "skills": ["Skill1","Skill2","Skill3"] }\n  ],\n  "top_keywords": ["kw1","kw2","kw3","kw4","kw5"]\n}\nReturn 5 diverse, highly relevant search queries ranked by fit. Queries should be concise (2-4 words) for job board searches.' + locInstruction;
+  var systemPrompt = 'You are a career coach. Analyse the resume and return ONLY a valid JSON object — no markdown, no explanation.\n\nRules:\n- "primary_role": the single most precise job title that best matches this person (e.g. "Business Analyst", "Senior Software Engineer", "Project Manager") — be specific, NOT just "Analyst" or "Engineer"\n- "searches": 5 job board search strings. Each query MUST start with the specific role title (e.g. "Business Analyst Agile", "Business Systems Analyst ERP", "BA Requirements Management") — never a generic word like just "Analyst". Vary by specialisation, not just synonyms.\n- "title_keywords": 4–6 exact job title words/phrases that MUST appear in a matching job title (e.g. ["Business Analyst","Systems Analyst","BA","Business Systems"]). These are used to filter irrelevant results — be precise.\n- "top_keywords": 5 resume keywords to add.\n\nFormat:\n{\n  "primary_role": "Business Analyst",\n  "searches": [\n    { "query": "Business Analyst Agile BRD", "title": "Business Analyst", "why": "One sentence why.", "skills": ["Skill1","Skill2"] }\n  ],\n  "title_keywords": ["Business Analyst","Systems Analyst","BA","Product Analyst"],\n  "top_keywords": ["kw1","kw2","kw3","kw4","kw5"]\n}' + locInstruction;
 
   var userMsg = 'Resume:\n\n' + resumeText.slice(0, 4000)
     + (locPref ? '\n\nLocation: ' + locPref : '')
@@ -4138,8 +4138,18 @@ async function runJobMatch() {
     var parsed = JSON.parse(raw);
     var searches = parsed.searches || [];
     var topKeywords = parsed.top_keywords || [];
+    var primaryRole = (parsed.primary_role || '').trim();
+    var titleKeywords = (parsed.title_keywords || []).map(function(k){ return k.toLowerCase().trim(); });
 
     if (!searches.length) throw new Error('No search queries returned');
+
+    // Build a fast title-relevance checker: a job title is relevant if it contains
+    // at least one of the title_keywords extracted from the resume
+    function isTitleRelevant(jobTitle) {
+      if (!titleKeywords.length) return true; // no filter if Claude didn't return keywords
+      var t = (jobTitle || '').toLowerCase();
+      return titleKeywords.some(function(kw){ return t.includes(kw); });
+    }
 
     // ── Step 2: Fetch real listings + authentic ATS jobs in parallel ──
     body.innerHTML = '<div class="jm-loading"><div class="jm-spinner"></div><span>Fetching live job listings…</span></div>';
@@ -4199,8 +4209,14 @@ async function runJobMatch() {
 
     // Canadian Government & Provincial job boards — TOP PRIORITY when location is in Canada
     // Federal (jobs.gc.ca, jobbank.gc.ca) + all 10 provinces + 3 territories + major cities
+    // Gov search: use primary_role for the query (more precise than multi-topic searches)
+    // Also run the top 2 searches as fallback to maximise coverage
+    var govQueries = primaryRole
+      ? [{ query: primaryRole, title: primaryRole, skills: [] }].concat(searches.slice(0, 2))
+      : searches.slice(0, 3);
+
     var govPromise = isCanadaSearch
-      ? Promise.all(searches.slice(0, 3).map(async function(s) {
+      ? Promise.all(govQueries.map(async function(s) {
           try {
             var r = await fetch('/api/jobs-gov-canada', {
               method: 'POST',
@@ -4224,11 +4240,18 @@ async function runJobMatch() {
     // Wait for all three to finish
     await Promise.all([regularPromise, authPromise, govPromise]);
 
+    // Apply title relevance filter to gov + ATS jobs (keeps only titles that match the career vault role)
+    // Regular board results are kept as-is since they're already ranked by the job board
+    if (titleKeywords.length) {
+      govJobs  = govJobs.filter(function(j){ return isTitleRelevant(j.title); });
+      authJobs = authJobs.filter(function(j){ return isTitleRelevant(j.title); });
+    }
+
     // Priority order: 🏛️ Gov Canada first → ✓ Direct ATS second → Regular boards last
     allJobs = govJobs.concat(authJobs).concat(allJobs);
 
     // Store state for load-more
-    _jmSearchState = { searches: searches, locPref: locPref, workType: _jmWorkType, datePosted: _jmDatePosted, exp: _jmExp, page: 1, allJobs: allJobs, seenIds: seenIds, topKeywords: topKeywords, resumeText: resumeText };
+    _jmSearchState = { searches: searches, locPref: locPref, workType: _jmWorkType, datePosted: _jmDatePosted, exp: _jmExp, page: 1, allJobs: allJobs, seenIds: seenIds, topKeywords: topKeywords, resumeText: resumeText, primaryRole: primaryRole, titleKeywords: titleKeywords };
 
     // Show API error/diagnostic banner if no jobs returned
     if (!allJobs.length) {

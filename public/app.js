@@ -335,7 +335,7 @@ function getSystemPrompt(profileKey, pages) {
     '2. Natural human tone. No corporate filler phrases ("synergised", "leveraged", "holistic", "robust", etc.).',
     '3. SPECIFICITY RULE: Every bullet must name the specific technique, tool, or metric. Never say "analysed" without saying how. Never say "managed" without saying what and at what scale.',
     '4. NO EM DASHES anywhere. Use commas, parentheses, or restructure sentences.',
-    '5. PROFESSIONAL SUMMARY: Open with "A [adjective] [exact job title from JD]..." — set summaryTitle to "PROFESSIONAL SUMMARY - [exact job title from JD]". HARD LIMIT: maximum 5 lines (≈60 words). No matter the page count, keep the summary concise and punchy.',
+    '5. PROFESSIONAL SUMMARY: Open with "A [adjective] [exact job title from JD]..." — set summaryTitle to "PROFESSIONAL SUMMARY - [exact job title from JD]". HARD LIMIT: maximum 5 lines (≈60 words). No matter the page count, keep the summary concise and punchy. YEARS OF EXPERIENCE RULE: Scan the JD for any minimum years of experience requirement (e.g. "3 years", "5+ years", "minimum 4 years", "at least 3 years"). If found, include "over X years" (where X matches the JD requirement) naturally in the opening sentence — e.g. "A results-driven Business Analyst with over 5 years of experience...". Never state fewer years than the JD requires. If the candidate\'s actual experience exceeds the requirement, use the higher number. If the JD states no specific years requirement, use the candidate\'s actual total years of relevant experience.',
     '6. KEY SKILLS / CORE COMPETENCE: Exactly 12 items. Front-load the most JD-relevant ones.',
     projectRule,
     '8. Keep all real metrics from the original resume. Do not water down quantified achievements.',

@@ -4345,16 +4345,18 @@ async function runJobMatch() {
     await Promise.all([regularPromise, authPromise, govPromise]);
 
     // ── Relevance + aggregator filtering ─────────────────────────
-    // Gov jobs: DON'T title-filter — the query was already role-specific (primary_role).
-    //   Only strip aggregator pages (e.g. "All Analyst Jobs in Alberta").
-    govJobs = govJobs.filter(function(j){ return !isAggregatorTitle(j.title); });
-
-    // ATS + regular board jobs: strip aggregator pages AND apply title relevance filter.
+    govJobs  = govJobs.filter(function(j){ return !isAggregatorTitle(j.title); });
     authJobs = authJobs.filter(function(j){ return !isAggregatorTitle(j.title) && isTitleRelevant(j.title); });
     allJobs  = allJobs.filter(function(j){ return !isAggregatorTitle(j.title) && isTitleRelevant(j.title); });
 
-    // Priority order: 🏛️ Gov Canada first → ✓ Direct ATS second → Regular boards last
-    allJobs = govJobs.concat(authJobs).concat(allJobs);
+    // ── Priority merge ─────────────────────────────────────────────
+    // 1st: Eluta / Hiring.cafe / LinkedIn (_tier:1 tagged by server)
+    // 2nd: 🏛️ Canadian Government boards
+    // 3rd: ✓ Direct ATS (Greenhouse, Lever, Workday, etc.)
+    // 4th: Regular boards (Indeed, Glassdoor, etc.)
+    var tier1Jobs    = allJobs.filter(function(j){ return j._tier === 1; });
+    var regularJobs  = allJobs.filter(function(j){ return j._tier !== 1; });
+    allJobs = tier1Jobs.concat(govJobs).concat(authJobs).concat(regularJobs);
 
     // Store state for load-more
     _jmSearchState = { searches: searches, locPref: locPref, workType: _jmWorkType, datePosted: _jmDatePosted, exp: _jmExp, page: 1, allJobs: allJobs, seenIds: seenIds, topKeywords: topKeywords, resumeText: resumeText, primaryRole: primaryRole, titleKeywords: titleKeywords };

@@ -1730,7 +1730,8 @@ app.post('/api/jobs-search', requireAuth, async (req, res) => {
       const d = p1Result.value;
       const organic   = (d.organic || []).map(normaliseOrganicResult).filter(j => j.applyUrl);
       const jobsBlock = (d.jobs    || []).map(normaliseSerperJob);
-      priorityJobs = cleanJobs([...organic, ...jobsBlock]);
+      // Tag P1 jobs so app.js can hoist them above gov/ATS results
+      priorityJobs = cleanJobs([...organic, ...jobsBlock]).map(j => ({ ...j, _tier: 1 }));
       console.log(`Serper priority (eluta/hiring.cafe/linkedin) → ${priorityJobs.length} results`);
     } else {
       errors.push('Serper priority: ' + p1Result.reason?.message);
@@ -1738,7 +1739,13 @@ app.post('/api/jobs-search', requireAuth, async (req, res) => {
 
     let googleJobs = [];
     if (p2Result.status === 'fulfilled') {
-      googleJobs = cleanJobs((p2Result.value.jobs || []).map(normaliseSerperJob));
+      // Tag LinkedIn jobs from the Google Jobs panel as tier-1 (priority source)
+      googleJobs = cleanJobs((p2Result.value.jobs || []).map(normaliseSerperJob)).map(j => {
+        const via = (j.via || '').toLowerCase();
+        const url = (j.applyUrl || '').toLowerCase();
+        if (via.includes('linkedin') || url.includes('linkedin.com')) return { ...j, _tier: 1 };
+        return j;
+      });
       console.log(`Serper /jobs (Google Jobs panel) → ${googleJobs.length} results`);
     } else {
       errors.push('Serper /jobs: ' + p2Result.reason?.message);

@@ -918,6 +918,42 @@
     }
     .app-drawer-signout:hover { background:rgba(220,38,38,.25); }
 
+    /* ── Active sidebar item ── */
+    .app-drawer-item.di-active {
+      color:#fff !important;
+      background:rgba(99,102,241,.22) !important;
+      border-left-color:#6366f1 !important;
+      font-weight:700;
+    }
+
+    /* ── DESKTOP PERSISTENT SIDEBAR ─────────────────────────────
+       On screens > 640px the drawer becomes a fixed left sidebar.
+       Header and main shift right by the sidebar width.           */
+    @media (min-width:641px) {
+      /* Pin sidebar — always visible, no slide animation */
+      .app-drawer {
+        transform: translateX(0) !important;
+        transition: none !important;
+        width: 230px;
+        z-index: 100;
+        box-shadow: 2px 0 28px rgba(0,0,0,.22);
+      }
+      /* Hide close button — not needed on desktop */
+      .app-drawer-close { display:none !important; }
+      /* No overlay on desktop */
+      .app-overlay { display:none !important; }
+      /* Hamburger hidden on desktop */
+      .app-hamburger { display:none !important; }
+
+      /* Push header & content to the right of the sidebar */
+      header { margin-left:230px; }
+      main   { margin-left:230px; max-width: calc(800px + 230px); padding-left:20px; padding-right:20px; }
+
+      /* Hide top-bar nav links — they live in the sidebar now */
+      .user-link  { display:none !important; }
+      .header-sub { display:none !important; }
+    }
+
     /* ── Resume Library / Upload Tabs ── */
     .upload-tabs {
       display:flex; background:rgba(244,246,250,.75);
@@ -1840,6 +1876,7 @@
   </div>
   <nav class="app-drawer-nav">
     <a href="/" class="app-drawer-item"><span class="di-icon">🏠</span> Home</a>
+    <a href="/app.html" class="app-drawer-item di-active"><span class="di-icon">📄</span> Resume Builder</a>
     <a href="/tracker.html" class="app-drawer-item"><span class="di-icon">📋</span> Job Tracker</a>
     <button class="app-drawer-item" onclick="openJobMatch();closeAppDrawer()"><span class="di-icon">🎯</span> Find Jobs</button>
     <a href="/prep.html" class="app-drawer-item"><span class="di-icon">🎤</span> Interview Prep</a>
